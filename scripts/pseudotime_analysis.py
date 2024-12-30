@@ -43,7 +43,7 @@ import warnings
 import os
 import random
 from adapters.space_gm_adapter import CustomSubgraphSampler
-from core.pseudotime_analysis import aggregate_biomarker_by_pseudotime, perform_pseudotime_analysis, plot_biomarker_vs_pseudotime
+from core.pseudotime_analysis import aggregate_biomarker_by_pseudotime_with_overlap, perform_pseudotime_analysis
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -57,6 +57,9 @@ from spacegm.embeddings_analysis import (
     get_composition_vector,
     dimensionality_reduction_combo
 )
+
+from utils.data_transform import normalize
+from utils.visualization import plot_biomarker_vs_pseudotime
 
 
 # Suppress warnings
@@ -106,8 +109,9 @@ class Config:
         self.biomarkers = ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"]
         self.show_plots = True
         self.num_bins = 100
+        self.overlap = 0.2 # bin overlap
         self.use_bins = True
-        self.plotting_transform = 'normalize' # ['normalize','smooth']
+        self.plotting_transform = [normalize]
 
 def initialize_dataset(root_path, dataset_kwargs):
     """Initialize the CellularGraphDataset."""
@@ -232,12 +236,12 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             save_pseudotime_to_csv(sampled_subgraph_dicts, output_path)
 
             # Aggregate biomarker data
-            aggregated_data = aggregate_biomarker_by_pseudotime(
-                sampled_subgraph_dicts, config.biomarkers, num_bins=config.num_bins, use_bins=config.use_bins
+            aggregated_data = aggregate_biomarker_by_pseudotime_with_overlap(
+                sampled_subgraph_dicts, config.biomarkers, num_bins=config.num_bins, overlap=config.overlap, use_bins=config.use_bins
             )
 
             # Plot and save biomarker trends
-            plot_biomarker_vs_pseudotime(aggregated_data, output_dir,method=embedding_key,transform=config.plotting_transform, use_bins=config.use_bins)
+            plot_biomarker_vs_pseudotime(aggregated_data, output_dir,method=embedding_key,transforms=config.plotting_transform, use_bins=config.use_bins)
 
 if __name__ == "__main__":
     # Pipeline Execution

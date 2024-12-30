@@ -154,165 +154,53 @@ def visualize_expression_vs_pseudotime(
     plt.legend()
     plt.show()
 
-def generate_composition_vector_df(dataset, cell_type, n_samples=1000, normalize=True):
+def aggregate_biomarker_by_pseudotime_with_overlap(sampled_subgraphs, biomarkers, num_bins=200, overlap=0.2, use_bins=True):
     """
-    Generate a DataFrame with composition vectors as embeddings for pseudotime analysis.
-
-    Parameters:
-        dataset: CellularGraphDataset object containing the graph data.
-        cell_type (int): Target cell type as the center node.
-        n_samples (int): Number of subgraphs to sample.
-        normalize (bool): Whether to normalize the composition vectors.
-
-    Returns:
-        pd.DataFrame: DataFrame with the following columns:
-            - embedding: Composition vector.
-            - region_id: Region identifier (inferred from dataset).
-            - center_node_idx: Index of the center node (placeholder or actual).
-            - cell_type: Target cell type.
-    """
-    from spacegm.embeddings_analysis import get_composition_vector, sample_subgraphs_by_cell_type
-
-    # Sample subgraphs with the specified cell type
-    reference_subgraph_list = sample_subgraphs_by_cell_type(dataset, cell_type=cell_type, n_samples=n_samples)
-    
-    # Extract composition vectors
-    ref_composition_vectors = [
-        get_composition_vector(data, n_cell_types=len(dataset.cell_type_mapping))
-        for data in reference_subgraph_list
-    ]
-
-    # Normalize composition vectors if required
-    if normalize:
-        ref_composition_vectors = [
-            (vec - np.min(vec)) / (np.max(vec) - np.min(vec) + 1e-8) for vec in ref_composition_vectors
-        ]
-
-    # Build DataFrame
-    data = []
-    for idx, (vec, subgraph) in enumerate(zip(ref_composition_vectors, reference_subgraph_list)):
-        data.append({
-            "embedding": vec,
-            "region_id": subgraph.region_id if hasattr(subgraph, "region_id") else f"region_{idx}",
-            "center_node_idx": subgraph.original_center_node if hasattr(subgraph, "original_center_node") else idx,
-            "cell_type": cell_type
-        })
-    
-    return pd.DataFrame(data)
-
-def aggregate_biomarker_by_pseudotime(sampled_subgraphs, biomarkers, num_bins=200, use_bins=True):
-    """
-    Aggregate biomarker data by pseudotime.
+    Aggregate biomarker data by pseudotime with optional overlapping bins.
 
     Args:
         sampled_subgraphs (list): List of sampled subgraphs with pseudotime and biomarker data.
         biomarkers (list): List of biomarker keys to aggregate.
         num_bins (int): Number of bins for pseudotime (if use_bins is True).
+        overlap (float): Proportion of overlap between bins (0.0 to 1.0). Defaults to 0.2 (20% overlap).
         use_bins (bool): Whether to bin pseudotime values.
 
     Returns:
         dict: Aggregated biomarker data by pseudotime.
     """
+    if overlap < 0 or overlap >= 1:
+        raise ValueError("Overlap must be between 0 and 1 (exclusive).")
+
     biomarker_data = {biomarker: [] for biomarker in biomarkers}
     pseudotime_values = [subgraph["pseudotime"] for subgraph in sampled_subgraphs]
 
-    # Bin pseudotime if required
+    # Calculate bin edges and apply overlap if required
     if use_bins:
-        bins = np.linspace(min(pseudotime_values), max(pseudotime_values), num_bins)
-        bin_indices = np.digitize(pseudotime_values, bins)
+        min_pt, max_pt = min(pseudotime_values), max(pseudotime_values)
+        bin_width = (max_pt - min_pt) / num_bins
+        step_size = bin_width * (1 - overlap)  # Overlapping step size
+        bin_edges = np.arange(min_pt, max_pt + step_size, step_size)
     else:
-        bin_indices = np.array(pseudotime_values)
+        bin_edges = np.unique(pseudotime_values)  # No binning, use unique pseudotime values
 
-    # Aggregate biomarker data
-    for subgraph, bin_idx in zip(sampled_subgraphs, bin_indices):
-        for biomarker in biomarkers:
-            biomarker_value = subgraph["node_info"].get("biomarker_expression", {}).get(biomarker, np.nan)
-            biomarker_data[biomarker].append((bin_idx, biomarker_value))
+    # Aggregate biomarker data into bins
+    for subgraph in sampled_subgraphs:
+        pt_value = subgraph["pseudotime"]
+        for i in range(len(bin_edges) - 1):
+            bin_start, bin_end = bin_edges[i], bin_edges[i + 1]
+            if bin_start <= pt_value < bin_end:
+                for biomarker in biomarkers:
+                    biomarker_value = subgraph["node_info"].get("biomarker_expression", {}).get(biomarker, np.nan)
+                    biomarker_data[biomarker].append((i, biomarker_value))
+                break
 
     # Compute average biomarker values per bin
     aggregated_data = {}
     for biomarker, values in biomarker_data.items():
         values = pd.DataFrame(values, columns=["bin", "value"]).dropna()
         aggregated = values.groupby("bin")["value"].mean().reset_index()
+        aggregated["bin_center"] = aggregated["bin"].apply(lambda b: (bin_edges[b] + bin_edges[b + 1]) / 2)
         aggregated_data[biomarker] = aggregated
 
     return aggregated_data
-
-# Biomarker Normalization
-def normalize_biomarker_values(aggregated_data):
-    """
-    Normalize biomarker values for better visualization.
-
-    Args:
-        aggregated_data (dict): Aggregated biomarker data by pseudotime.
-
-    Returns:
-        dict: Normalized biomarker data by pseudotime.
-    """
-    normalized_data = {}
-    for biomarker, data in aggregated_data.items():
-        values = data["value"]
-        min_val = values.min()
-        max_val = values.max()
-        normalized_values = (values - min_val) / (max_val - min_val)
-        normalized_data[biomarker] = pd.DataFrame({
-            "bin": data["bin"],
-            "value": normalized_values
-        })
-    return normalized_data
-
-def smooth_biomarker_values(aggregated_data, window_size=5):
-    """
-    Smooth biomarker values using a rolling average for better visualization.
-
-    Args:
-        aggregated_data (dict): Aggregated biomarker data by pseudotime.
-        window_size (int): Window size for smoothing.
-
-    Returns:
-        dict: Smoothed biomarker data by pseudotime.
-    """
-    smoothed_data = {}
-    for biomarker, data in aggregated_data.items():
-        values = data["value"].rolling(window=window_size, min_periods=1).mean()
-        smoothed_data[biomarker] = pd.DataFrame({
-            "bin": data["bin"],
-            "value": values
-        })
-    return smoothed_data
-
-def plot_biomarker_vs_pseudotime(aggregated_data, output_dir=None, method=None, transform=None, use_bins=True):
-    """
-    Plot biomarker expression across pseudotime.
-
-    Args:
-        aggregated_data (dict): Aggregated biomarker data by pseudotime.
-        output_dir (str, optional): Directory to save the output PNG file.
-        method (str, optional): Method for pseudotime (used in labels).
-        transform (str, optional): Transformation to apply ('normalize', 'smooth', etc.).
-        use_bins (bool): Whether pseudotime is binned.
-    """
-    if transform == "normalize":
-        aggregated_data = normalize_biomarker_values(aggregated_data)
-    elif transform == "smooth":
-        aggregated_data = smooth_biomarker_values(aggregated_data)
-
-    plt.figure(figsize=(12, 6))
-    for biomarker, data in aggregated_data.items():
-        plt.plot(data["bin"], data["value"], label=biomarker)
-
-    # Use a default value for method if it's None
-    method_label = method + "Pseudotime" if method is not None else "Pseudotime"
-    plt.xlabel(f"{method_label} (binned)" if use_bins else f"{method_label}")
-    plt.ylabel("Normalized Average Expression Level" if transform == "normalize" else "Smoothed Expression Level")
-    plt.title("Pseudotime vs Biomarker Expression Levels")
-    plt.legend()
-    plt.show()
-
-    if output_dir is not None:
-        os.makedirs(output_dir, exist_ok=True)
-        plot_path = os.path.join(output_dir, "biomarker_vs_pseudotime.png")
-        plt.savefig(plot_path)
-        plt.close()
-        print(f"Biomarker trends saved to {plot_path}")
 
