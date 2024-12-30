@@ -39,95 +39,109 @@ To execute the pipeline:
 
 """
 
-import warnings
 import os
 import random
-from adapters.space_gm_adapter import CustomSubgraphSampler
-from core.pseudotime_analysis import aggregate_biomarker_by_pseudotime_with_overlap, perform_pseudotime_analysis
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_FREQ_UPMC, CELL_TYPE_MAPPING_UPMC
 import torch
-import torch.nn as nn
+from adapters.space_gm_adapter import CustomSubgraphSampler
+from core.pseudotime_analysis import perform_pseudotime_analysis, aggregate_biomarker_by_pseudotime_with_overlap
+from core.expression_analysis import analyze_and_visualize_expression
 from spacegm import CellularGraphDataset, GNN_pred
-
-from spacegm.embeddings_analysis import (
-    get_embedding,
-    get_composition_vector,
-    dimensionality_reduction_combo
-)
-
+from spacegm.embeddings_analysis import get_embedding, get_composition_vector, dimensionality_reduction_combo
 from utils.data_transform import normalize
 from utils.visualization import plot_biomarker_vs_pseudotime
 
-
 # Suppress warnings
+import warnings
 warnings.filterwarnings("ignore")
 
+# Config Class
 class Config:
     def __init__(self):
-        # Paths
-        self.data_root = "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC"
-        self.output_dir = "/root/TIC/data/embedding_analysis/pseudotime_analysis/test"
-        self.model_path = "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt"
-        self.device = 'cuda:0'
-
-        # Dataset parameters
-        self.dataset_kwargs = {
-            'raw_folder_name': 'graph',
-            'processed_folder_name': 'tg_graph',
-            'node_features': ["cell_type", "SIZE", "biomarker_expression", "neighborhood_composition", "center_coord"],
-            'edge_features': ["edge_type", "distance"],
-            'cell_type_mapping': CELL_TYPE_MAPPING_UPMC,
-            'cell_type_freq': CELL_TYPE_FREQ_UPMC,
-            'biomarkers': BIOMARKERS_UPMC,
-            'subgraph_size': 3,
-            'subgraph_source': 'chunk_save',
-            'subgraph_allow_distant_edge': True,
-            'subgraph_radius_limit': 55 * 3 + 35,
-            'biomarker_expression_process_method': "linear",
-            'biomarker_expression_lower_bound': 0,
-            'biomarker_expression_upper_bound': 18,
-            'neighborhood_size': 10,
+        # General settings
+        self.general = {
+            "data_root": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC",
+            "output_dir": "/root/tic-sci/data/embedding_analysis",
+            "model_path": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt",
+            "device": "cuda:0",
+            "random_seed": 42,
         }
 
-        # Sampler parameters
-        self.sampler_kwargs = {
-            'total_samples': 1000,
-            'cell_type': 9,
-            'region_id': None,
-            'batch_size': 64,
-            'num_workers': 8,
-            'output_csv': os.path.join(self.output_dir,'sampled_subgraphs.csv'), # save sampled subgraph infomation
-            'include_node_info': True,
-            'random_seed': 42,
+        # Dataset-specific settings
+        self.dataset = {
+            "raw_folder_name": "graph",
+            "processed_folder_name": "tg_graph",
+            "node_features": ["cell_type", "SIZE", "biomarker_expression", "neighborhood_composition", "center_coord"],
+            "edge_features": ["edge_type", "distance"],
+            "cell_type_mapping": CELL_TYPE_MAPPING_UPMC,
+            "cell_type_freq": CELL_TYPE_FREQ_UPMC,
+            "biomarkers": BIOMARKERS_UPMC,
+            "subgraph_size": 3,
+            "subgraph_source": "chunk_save",
+            "subgraph_allow_distant_edge": True,
+            "subgraph_radius_limit": 200,
+            "biomarker_expression_process_method": "linear",
+            "biomarker_expression_lower_bound": 0,
+            "biomarker_expression_upper_bound": 18,
+            "neighborhood_size": 10,
         }
 
-        # Pseudo-time analysis parameters
-        self.embedding_keys = ["expression_vectors", "composition_vectors", "node_embeddings", "graph_embeddings", "composition_vectors+expression_vectors","node_embeddings+expression_vectors","graph_embeddings+composition_vectors"]
-        self.start_nodes = [0,1]
-        self.biomarkers = ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"]
-        self.show_plots = True
-        self.num_bins = 100
-        self.overlap = 0.2 # bin overlap
-        self.use_bins = True
-        self.plotting_transform = [normalize]
+        # Sampler-specific settings
+        self.sampler = {
+            "total_samples": 1000,
+            "cell_type": [9,10,11,12,13,14],
+            "region_id": None,
+            "batch_size": 64,
+            "num_workers": 8,
+            "output_csv": os.path.join(self.general["output_dir"], "sampled_subgraphs.csv"),
+            "include_node_info": True,
+        }
 
-def initialize_dataset(root_path, dataset_kwargs):
+        # Pipeline modules configuration
+        self.pipeline = {
+            "embedding_preparation": {
+                "keys": ["expression_vectors", "composition_vectors", "node_embeddings", "graph_embeddings"],
+            },
+            "expression_analysis": {
+                "biomarkers": ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"],
+                "visualization_transform": [],
+                "visualization_kwargs": ["PANCK", "avg(ASMA+VIMENTIN+PODOPLANIN)"],
+            },
+            "pseudo_time_analysis": {
+                "start_nodes": [0, 1],
+                "num_bins": 100,
+                "use_bins": True,
+                "overlap": 0.2,
+                "plotting_transform": [normalize],
+                "show_plots": True,
+            },
+        }
+
+    def add_module_config(self, module_name, config_dict):
+        """Add a new module configuration to the pipeline."""
+        self.pipeline[module_name] = config_dict
+
+
+# Pipeline Functions
+def initialize_dataset(config):
     """Initialize the CellularGraphDataset."""
-    return CellularGraphDataset(root_path, **dataset_kwargs)
+    return CellularGraphDataset(config.general["data_root"], **config.dataset)
 
-def initialize_sampler(dataset, sampler_kwargs):
+
+def initialize_sampler(dataset, config):
     """Initialize the CustomSubgraphSampler."""
-    return CustomSubgraphSampler(dataset, **sampler_kwargs)
+    return CustomSubgraphSampler(dataset, **config.sampler)
 
-def prepare_embeddings(dataset, sampler, model_path, device, embedding_keys):
-    """Prepare and add selected embeddings to subgraphs."""
+
+def prepare_embeddings(dataset, sampler, config):
+    """Prepare embeddings and add them to the sampled subgraphs."""
+    embedding_keys = config.pipeline["embedding_preparation"]["keys"]
     pyg_subgraphs = sampler.get_subgraph_objects()
-
     embeddings_dict = {}
 
+    # Composition vectors
     if "composition_vectors" in embedding_keys:
         composition_vectors = [
             get_composition_vector(data, n_cell_types=len(dataset.cell_type_mapping))
@@ -135,34 +149,8 @@ def prepare_embeddings(dataset, sampler, model_path, device, embedding_keys):
         ]
         sampler.add_kv_to_sampled_subgraphs(composition_vectors, key="composition_vectors")
         embeddings_dict["composition_vectors"] = composition_vectors
-
-    if "node_embeddings" in embedding_keys or "graph_embeddings" in embedding_keys:
-        model_kwargs = {
-            'num_layer': dataset.subgraph_size,
-            'num_node_type': len(dataset.cell_type_mapping) + 1,
-            'num_feat': dataset[0].x.shape[1] - 1,
-            'emb_dim': 512,
-            'num_node_tasks': 0,
-            'num_graph_tasks': 1,
-            'node_embedding_output': 'last',
-            'drop_ratio': 0.25,
-            'graph_pooling': "max",
-            'gnn_type': 'gin',
-        }
-
-        model = GNN_pred(**model_kwargs).to(device)
-        model.load_state_dict(torch.load(model_path))
-
-        node_embeddings, graph_embeddings, _ = get_embedding(model, pyg_subgraphs, device)
-
-        if "node_embeddings" in embedding_keys:
-            sampler.add_kv_to_sampled_subgraphs(node_embeddings, key="node_embeddings")
-            embeddings_dict["node_embeddings"] = node_embeddings
-
-        if "graph_embeddings" in embedding_keys:
-            sampler.add_kv_to_sampled_subgraphs(graph_embeddings, key="graph_embeddings")
-            embeddings_dict["graph_embeddings"] = graph_embeddings
-
+    
+    # Expression vectors
     if "expression_vectors" in embedding_keys:
         def extract_expression_vector(subgraph_dict):
             node_info = subgraph_dict.get("node_info", {})
@@ -174,6 +162,30 @@ def prepare_embeddings(dataset, sampler, model_path, device, embedding_keys):
         ]
         sampler.add_kv_to_sampled_subgraphs(expression_vectors, key="expression_vectors")
         embeddings_dict["expression_vectors"] = expression_vectors
+
+    # Node and graph embeddings
+    if any(k in embedding_keys for k in ["node_embeddings", "graph_embeddings"]):
+        model = GNN_pred(
+            num_layer=dataset.subgraph_size,
+            num_node_type=len(dataset.cell_type_mapping) + 1,
+            num_feat=dataset[0].x.shape[1] - 1,
+            emb_dim=512,
+            num_node_tasks=0,
+            num_graph_tasks=1,
+            node_embedding_output="last",
+            drop_ratio=0.25,
+            graph_pooling="max",
+            gnn_type="gin",
+        ).to(config.general["device"])
+        model.load_state_dict(torch.load(config.general["model_path"]))
+
+        node_embeddings, graph_embeddings, _ = get_embedding(model, pyg_subgraphs, config.general["device"])
+        if "node_embeddings" in embedding_keys:
+            sampler.add_kv_to_sampled_subgraphs(node_embeddings, key="node_embeddings")
+            embeddings_dict["node_embeddings"] = node_embeddings
+        if "graph_embeddings" in embedding_keys:
+            sampler.add_kv_to_sampled_subgraphs(graph_embeddings, key="graph_embeddings")
+            embeddings_dict["graph_embeddings"] = graph_embeddings
 
     # Handle concatenated embeddings
     for key in embedding_keys:
@@ -204,51 +216,72 @@ def save_pseudotime_to_csv(sampled_subgraphs, output_path):
 
 
 def perform_pseudo_time_analysis_pipeline(config, sampler):
-    """Run pseudo-time analysis pipeline."""
+    """Run the pseudo-time analysis pipeline."""
     sampled_subgraph_dicts = sampler.get_all_sampled_subgraphs()
 
-    for embedding_key in config.embedding_keys:
+    for embedding_key in config.pipeline["embedding_preparation"]["keys"]:
         embeddings = np.array([subgraph.get(embedding_key) for subgraph in sampled_subgraph_dicts])
 
         # Dimensionality reduction and clustering
-        pca_embs, umap_embs, cluster_labels, _ = dimensionality_reduction_combo(
-            embeddings, n_pca_components=10, cluster_method='kmeans', n_clusters=2, seed=42
+        _, umap_embs, cluster_labels, _ = dimensionality_reduction_combo(
+            embeddings, n_pca_components=10, cluster_method="kmeans", n_clusters=2, seed=config.general["random_seed"]
         )
 
         # Attach cluster labels to subgraphs
         for i, subgraph in enumerate(sampled_subgraph_dicts):
             subgraph["cluster_label"] = cluster_labels[i]
 
-        # Perform pseudo-time analysis for each start node
-        for start_node in config.start_nodes:
-            output_dir = os.path.join(config.output_dir, embedding_key, f"start_node_{start_node}")
-            output_path = os.path.join(output_dir, "pseudotime.csv")
+        # Expression Analysis Submodule
+        output_dir = os.path.join(config.general["output_dir"], embedding_key, "expression")
+        analyze_and_visualize_expression(
+            sampled_subgraph_dicts,
+            cluster_labels,
+            biomarkers=config.pipeline["expression_analysis"]["biomarkers"],
+            output_dir=output_dir,
+            visualization_transform=config.pipeline["expression_analysis"]["visualization_transform"],
+            visualization_kws=config.pipeline["expression_analysis"]["visualization_kwargs"],
+        )
 
+        # Pseudo-Time Analysis Submodule
+        pseudotime_output_dir = os.path.join(config.general["output_dir"], embedding_key, "pseudotime")
+        for start_node in config.pipeline["pseudo_time_analysis"]["start_nodes"]:
             pseudotime_results = perform_pseudotime_analysis(
                 labels=cluster_labels,
                 umap_embs=umap_embs,
-                output_dir=output_dir,
+                output_dir=pseudotime_output_dir,
                 start=start_node,
-                show_plots=config.show_plots
+                show_plots=config.pipeline["pseudo_time_analysis"]["show_plots"],
             )
             sampler.add_kv_to_sampled_subgraphs(pseudotime_results, key="pseudotime")
 
             # Save pseudotime data
-            save_pseudotime_to_csv(sampled_subgraph_dicts, output_path)
+            node_output_dir = os.path.join(pseudotime_output_dir,f'start_node_{start_node}')
+            pseudotime_csv = os.path.join(node_output_dir,"pseudotime.csv")
+            save_pseudotime_to_csv(sampled_subgraph_dicts, pseudotime_csv)
 
             # Aggregate biomarker data
             aggregated_data = aggregate_biomarker_by_pseudotime_with_overlap(
-                sampled_subgraph_dicts, config.biomarkers, num_bins=config.num_bins, overlap=config.overlap, use_bins=config.use_bins
+                sampled_subgraph_dicts, 
+                biomarkers=config.pipeline["expression_analysis"]["biomarkers"], 
+                num_bins=config.pipeline["pseudo_time_analysis"]["num_bins"], 
+                overlap=config.pipeline["pseudo_time_analysis"]["overlap"], 
+                use_bins=config.pipeline["pseudo_time_analysis"]["use_bins"]
             )
 
             # Plot and save biomarker trends
-            plot_biomarker_vs_pseudotime(aggregated_data, output_dir,method=embedding_key,transforms=config.plotting_transform, use_bins=config.use_bins)
+            plot_biomarker_vs_pseudotime(aggregated_data, node_output_dir,method=embedding_key,transforms=config.pipeline["pseudo_time_analysis"]["plotting_transform"], use_bins=config.pipeline["pseudo_time_analysis"]["use_bins"])
 
+# Main Script
 if __name__ == "__main__":
-    # Pipeline Execution
+    # Initialize Config
     config = Config()
-    dataset = initialize_dataset(config.data_root, config.dataset_kwargs)
-    sampler = initialize_sampler(dataset, config.sampler_kwargs)
-    sampler = prepare_embeddings(dataset, sampler, config.model_path, config.device, config.embedding_keys)
 
+    # Initialize Dataset and Sampler
+    dataset = initialize_dataset(config)
+    sampler = initialize_sampler(dataset, config)
+
+    # Prepare Embeddings
+    sampler = prepare_embeddings(dataset, sampler, config)
+
+    # Run Pseudo-Time Analysis Pipeline
     perform_pseudo_time_analysis_pipeline(config, sampler)

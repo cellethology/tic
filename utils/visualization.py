@@ -48,7 +48,6 @@ def plot_filtering_process(embeddings, cluster_labels, filtered_embeddings, filt
         filtered_labels (np.ndarray): Filtered cluster labels.
         output_path (str, optional): Path to save the plot.
     """
-    raise NotImplemented
     plt.figure(figsize=(12, 6))
 
     # Original embeddings
@@ -69,4 +68,34 @@ def plot_filtering_process(embeddings, cluster_labels, filtered_embeddings, filt
     if output_path:
         plt.savefig(output_path)
         print(f"Filtering visualization saved to {output_path}")
+    plt.show()
+
+#--------------------------------
+# Cluster-wise biomarker averages
+#--------------------------------
+def plot_biomarker_bar_chart(cluster_summary, visualization_kws, output_path=None):
+    """
+    Plot biomarker averages for each cluster as a bar chart.
+
+    Args:
+        cluster_summary (pd.DataFrame): DataFrame containing average biomarker expression per cluster.
+        visualization_kws (list): List of biomarkers or calculated metrics to visualize.
+        output_path (str, optional): File path to save the bar chart.
+
+    Returns:
+        None
+    """
+    # Plot the bar chart for selected biomarkers
+    ax = cluster_summary[visualization_kws].plot.bar(figsize=(12, 6))
+    ax.set_xlabel("Cluster")
+    ax.set_ylabel("Biomarker Expression (Averaged)")
+    ax.set_title("Cluster-wise Biomarker Averages")
+    plt.legend(title="Biomarkers")
+    plt.tight_layout()
+
+    # Save the chart if output_path is specified
+    if output_path:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        plt.savefig(output_path)
+        print(f"Bar chart saved to {output_path}")
     plt.show()
