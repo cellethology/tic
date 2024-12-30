@@ -66,7 +66,7 @@ class Config:
     def __init__(self):
         # Paths
         self.data_root = "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC"
-        self.output_dir = "/root/TIC/data/embedding_analysis/pseudotime_analysis/tumor_all"
+        self.output_dir = "/root/TIC/data/embedding_analysis/pseudotime_analysis/test"
         self.model_path = "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt"
         self.device = 'cuda:0'
 
