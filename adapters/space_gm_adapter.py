@@ -257,7 +257,7 @@ class CustomSubgraphSampler:
     Args:
         dataset (CellularGraphDataset): The dataset instance.
         total_samples (int): The total number of samples to retrieve.
-        cell_type (int, optional): Specific cell type to sample. Defaults to None.
+        cell_type (int or list, optional): Specific cell type(s) to sample. Defaults to None.
         region_id (str, optional): Specific region ID to sample. Defaults to None.
         batch_size (int, optional): Batch size for DataLoader. Defaults to None.
         num_workers (int): Number of workers for DataLoader.
@@ -278,13 +278,16 @@ class CustomSubgraphSampler:
                  random_seed=None):
         self.dataset = dataset
         self.total_samples = total_samples
-        self.cell_type = cell_type
+        self.cell_type = cell_type if isinstance(cell_type, list) else [cell_type]  
         self.region_id = region_id
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.output_csv = output_csv
         self.include_node_info = include_node_info
         self.sampled_subgraphs = []
+
+        output_dir = os.path.dirname(output_csv)
+        os.makedirs(output_dir, exist_ok=True)
 
         if random_seed is not None:
             random.seed(random_seed)
@@ -298,21 +301,21 @@ class CustomSubgraphSampler:
         self._prepare_samples_proportionally()
         self._save_to_csv()
 
-    def _process_region(self, region_idx, num_samples, cell_type, include_node_info, seen):
+    def _process_region(self, region_idx, num_samples, cell_types, include_node_info, seen):
         """Helper function to process a single region."""
         sampled_subgraphs = []
         full_graph = self.dataset.get_full(region_idx)
         region_id = full_graph.region_id
 
-        # Retrieve candidates
-        if cell_type is not None:
-            center_candidates = (full_graph.x[:, 0] == cell_type).nonzero(as_tuple=True)[0].tolist()
-        else:
-            center_candidates = np.arange(full_graph.num_nodes)
+        # Retrieve candidates for specified cell types
+        center_candidates = []
+        for cell_type in cell_types:
+            type_candidates = (full_graph.x[:, 0] == cell_type).nonzero(as_tuple=True)[0].tolist()
+            center_candidates.extend(type_candidates)
 
         # Ensure num_samples does not exceed the number of candidates
         if len(center_candidates) == 0:
-            print(f"Warning: No candidates found for region {region_id}. Skipping.")
+            print(f"Warning: No candidates found for region {region_id} and cell types {cell_types}. Skipping.")
             return sampled_subgraphs
 
         actual_num_samples = min(num_samples, len(center_candidates))
@@ -329,6 +332,9 @@ class CustomSubgraphSampler:
             except Exception as e:
                 print(f"Error retrieving cell ID for region {region_id}, node {center_node}: {e}")
 
+            # Determine the cell type of the center node
+            center_cell_type = int(full_graph.x[center_node, 0].item())
+
             # Include optional node info
             node_info = None
             if include_node_info:
@@ -341,6 +347,7 @@ class CustomSubgraphSampler:
                 "region_id": region_id,
                 "center_node_idx": center_node,
                 "cell_id": cell_id,
+                "cell_type": center_cell_type,  
                 "subgraph": subgraph,
                 "node_info": node_info,
             })
@@ -356,7 +363,7 @@ class CustomSubgraphSampler:
         region_weights = np.array(region_subgraph_counts) / total_subgraphs
         region_allocations = (self.total_samples * region_weights).astype(int)
 
-        # ensure total_samples is accurate
+        # Ensure total_samples is accurate
         adjustment = self.total_samples - region_allocations.sum()
         if adjustment > 0:
             region_allocations[:adjustment] += 1
@@ -405,14 +412,15 @@ class CustomSubgraphSampler:
     def _save_to_csv(self):
         """Save sampled subgraphs information to a CSV file."""
         with open(self.output_csv, mode="w", newline="") as file:
-            fieldnames = ["region_id", "center_node_idx", "cell_id"]
+            fieldnames = ["region_id", "center_node_idx", "cell_id", "cell_type"]  
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
             for subgraph_info in self.sampled_subgraphs:
                 row = {
                     "region_id": subgraph_info["region_id"],
                     "center_node_idx": subgraph_info["center_node_idx"],
-                    "cell_id": subgraph_info["cell_id"]
+                    "cell_id": subgraph_info["cell_id"],
+                    "cell_type": subgraph_info["cell_type"],  
                 }
                 writer.writerow(row)
         print(f"Sampled subgraphs information saved to {self.output_csv}")

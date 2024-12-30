@@ -99,6 +99,7 @@ class Config:
             'region_id': None,
             'batch_size': 64,
             'num_workers': 8,
+            'output_csv': os.path.join(self.output_dir,'sampled_subgraphs.csv'), # save sampled subgraph infomation
             'include_node_info': True,
             'random_seed': 42,
         }
