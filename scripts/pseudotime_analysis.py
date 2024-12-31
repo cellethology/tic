@@ -40,18 +40,17 @@ To execute the pipeline:
 """
 
 import os
-import random
 import numpy as np
 import pandas as pd
 from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_FREQ_UPMC, CELL_TYPE_MAPPING_UPMC
 import torch
 from adapters.space_gm_adapter import CustomSubgraphSampler
-from core.pseudotime_analysis import perform_pseudotime_analysis, aggregate_biomarker_by_pseudotime_with_overlap
+from core.pseudotime_analysis import aggregate_data_by_pseudotime, perform_pseudotime_analysis
 from core.expression_analysis import analyze_and_visualize_expression
 from spacegm import CellularGraphDataset, GNN_pred
 from spacegm.embeddings_analysis import get_embedding, get_composition_vector, dimensionality_reduction_combo
 from utils.data_transform import normalize
-from utils.visualization import plot_biomarker_vs_pseudotime
+from utils.visualization import plot_trends
 
 # Suppress warnings
 import warnings
@@ -63,10 +62,11 @@ class Config:
         # General settings
         self.general = {
             "data_root": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC",
-            "output_dir": "/root/tic-sci/data/embedding_analysis",
+            "output_dir": "/root/tic-sci/data/embedding_analysis/clustering_2",
             "model_path": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt",
             "device": "cuda:0",
             "random_seed": 42,
+            "n_clusters": 2
         }
 
         # Dataset-specific settings
@@ -102,7 +102,7 @@ class Config:
         # Pipeline modules configuration
         self.pipeline = {
             "embedding_preparation": {
-                "keys": ["expression_vectors", "composition_vectors", "node_embeddings", "graph_embeddings"],
+                "keys": ["expression_vectors", "composition_vectors", "node_embeddings", "graph_embeddings", "expression_vectors+composition_vectors"],
             },
             "expression_analysis": {
                 "biomarkers": ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"],
@@ -116,7 +116,18 @@ class Config:
                 "overlap": 0.2,
                 "plotting_transform": [normalize],
                 "show_plots": True,
+                "feature_keys": ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"],
+                "visualization_kwargs": ["PANCK","avg(ASMA+VIMENTIN+PODOPLANIN)"],
             },
+            "neighborhood_analysis": {
+                "num_bins": 100,
+                "use_bins": True,
+                "overlap": 0.2,
+                "plotting_transform": [normalize],
+                "feature_keys": ["Tumor", "Vessel", "Tumor (CD15+)"],
+                "visualization_kwargs": ["Tumor"],
+                "show_plots": True,
+            }
         }
 
     def add_module_config(self, module_name, config_dict):
@@ -224,14 +235,16 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
 
         # Dimensionality reduction and clustering
         _, umap_embs, cluster_labels, _ = dimensionality_reduction_combo(
-            embeddings, n_pca_components=10, cluster_method="kmeans", n_clusters=2, seed=config.general["random_seed"]
+            embeddings, n_pca_components=10, cluster_method="kmeans", n_clusters=config.general['n_clusters'], seed=config.general["random_seed"]
         )
 
         # Attach cluster labels to subgraphs
         for i, subgraph in enumerate(sampled_subgraph_dicts):
             subgraph["cluster_label"] = cluster_labels[i]
 
-        # Expression Analysis Submodule
+        #################################
+        # Expression Analysis Submodule #
+        #################################
         output_dir = os.path.join(config.general["output_dir"], embedding_key, "expression")
         analyze_and_visualize_expression(
             sampled_subgraph_dicts,
@@ -242,9 +255,13 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             visualization_kws=config.pipeline["expression_analysis"]["visualization_kwargs"],
         )
 
-        # Pseudo-Time Analysis Submodule
+        ##################################
+        # Pseudo-Time Analysis Submodule #
+        ##################################
         pseudotime_output_dir = os.path.join(config.general["output_dir"], embedding_key, "pseudotime")
         for start_node in config.pipeline["pseudo_time_analysis"]["start_nodes"]:
+            node_output_dir = os.path.join(pseudotime_output_dir,f'start_node_{start_node}')
+
             pseudotime_results = perform_pseudotime_analysis(
                 labels=cluster_labels,
                 umap_embs=umap_embs,
@@ -255,21 +272,59 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             sampler.add_kv_to_sampled_subgraphs(pseudotime_results, key="pseudotime")
 
             # Save pseudotime data
-            node_output_dir = os.path.join(pseudotime_output_dir,f'start_node_{start_node}')
             pseudotime_csv = os.path.join(node_output_dir,"pseudotime.csv")
             save_pseudotime_to_csv(sampled_subgraph_dicts, pseudotime_csv)
 
-            # Aggregate biomarker data
-            aggregated_data = aggregate_biomarker_by_pseudotime_with_overlap(
-                sampled_subgraph_dicts, 
-                biomarkers=config.pipeline["expression_analysis"]["biomarkers"], 
-                num_bins=config.pipeline["pseudo_time_analysis"]["num_bins"], 
-                overlap=config.pipeline["pseudo_time_analysis"]["overlap"], 
-                use_bins=config.pipeline["pseudo_time_analysis"]["use_bins"]
+
+            ###########################################
+            # Biomarker expression Analysis Submodule #
+            ###########################################
+            def extract_biomarkers(subgraph):
+                return subgraph["node_info"].get("biomarker_expression", {})
+
+            biomarker_data = aggregate_data_by_pseudotime(
+                sampled_subgraphs=sampled_subgraph_dicts,
+                pseudotime=pseudotime_results,
+                feature_extractor=extract_biomarkers,
+                feature_keys=config.pipeline["pseudo_time_analysis"]["feature_keys"],
+                num_bins=100,
+                overlap=0.2,
+                use_bins=True
+            )
+            plot_trends(
+                biomarker_data,
+                visualization_kwargs = config.pipeline["pseudo_time_analysis"]["visualization_kwargs"],
+                output_dir = node_output_dir,
+                ylabel = 'Biomarkers',
+                show_plots = True,
+                transforms = [normalize]
             )
 
-            # Plot and save biomarker trends
-            plot_biomarker_vs_pseudotime(aggregated_data, node_output_dir,method=embedding_key,transforms=config.pipeline["pseudo_time_analysis"]["plotting_transform"], use_bins=config.pipeline["pseudo_time_analysis"]["use_bins"])
+            ###############################################
+            # Neighborhood Composition Analysis Submodule #
+            ###############################################
+            def extract_composition(subgraph):
+                composition_vec = get_composition_vector(subgraph.get("subgraph", None), len(dataset.cell_type_mapping))
+                return {cell_type: composition_vec[idx] for cell_type, idx in dataset.cell_type_mapping.items()}
+
+            neighborhood_data = aggregate_data_by_pseudotime(
+                sampled_subgraphs=sampled_subgraph_dicts,
+                pseudotime=pseudotime_results,
+                feature_extractor=extract_composition,
+                feature_keys=config.pipeline["neighborhood_analysis"]["feature_keys"],
+                num_bins=100,
+                overlap=0.2,
+                use_bins=True
+            )
+
+            plot_trends(
+                neighborhood_data,
+                visualization_kwargs = config.pipeline["neighborhood_analysis"]["visualization_kwargs"],
+                output_dir = node_output_dir,
+                ylabel = 'Neighborhood Composition',
+                show_plots = True,
+                transforms = [normalize]
+            )
 
 # Main Script
 if __name__ == "__main__":

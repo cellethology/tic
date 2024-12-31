@@ -1,5 +1,6 @@
 import os
 from matplotlib import pyplot as plt
+import pandas as pd
 from utils.data_transform import apply_transformations
 
 def plot_biomarker_vs_pseudotime(aggregated_data, output_dir=None, method=None, transforms=None, use_bins=True):
@@ -99,3 +100,131 @@ def plot_biomarker_bar_chart(cluster_summary, visualization_kws, output_path=Non
         plt.savefig(output_path)
         print(f"Bar chart saved to {output_path}")
     plt.show()
+#-------------------------------------
+# Visualize neighborhood composition along pseudotime trajectory
+#-------------------------------------
+def visualize_neighborhood_composition(
+    aggregated_data,
+    visualization_kwargs,
+    output_dir,
+    show_plots=True,
+):
+    """
+    Visualize neighborhood composition along pseudotime.
+
+    Args:
+        aggregated_data (pd.DataFrame): DataFrame containing aggregated neighborhood composition data.
+            - Index: Binned pseudotime values or raw pseudotime values (if binning is disabled).
+            - Columns: One column per cell type and additional metadata columns.
+        visualization_kwargs (list): Custom visualization configurations.
+            - Example: ["Vessel", "avg(Tumor+Vessel)"]
+        output_dir (str): Directory to save plots.
+        show_plots (bool): Whether to display plots interactively.
+
+    Returns:
+        None
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Filter cell types for visualization
+    visualization_data = {}
+    for key in visualization_kwargs:
+        if key.startswith("avg(") and key.endswith(")"):
+            # Extract and average specified cell types
+            avg_keys = key[4:-1].split("+")
+            if all(col in aggregated_data.columns for col in avg_keys):
+                visualization_data[key] = aggregated_data[avg_keys].mean(axis=1)
+            else:
+                print(f"Warning: Some cell types in '{key}' are not present in the data.")
+        elif key in aggregated_data.columns:
+            # Add individual cell type data
+            visualization_data[key] = aggregated_data[key]
+        else:
+            print(f"Warning: '{key}' not found in the aggregated data and will be ignored.")
+
+    # Visualization
+    plt.figure(figsize=(10, 6))
+    for label, values in visualization_data.items():
+        plt.plot(aggregated_data.index, values, label=label)
+
+    plt.title("Neighborhood Composition vs Pseudotime")
+    plt.xlabel("Pseudotime")
+    plt.ylabel("Normalized Composition")
+    plt.legend(loc="upper left")
+    plt.tight_layout()
+
+    # Save plot
+    plot_path = os.path.join(output_dir, "neighborhood_composition_vs_pseudotime.png")
+    plt.savefig(plot_path)
+
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
+
+    print(f"Plot saved to {plot_path}")
+
+def plot_trends(
+    aggregated_data,
+    visualization_kwargs,
+    output_dir=None,
+    title="Feature Trends vs Pseudotime",
+    xlabel="Pseudotime",
+    ylabel="Feature Value",
+    show_plots=True,
+    transforms=None,
+):
+    """
+    Plot trends for aggregated data across pseudotime.
+
+    Args:
+        aggregated_data (pd.DataFrame): Aggregated feature data by pseudotime.
+            - Index: Pseudotime bins or raw pseudotime values.
+            - Columns: Feature values (e.g., biomarkers, cell types, etc.).
+        visualization_kwargs (list): List of features to plot (e.g., individual keys or averages).
+        output_dir (str, optional): Directory to save the plot.
+        title (str): Plot title.
+        xlabel (str): X-axis label.
+        ylabel (str): Y-axis label.
+        show_plots (bool): Whether to display the plot interactively.
+        transforms (list of callable, optional): Transformations to apply to the data.
+    """
+    # Apply transformations if provided
+    if transforms:
+        aggregated_data = apply_transformations(aggregated_data, transforms)
+
+    # Process visualization data
+    visualization_data = {}
+    for key in visualization_kwargs:
+        if key.startswith("avg(") and key.endswith(")"):
+            avg_keys = key[4:-1].split("+")
+            if all(k in aggregated_data.columns for k in avg_keys):
+                visualization_data[key] = aggregated_data[avg_keys].mean(axis=1)
+            else:
+                print(f"Warning: Some keys in '{key}' are not present in aggregated_data.")
+        elif key in aggregated_data.columns:
+            visualization_data[key] = aggregated_data[key]
+        else:
+            print(f"Warning: Key '{key}' not found in aggregated_data.")
+
+    # Plot
+    plt.figure(figsize=(10, 6))
+    for label, values in visualization_data.items():
+        plt.plot(aggregated_data.index, values, label=label)
+
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.legend()
+    plt.tight_layout()
+
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        plot_path = os.path.join(output_dir, f"{ylabel.replace(' ', '_')}_trends_vs_pseudotime.png")
+        plt.savefig(plot_path)
+        print(f"Plot saved to {plot_path}")
+
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()

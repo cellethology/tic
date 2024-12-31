@@ -100,24 +100,68 @@ def filter_by_cluster_proximity(embeddings, cluster_labels, threshold=0.8):
 #------------------
 # Pseudo time transformation
 #------------------
-"""
-Transformable Biomarker Visualization:
-This section provides a flexible framework for visualizing biomarker expression across pseudotime.
-- Allows a sequence of transformation functions (e.g., normalize -> smooth) to be applied to the biomarker data.
-- Ensures composability and flexibility by supporting user-defined transformation functions.
-- Generates plots of biomarker trends with optional output to specified directories.
-"""
+# """
+# Transformable Biomarker Visualization:
+# This section provides a flexible framework for visualizing biomarker expression across pseudotime.
+# - Allows a sequence of transformation functions (e.g., normalize -> smooth) to be applied to the biomarker data.
+# - Ensures composability and flexibility by supporting user-defined transformation functions.
+# - Generates plots of biomarker trends with optional output to specified directories.
+# """
 
+# def apply_transformations(aggregated_data, transformations):
+#     """
+#     Apply a series of transformations to the aggregated biomarker data.
+
+#     Args:
+#         aggregated_data (dict): Aggregated biomarker data by pseudotime.
+#         transformations (list of callable): List of transformation functions to apply.
+
+#     Returns:
+#         dict: Transformed biomarker data by pseudotime.
+#     """
+#     transformed_data = aggregated_data.copy()
+#     for transform in transformations:
+#         if callable(transform):
+#             transformed_data = transform(transformed_data)
+#         else:
+#             raise ValueError(f"Transformation {transform} is not callable.")
+#     return transformed_data
+
+# # Define transformation functions
+# def normalize(aggregated_data):
+#     normalized_data = {}
+#     for biomarker, data in aggregated_data.items():
+#         values = data["value"]
+#         min_val = values.min()
+#         max_val = values.max()
+#         normalized_values = (values - min_val) / (max_val - min_val)
+#         normalized_data[biomarker] = pd.DataFrame({
+#             "bin": data["bin"],
+#             "value": normalized_values
+#         })
+#     return normalized_data
+
+# def smooth(aggregated_data, window_size=5):
+#     smoothed_data = {}
+#     for biomarker, data in aggregated_data.items():
+#         values = data["value"].rolling(window=window_size, min_periods=1).mean()
+#         smoothed_data[biomarker] = pd.DataFrame({
+#             "bin": data["bin"],
+#             "value": values
+#         })
+#     return smoothed_data
+
+#-----------------------------------
 def apply_transformations(aggregated_data, transformations):
     """
-    Apply a series of transformations to the aggregated biomarker data.
+    Apply a series of transformations to the aggregated data.
 
     Args:
-        aggregated_data (dict): Aggregated biomarker data by pseudotime.
+        aggregated_data (pd.DataFrame): Aggregated data with pseudotime or bins as the index.
         transformations (list of callable): List of transformation functions to apply.
 
     Returns:
-        dict: Transformed biomarker data by pseudotime.
+        pd.DataFrame: Transformed aggregated data.
     """
     transformed_data = aggregated_data.copy()
     for transform in transformations:
@@ -127,28 +171,9 @@ def apply_transformations(aggregated_data, transformations):
             raise ValueError(f"Transformation {transform} is not callable.")
     return transformed_data
 
-# Define transformation functions
-def normalize(aggregated_data):
-    normalized_data = {}
-    for biomarker, data in aggregated_data.items():
-        values = data["value"]
-        min_val = values.min()
-        max_val = values.max()
-        normalized_values = (values - min_val) / (max_val - min_val)
-        normalized_data[biomarker] = pd.DataFrame({
-            "bin": data["bin"],
-            "value": normalized_values
-        })
-    return normalized_data
+# Example transformation functions
+def normalize(data):
+    return (data - data.min()) / (data.max() - data.min())
 
-def smooth(aggregated_data, window_size=5):
-    smoothed_data = {}
-    for biomarker, data in aggregated_data.items():
-        values = data["value"].rolling(window=window_size, min_periods=1).mean()
-        smoothed_data[biomarker] = pd.DataFrame({
-            "bin": data["bin"],
-            "value": values
-        })
-    return smoothed_data
-
-
+def smooth(data, window_size=5):
+    return data.rolling(window=window_size, min_periods=1).mean()

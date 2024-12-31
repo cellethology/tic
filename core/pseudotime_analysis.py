@@ -204,3 +204,70 @@ def aggregate_biomarker_by_pseudotime_with_overlap(sampled_subgraphs, biomarkers
 
     return aggregated_data
 
+def aggregate_data_by_pseudotime(
+    sampled_subgraphs,
+    pseudotime,
+    feature_extractor,
+    feature_keys,
+    num_bins=100,
+    overlap=0.2,
+    use_bins=True
+):
+    """
+    Generalized function to aggregate features by pseudotime with optional overlapping bins.
+
+    Args:
+        sampled_subgraphs (list): List of sampled subgraphs (dict).
+        pseudotime (list): Pseudotime values for subgraphs.
+        feature_extractor (callable): Function to extract features from a subgraph.
+        feature_keys (list): List of feature keys to aggregate (e.g., biomarkers or cell types).
+        num_bins (int): Number of bins for pseudotime (if use_bins is True).
+        overlap (float): Proportion of overlap between bins (0.0 to 1.0). Defaults to 0.2 (20% overlap).
+        use_bins (bool): Whether to bin pseudotime values.
+
+    Returns:
+        pd.DataFrame: Aggregated data with pseudotime or bin centers as the index and features as columns.
+    """
+    if overlap < 0 or overlap >= 1:
+        raise ValueError("Overlap must be between 0 and 1 (exclusive).")
+
+    # Extract feature values
+    feature_data = {key: [] for key in feature_keys}
+    pseudotime_values = pseudotime
+
+    for subgraph, pt in zip(sampled_subgraphs, pseudotime):
+        features = feature_extractor(subgraph)
+        for key in feature_keys:
+            feature_data[key].append({"pseudotime": pt, "value": features.get(key, np.nan)})
+
+    # Calculate bin edges and apply overlap if required
+    if use_bins:
+        min_pt, max_pt = min(pseudotime_values), max(pseudotime_values)
+        bin_width = (max_pt - min_pt) / num_bins
+        step_size = bin_width * (1 - overlap)  # Overlapping step size
+        bin_edges = np.arange(min_pt, max_pt + step_size, step_size)
+    else:
+        bin_edges = np.unique(pseudotime_values)  # No binning, use unique pseudotime values
+
+    # Aggregate feature data into bins
+    all_aggregated = []
+    for i in range(len(bin_edges) - 1):
+        bin_start, bin_end = bin_edges[i], bin_edges[i + 1]
+        bin_center = (bin_start + bin_end) / 2
+
+        bin_data = {}
+        for key, values in feature_data.items():
+            values_df = pd.DataFrame(values).dropna()
+            bin_values = values_df[
+                (values_df["pseudotime"] >= bin_start) & (values_df["pseudotime"] < bin_end)
+            ]
+            avg_value = bin_values["value"].mean() if not bin_values.empty else np.nan
+            bin_data[key] = avg_value
+
+        # Add bin_center as index
+        bin_data["bin_center"] = bin_center
+        all_aggregated.append(pd.DataFrame([bin_data]).set_index("bin_center"))
+
+    # Combine all aggregated data
+    aggregated_df = pd.concat(all_aggregated, axis=0)  
+    return aggregated_df.reset_index()
