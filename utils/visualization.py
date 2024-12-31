@@ -1,5 +1,6 @@
 import os
 from matplotlib import pyplot as plt
+import seaborn as sns
 import pandas as pd
 from utils.data_transform import apply_transformations
 
@@ -223,6 +224,55 @@ def plot_trends(
         plot_path = os.path.join(output_dir, f"{ylabel.replace(' ', '_')}_trends_vs_pseudotime.png")
         plt.savefig(plot_path)
         print(f"Plot saved to {plot_path}")
+
+    if show_plots:
+        plt.show()
+    else:
+        plt.close()
+
+def plot_umap_vs_cell_types(umap_embeddings, cell_types, cell_type_mapping, output_dir=None, show_plots=True):
+    """
+    Plot UMAP embeddings colored by cell types.
+
+    Args:
+        umap_embeddings (np.ndarray): UMAP embeddings of shape (n_samples, 2).
+        cell_types (list): List of cell type labels corresponding to embeddings.
+        cell_type_mapping (dict): Mapping of cell type indices to names.
+        output_dir (str, optional): Directory to save the plot. Defaults to None.
+        show_plots (bool, optional): Whether to display the plot interactively. Defaults to True.
+
+    Returns:
+        None
+    """
+    # Map cell type indices to names
+    cell_type_names = [cell_type_mapping.get(ct, "Unknown") for ct in cell_types]
+
+    # Create a DataFrame for visualization
+    df = pd.DataFrame(umap_embeddings, columns=["UMAP1", "UMAP2"])
+    df["CellType"] = cell_type_names
+
+    # Plot using seaborn
+    plt.figure(figsize=(10, 8))
+    sns.scatterplot(
+        x="UMAP1",
+        y="UMAP2",
+        hue="CellType",
+        palette="tab10",
+        data=df,
+        alpha=0.8,
+        s=30
+    )
+    plt.title("UMAP Embeddings vs Cell Types")
+    plt.xlabel("UMAP1")
+    plt.ylabel("UMAP2")
+    plt.legend(title="Cell Types", bbox_to_anchor=(1.05, 1), loc="upper left")
+
+    # Save or show the plot
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        plot_path = os.path.join(output_dir, "umap_vs_cell_types.png")
+        plt.savefig(plot_path, bbox_inches="tight")
+        print(f"UMAP vs Cell Types plot saved to {plot_path}")
 
     if show_plots:
         plt.show()

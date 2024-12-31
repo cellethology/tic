@@ -45,12 +45,14 @@ import pandas as pd
 from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_FREQ_UPMC, CELL_TYPE_MAPPING_UPMC
 import torch
 from adapters.space_gm_adapter import CustomSubgraphSampler
+from core.feature_extractor import extract_composition_generalized
 from core.pseudotime_analysis import aggregate_data_by_pseudotime, perform_pseudotime_analysis
 from core.expression_analysis import analyze_and_visualize_expression
 from spacegm import CellularGraphDataset, GNN_pred
 from spacegm.embeddings_analysis import get_embedding, get_composition_vector, dimensionality_reduction_combo
+from utils.constant import GENERAL_CELL_TYPES
 from utils.data_transform import normalize
-from utils.visualization import plot_trends
+from utils.visualization import plot_trends, plot_umap_vs_cell_types
 
 # Suppress warnings
 import warnings
@@ -62,7 +64,7 @@ class Config:
         # General settings
         self.general = {
             "data_root": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC",
-            "output_dir": "/root/tic-sci/data/embedding_analysis/clustering_2",
+            "output_dir": "/root/tic-sci/data/embedding_analysis/clustering_2_tumor",
             "model_path": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt",
             "device": "cuda:0",
             "random_seed": 42,
@@ -91,7 +93,7 @@ class Config:
         # Sampler-specific settings
         self.sampler = {
             "total_samples": 1000,
-            "cell_type": [9,10,11,12,13,14],
+            "cell_type": [9], # [9,10,11,12,13,14]
             "region_id": None,
             "batch_size": 64,
             "num_workers": 8,
@@ -124,8 +126,17 @@ class Config:
                 "use_bins": True,
                 "overlap": 0.2,
                 "plotting_transform": [normalize],
-                "feature_keys": ["Tumor", "Vessel", "Tumor (CD15+)"],
-                "visualization_kwargs": ["Tumor"],
+                "feature_keys": [
+                    "Immune", 
+                    "Tumor", 
+                    "Stromal", 
+                    "Vascular"
+                ],
+                "visualization_kwargs": [
+                    "Immune", 
+                    "Tumor", 
+                    "avg(Tumor+Immune+Stromal+Vascular)"
+                ],
                 "show_plots": True,
             }
         }
@@ -238,6 +249,18 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             embeddings, n_pca_components=10, cluster_method="kmeans", n_clusters=config.general['n_clusters'], seed=config.general["random_seed"]
         )
 
+        # Plot UMAP embeddings vs Cell Types
+        if len(config.sampler['cell_type']) > 1:
+            umap_output_dir = os.path.join(config.general["output_dir"], embedding_key, "umap")
+            plot_umap_vs_cell_types(
+                umap_embeddings=umap_embs,
+                cell_types=[subgraph["node_info"].get("cell_type", -1) for subgraph in sampled_subgraph_dicts],
+                cell_type_mapping=config.dataset["cell_type_mapping"],
+                output_dir=umap_output_dir,
+                show_plots=config.pipeline["pseudo_time_analysis"]["show_plots"],
+            )
+
+
         # Attach cluster labels to subgraphs
         for i, subgraph in enumerate(sampled_subgraph_dicts):
             subgraph["cluster_label"] = cluster_labels[i]
@@ -303,19 +326,24 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             ###############################################
             # Neighborhood Composition Analysis Submodule #
             ###############################################
-            def extract_composition(subgraph):
-                composition_vec = get_composition_vector(subgraph.get("subgraph", None), len(dataset.cell_type_mapping))
-                return {cell_type: composition_vec[idx] for cell_type, idx in dataset.cell_type_mapping.items()}
+            # def extract_composition(subgraph):
+            #     composition_vec = get_composition_vector(subgraph.get("subgraph", None), len(dataset.cell_type_mapping))
+            #     return {cell_type: composition_vec[idx] for cell_type, idx in dataset.cell_type_mapping.items()}
 
             neighborhood_data = aggregate_data_by_pseudotime(
                 sampled_subgraphs=sampled_subgraph_dicts,
                 pseudotime=pseudotime_results,
-                feature_extractor=extract_composition,
+                feature_extractor=lambda subgraph: extract_composition_generalized(
+                    subgraph=subgraph,
+                    general_cell_types=GENERAL_CELL_TYPES,
+                    cell_type_mapping=dataset.cell_type_mapping,
+                ),
                 feature_keys=config.pipeline["neighborhood_analysis"]["feature_keys"],
-                num_bins=100,
-                overlap=0.2,
-                use_bins=True
+                num_bins=config.pipeline["neighborhood_analysis"]["num_bins"],
+                overlap=config.pipeline["neighborhood_analysis"]["overlap"],
+                use_bins=config.pipeline["neighborhood_analysis"]["use_bins"]
             )
+
 
             plot_trends(
                 neighborhood_data,

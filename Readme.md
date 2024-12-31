@@ -15,6 +15,27 @@ cd ../..
 pip install -e.
 ```
 ## Project Framework
+### PseudoTime Analysis output dir
+```
+output_dir/
+├── embedding_analysis/
+│   ├── {embedding_key}/
+│   │   ├── expression/
+│   │   │   ├── biomarker_trends_vs_pseudotime.png
+│   │   │   ├── aggregated_expression_data.csv
+│   │   │   └── transform_logs.txt
+│   │   ├── pseudotime/
+│   │   │   ├── start_node_{start_node}/
+│   │   │   │   ├── pseudotime.csv
+│   │   │   │   ├── biomarker_trends_vs_pseudotime.png
+│   │   │   │   ├── neighborhood_composition_vs_pseudotime.png
+│   │   │   │   └── aggregated_composition_data.csv
+│   │   │   └── pseudotime_overview.png
+│   │   ├── clustering/
+│   │   │   ├── umap_embeddings_vs_cell_types.png
+│   │   │   └── cluster_summary.csv
+
+```
 # Space-Gm
 ## How to construct a graph:
 you need : 
