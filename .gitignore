@@ -1,5 +1,6 @@
 data/
-
+!data/ReadMe.md
+!data/ReadMe.md
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
 __pycache__/
