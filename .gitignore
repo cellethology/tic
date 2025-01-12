@@ -2,6 +2,10 @@ data/*
 !data/
 !data/example
 !data/ReadMe.md
+
+#-------------ignore hydra output----------
+outputs/
+
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
 __pycache__/

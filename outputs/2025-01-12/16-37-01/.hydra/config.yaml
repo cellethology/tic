@@ -1,7 +1,0 @@
-general:
-  data_root: /root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC
-  output_dir: /root/tic-sci/data/embedding_analysis/clustering_2_tumor
-  model_path: /root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt
-  device: cuda:0
-  random_seed: 42
-  n_clusters: 2
