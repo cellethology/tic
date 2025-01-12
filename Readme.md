@@ -5,11 +5,14 @@ To use TIC, you need to install these modules:
 1. space-gm: to construct graph for cell micro-environment
 2. slingshot: this is the basic algrithm for TIC to do pseudo-time analysis
 ```Python
-git submodule add https://github.com/kstreet13/slingshot.git tools/slingshot
-git submodule add https://gitlab.com/enable-medicine-public/space-gm.git tools/space-gm
+git clone https://github.com/JiahaoZhang-Public/tic.git
+git submodule update --init
 
 cd tools/space-gm
 pip install -e.
+
+cd ../slingshot
+pip install -e. 
 
 cd ../..
 pip install -e.
