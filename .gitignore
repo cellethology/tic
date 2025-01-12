@@ -1,4 +1,5 @@
-data/
+data/*
+!data/
 !data/example
 !data/ReadMe.md
 #-------------Python gitignore template----------
