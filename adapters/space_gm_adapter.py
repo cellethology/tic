@@ -278,7 +278,8 @@ class CustomSubgraphSampler:
                  random_seed=None):
         self.dataset = dataset
         self.total_samples = total_samples
-        self.cell_type = cell_type if isinstance(cell_type, list) else [cell_type]  
+        self.cell_type = cell_type if isinstance(cell_type, list) and not any(isinstance(ct, list) for ct in cell_type) else [
+            item for sublist in cell_type for item in (sublist if isinstance(sublist, list) else [sublist])]
         self.region_id = region_id
         self.batch_size = batch_size
         self.num_workers = num_workers

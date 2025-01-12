@@ -26,23 +26,23 @@ This notebook implements a pipeline for analyzing pseudo-time in cellular graph 
    - Save results (e.g., pseudo-time values) to structured directories for future analysis.
 
 # Configuration
-All parameters (e.g., paths, embedding types, analysis settings) are controlled through a centralized `Config` class for flexibility and ease of use.
+The script uses Hydra for configuration management. Parameters such as paths, embedding types, analysis settings, and constants are defined in `config` files. The configuration is modular, flexible, and reusable across different datasets and experiments.
 
 # Requirements
-- Python libraries: `numpy`, `pandas`, `matplotlib`, `torch`
 - Custom dependencies: `spacegm`, `tic`
 
 # Usage
 To execute the pipeline:
-1. Modify the `Config` class to set paths and desired parameters.
+1. Modify the `Config` files to set paths and desired parameters.
 2. Run the script to generate outputs in structured directories.
 
 """
 
 import os
+import hydra
 import numpy as np
+from omegaconf import DictConfig, OmegaConf
 import pandas as pd
-from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_FREQ_UPMC, CELL_TYPE_MAPPING_UPMC
 import torch
 from adapters.space_gm_adapter import CustomSubgraphSampler
 from core.feature_extractor import extract_composition_generalized
@@ -58,95 +58,7 @@ from utils.visualization import plot_trends, plot_umap_vs_cell_types
 import warnings
 warnings.filterwarnings("ignore")
 
-# Config Class
-class Config:
-    def __init__(self):
-        # General settings
-        self.general = {
-            "data_root": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC",
-            "output_dir": "/root/tic-sci/data/embedding_analysis/clustering_2_tumor",
-            "model_path": "/root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt",
-            "device": "cuda:0",
-            "random_seed": 42,
-            "n_clusters": 2
-        }
-
-        # Dataset-specific settings
-        self.dataset = {
-            "raw_folder_name": "graph",
-            "processed_folder_name": "tg_graph",
-            "node_features": ["cell_type", "SIZE", "biomarker_expression", "neighborhood_composition", "center_coord"],
-            "edge_features": ["edge_type", "distance"],
-            "cell_type_mapping": CELL_TYPE_MAPPING_UPMC,
-            "cell_type_freq": CELL_TYPE_FREQ_UPMC,
-            "biomarkers": BIOMARKERS_UPMC,
-            "subgraph_size": 3,
-            "subgraph_source": "chunk_save",
-            "subgraph_allow_distant_edge": True,
-            "subgraph_radius_limit": 200,
-            "biomarker_expression_process_method": "linear",
-            "biomarker_expression_lower_bound": 0,
-            "biomarker_expression_upper_bound": 18,
-            "neighborhood_size": 10,
-        }
-
-        # Sampler-specific settings
-        self.sampler = {
-            "total_samples": 1000,
-            "cell_type": [9], # [9,10,11,12,13,14]
-            "region_id": None,
-            "batch_size": 64,
-            "num_workers": 8,
-            "output_csv": os.path.join(self.general["output_dir"], "sampled_subgraphs.csv"),
-            "include_node_info": True,
-        }
-
-        # Pipeline modules configuration
-        self.pipeline = {
-            "embedding_preparation": {
-                "keys": ["expression_vectors", "composition_vectors", "node_embeddings", "graph_embeddings", "expression_vectors+composition_vectors"],
-            },
-            "expression_analysis": {
-                "biomarkers": ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"],
-                "visualization_transform": [],
-                "visualization_kwargs": ["PANCK", "avg(ASMA+VIMENTIN+PODOPLANIN)"],
-            },
-            "pseudo_time_analysis": {
-                "start_nodes": [0, 1],
-                "num_bins": 100,
-                "use_bins": True,
-                "overlap": 0.2,
-                "plotting_transform": [normalize],
-                "show_plots": True,
-                "feature_keys": ["ASMA", "PANCK", "VIMENTIN", "PODOPLANIN"],
-                "visualization_kwargs": ["PANCK","avg(ASMA+VIMENTIN+PODOPLANIN)"],
-            },
-            "neighborhood_analysis": {
-                "num_bins": 100,
-                "use_bins": True,
-                "overlap": 0.2,
-                "plotting_transform": [normalize],
-                "feature_keys": [
-                    "Immune", 
-                    "Tumor", 
-                    "Stromal", 
-                    "Vascular"
-                ],
-                "visualization_kwargs": [
-                    "Immune", 
-                    "Tumor", 
-                    "avg(Tumor+Immune+Stromal+Vascular)"
-                ],
-                "show_plots": True,
-            }
-        }
-
-    def add_module_config(self, module_name, config_dict):
-        """Add a new module configuration to the pipeline."""
-        self.pipeline[module_name] = config_dict
-
-
-# Pipeline Functions
+# Initialize Functions
 def initialize_dataset(config):
     """Initialize the CellularGraphDataset."""
     return CellularGraphDataset(config.general["data_root"], **config.dataset)
@@ -336,7 +248,7 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
                 feature_extractor=lambda subgraph: extract_composition_generalized(
                     subgraph=subgraph,
                     general_cell_types=GENERAL_CELL_TYPES,
-                    cell_type_mapping=dataset.cell_type_mapping,
+                    cell_type_mapping=config.constants["CELL_TYPE_MAPPING_UPMC"],
                 ),
                 feature_keys=config.pipeline["neighborhood_analysis"]["feature_keys"],
                 num_bins=config.pipeline["neighborhood_analysis"]["num_bins"],
@@ -354,17 +266,17 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
                 transforms = [normalize]
             )
 
-# Main Script
-if __name__ == "__main__":
-    # Initialize Config
-    config = Config()
+@hydra.main(config_path="../config/pseudotime", config_name="example")
+def main(cfg: DictConfig):
+    print(OmegaConf.to_yaml(cfg))
 
     # Initialize Dataset and Sampler
-    dataset = initialize_dataset(config)
-    sampler = initialize_sampler(dataset, config)
+    dataset = CellularGraphDataset(cfg.general.data_root, **cfg.dataset)
+    sampler = CustomSubgraphSampler(dataset, **cfg.sampler)
 
-    # Prepare Embeddings
-    sampler = prepare_embeddings(dataset, sampler, config)
+    # Prepare embeddings and run the analysis pipeline
+    sampler = prepare_embeddings(dataset, sampler, cfg)
+    perform_pseudo_time_analysis_pipeline(cfg, sampler)
 
-    # Run Pseudo-Time Analysis Pipeline
-    perform_pseudo_time_analysis_pipeline(config, sampler)
+if __name__ == "__main__":
+    main()

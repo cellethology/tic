@@ -1,0 +1,151 @@
+general:
+  data_root: data/example
+  output_dir: data/example/output
+  model_path: data/example/example_model_weights.pt
+  device: mps
+  random_seed: 42
+  n_clusters: 2
+dataset:
+  raw_folder_name: graph
+  processed_folder_name: tg_graph
+  node_features:
+  - cell_type
+  - SIZE
+  - biomarker_expression
+  - neighborhood_composition
+  - center_coord
+  edge_features:
+  - edge_type
+  - distance
+  cell_type_mapping: ${constants.CELL_TYPE_MAPPING_UPMC}
+  cell_type_freq: ${constants.CELL_TYPE_FREQ_UPMC}
+  biomarkers: ${constants.BIOMARKERS_UPMC}
+  subgraph_size: 3
+  subgraph_source: chunk_save
+  subgraph_allow_distant_edge: true
+  subgraph_radius_limit: 200
+  biomarker_expression_process_method: linear
+  biomarker_expression_lower_bound: 0
+  biomarker_expression_upper_bound: 18
+  neighborhood_size: 10
+sampler:
+  total_samples: 10
+  cell_type:
+  - 9
+  - 10
+  - 11
+  region_id: null
+  batch_size: 64
+  num_workers: 4
+  output_csv: data/example/sampler_output.csv
+  include_node_info: true
+pipeline:
+  embedding_preparation:
+    keys:
+    - expression_vectors
+    - composition_vectors
+    - expression_vectors+composition_vectors
+  expression_analysis:
+    biomarkers:
+    - ASMA
+    - PANCK
+    - VIMENTIN
+    - PODOPLANIN
+    visualization_transform: []
+    visualization_kwargs:
+    - PANCK
+    - avg(ASMA+VIMENTIN+PODOPLANIN)
+  pseudo_time_analysis:
+    start_nodes:
+    - 0
+    - 1
+    num_bins: 100
+    use_bins: true
+    overlap: 0.2
+    plotting_transform:
+    - normalize
+    show_plots: true
+    feature_keys:
+    - ASMA
+    - PANCK
+    - VIMENTIN
+    - PODOPLANIN
+    visualization_kwargs:
+    - PANCK
+    - avg(ASMA+VIMENTIN+PODOPLANIN)
+  neighborhood_analysis:
+    num_bins: 100
+    use_bins: true
+    overlap: 0.2
+    plotting_transform:
+    - normalize
+    feature_keys:
+    - Immune
+    - Tumor
+    - Stromal
+    - Vascular
+    visualization_kwargs:
+    - Immune
+    - Tumor
+    - avg(Tumor+Immune+Stromal+Vascular)
+    show_plots: true
+constants:
+  BIOMARKERS_UPMC:
+  - CD11b
+  - CD14
+  - CD15
+  - CD163
+  - CD20
+  - CD21
+  - CD31
+  - CD34
+  - CD3e
+  - CD4
+  - CD45
+  - CD45RA
+  - CD45RO
+  - CD68
+  - CD8
+  - CollagenIV
+  - HLA-DR
+  - Ki67
+  - PanCK
+  - Podoplanin
+  - Vimentin
+  - aSMA
+  CELL_TYPE_MAPPING_UPMC:
+    APC: 0
+    B cell: 1
+    CD4 T cell: 2
+    CD8 T cell: 3
+    Granulocyte: 4
+    Lymph vessel: 5
+    Macrophage: 6
+    Naive immune cell: 7
+    Stromal / Fibroblast: 8
+    Tumor: 9
+    Tumor (CD15+): 10
+    Tumor (CD20+): 11
+    Tumor (CD21+): 12
+    Tumor (Ki67+): 13
+    Tumor (Podo+): 14
+    Vessel: 15
+    Unassigned: 16
+  CELL_TYPE_FREQ_UPMC:
+    APC: 0.038
+    B cell: 0.066
+    CD4 T cell: 0.095
+    CD8 T cell: 0.078
+    Granulocyte: 0.027
+    Lymph vessel: 0.006
+    Macrophage: 0.103
+    Naive immune cell: 0.034
+    Stromal / Fibroblast: 0.077
+    Tumor: 0.109
+    Tumor (CD15+): 0.061
+    Tumor (CD20+): 0.021
+    Tumor (CD21+): 0.054
+    Tumor (Ki67+): 0.134
+    Tumor (Podo+): 0.063
+    Vessel: 0.034
+    Unassigned: 0.001

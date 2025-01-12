@@ -1,0 +1,82 @@
+general:
+  data_root: /root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC
+  output_dir: /root/tic-sci/data/embedding_analysis/clustering_2_tumor
+  model_path: /root/autodl-tmp/Data/Space-Gm/Processed_Dataset/UPMC/model/graph_level/GIN-primary_outcome-0/model_save_6.pt
+  device: cuda:0
+  random_seed: 42
+  n_clusters: 2
+dataset:
+  raw_folder_name: graph
+  processed_folder_name: tg_graph
+  node_features:
+  - cell_type
+  - SIZE
+  - biomarker_expression
+  - neighborhood_composition
+  - center_coord
+  edge_features:
+  - edge_type
+  - distance
+  cell_type_mapping: ${constants.CELL_TYPE_MAPPING_UPMC}
+  cell_type_freq: ${constants.CELL_TYPE_FREQ_UPMC}
+  biomarkers: ${constants.BIOMARKERS_UPMC}
+  subgraph_size: 3
+  subgraph_source: chunk_save
+  subgraph_allow_distant_edge: true
+  subgraph_radius_limit: 200
+  biomarker_expression_process_method: linear
+  biomarker_expression_lower_bound: 0
+  biomarker_expression_upper_bound: 18
+  neighborhood_size: 10
+pipeline:
+  embedding_preparation:
+    keys:
+    - expression_vectors
+    - composition_vectors
+    - node_embeddings
+    - graph_embeddings
+    - expression_vectors+composition_vectors
+  expression_analysis:
+    biomarkers:
+    - ASMA
+    - PANCK
+    - VIMENTIN
+    - PODOPLANIN
+    visualization_transform: []
+    visualization_kwargs:
+    - PANCK
+    - avg(ASMA+VIMENTIN+PODOPLANIN)
+  pseudo_time_analysis:
+    start_nodes:
+    - 0
+    - 1
+    num_bins: 100
+    use_bins: true
+    overlap: 0.2
+    plotting_transform:
+    - normalize
+    show_plots: true
+    feature_keys:
+    - ASMA
+    - PANCK
+    - VIMENTIN
+    - PODOPLANIN
+    visualization_kwargs:
+    - PANCK
+    - avg(ASMA+VIMENTIN+PODOPLANIN)
+  neighborhood_analysis:
+    num_bins: 100
+    use_bins: true
+    overlap: 0.2
+    plotting_transform:
+    - normalize
+    feature_keys:
+    - Immune
+    - Tumor
+    - Stromal
+    - Vascular
+    visualization_kwargs:
+    - Immune
+    - Tumor
+    - avg(Tumor+Immune+Stromal+Vascular)
+    show_plots: true
