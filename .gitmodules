@@ -1,3 +1,6 @@
 [submodule "tools/space-gm"]
 	path = tools/space-gm
 	url = https://gitlab.com/enable-medicine-public/space-gm.git
+[submodule "tools/slingshot"]
+	path = tools/slingshot
+	url = https://github.com/mossjacob/pyslingshot.git
