@@ -278,3 +278,60 @@ def plot_umap_vs_cell_types(umap_embeddings, cell_types, cell_type_mapping, outp
         plt.show()
     else:
         plt.close()
+#-------------------------------------
+# Visualize Casual Inferece Results
+#-------------------------------------
+
+def visualize_granger_results(p_values_df, significance_df, significance_level=0.05, output_path=None):
+    """
+    Visualize Granger causality results as heatmaps.
+
+    Args:
+        p_values_df (pd.DataFrame): DataFrame with p-values from Granger causality analysis (N x M).
+        significance_df (pd.DataFrame): DataFrame with binary significance results (0/1) (N x M).
+        significance_level (float): Threshold for determining significance.
+        output_path (str, optional): Path to save the plots. If None, display interactively.
+
+    Returns:
+        None
+    """
+    plt.figure(figsize=(16, 8))
+
+    # Heatmap for p-values
+    plt.subplot(1, 2, 1)
+    sns.heatmap(
+        p_values_df,
+        annot=True,
+        fmt=".3f",
+        cmap="coolwarm",
+        cbar=True,
+        linewidths=0.5,
+        linecolor='gray',
+    )
+    plt.title(f"Granger Causality (p-values)\nSignificance Level = {significance_level}")
+    plt.xlabel("Biomarkers")
+    plt.ylabel("Cell Types")
+
+    # Heatmap for significance (binary)
+    plt.subplot(1, 2, 2)
+    sns.heatmap(
+        significance_df,
+        annot=True,
+        fmt="d",
+        cmap="viridis",
+        cbar=False,
+        linewidths=0.5,
+        linecolor='gray',
+    )
+    plt.title("Significance Map (0 = Not Significant, 1 = Significant)")
+    plt.xlabel("Biomarkers")
+    plt.ylabel("Cell Types")
+
+    plt.tight_layout()
+
+    # Save or show the plot
+    if output_path:
+        plt.savefig(output_path, dpi=300)
+        print(f"Visualization saved to {output_path}")
+    else:
+        plt.show()
