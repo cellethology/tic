@@ -252,7 +252,7 @@ class CustomSubgraphSampler:
     Custom Sampler for sampling subgraphs based on the specified conditions.
 
     Supports sampling across all regions or specific regions, and across different
-    or specific cell types.
+    or specific cell types. If the output CSV exists, the subgraphs can be loaded directly.
 
     Args:
         dataset (CellularGraphDataset): The dataset instance.
@@ -264,6 +264,7 @@ class CustomSubgraphSampler:
         output_csv (str, optional): Path to save the CSV file with sampled subgraph info.
         include_node_info (bool): Whether to include all node-level information in the sampled info.
         random_seed (int, optional): Random seed for reproducibility.
+        use_existing (bool, optional): Whether to use existing output_csv if it exists. Defaults to True.
     """
 
     def __init__(self, 
@@ -275,7 +276,8 @@ class CustomSubgraphSampler:
                  num_workers=0, 
                  output_csv="sampled_subgraphs.csv",
                  include_node_info=False,
-                 random_seed=None):
+                 random_seed=None,
+                 use_existing=True):
         self.dataset = dataset
         self.total_samples = total_samples
         self.cell_type = cell_type if isinstance(cell_type, list) and not any(isinstance(ct, list) for ct in cell_type) else [
@@ -285,6 +287,7 @@ class CustomSubgraphSampler:
         self.num_workers = num_workers
         self.output_csv = output_csv
         self.include_node_info = include_node_info
+        self.use_existing = use_existing
         self.sampled_subgraphs = []
 
         output_dir = os.path.dirname(output_csv)
@@ -299,8 +302,13 @@ class CustomSubgraphSampler:
             except ImportError:
                 pass
 
-        self._prepare_samples_proportionally()
-        self._save_to_csv()
+        # Check if the output CSV exists and load it if allowed
+        if self.use_existing and os.path.exists(self.output_csv):
+            print(f"Loading sampled subgraphs from existing file: {self.output_csv}")
+            self._load_from_csv()
+        else:
+            self._prepare_samples_proportionally()
+            self._save_to_csv()
 
     def _process_region(self, region_idx, num_samples, cell_types, include_node_info, seen):
         """Helper function to process a single region."""
@@ -425,6 +433,44 @@ class CustomSubgraphSampler:
                 }
                 writer.writerow(row)
         print(f"Sampled subgraphs information saved to {self.output_csv}")
+    
+    def _load_from_csv(self):
+        """Load sampled subgraphs information from the existing CSV file."""
+        sampled_subgraphs = []
+        with open(self.output_csv, mode="r") as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                region_id = row["region_id"]
+                center_node_idx = int(row["center_node_idx"])
+                cell_id = int(row["cell_id"])
+                cell_type = int(row["cell_type"])
+
+                # Retrieve the full graph for the region
+                region_idx = self.dataset.region_ids.index(region_id)
+                full_graph = self.dataset.get_full(region_idx)
+
+                # Retrieve the subgraph for the center node
+                subgraph = self.dataset.get_subgraph(region_idx, center_node_idx)
+
+                # Retrieve node info for the center node
+                node_info = None
+                try:
+                    node_info = self._get_node_info(region_idx, center_node_idx)
+                except Exception as e:
+                    print(f"Error retrieving node info for region {region_id}, node {center_node_idx}: {e}")
+
+                # Append the loaded subgraph information
+                sampled_subgraphs.append({
+                    "region_id": region_id,
+                    "center_node_idx": center_node_idx,
+                    "cell_id": cell_id,
+                    "cell_type": cell_type,
+                    "subgraph": subgraph,
+                    "node_info": node_info,
+                })
+        
+        self.sampled_subgraphs = sampled_subgraphs
+
 
     def get_output_as_dataframe(self):
         """Return the output CSV as a pandas DataFrame."""

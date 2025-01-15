@@ -38,6 +38,7 @@ sampler:
   num_workers: 4
   output_csv: "/Users/zhangjiahao/Project/tic/data/example/sampler_output.csv" # output csv file for sampler
   include_node_info: true
+  use_existing: true
 
 pipeline:
   embedding_preparation:

@@ -200,7 +200,7 @@ def perform_pseudo_time_analysis_pipeline(config, sampler):
             pseudotime_results = perform_pseudotime_analysis(
                 labels=cluster_labels,
                 umap_embs=umap_embs,
-                output_dir=pseudotime_output_dir,
+                output_dir=node_output_dir,
                 start=start_node,
                 show_plots=config.pipeline["pseudo_time_analysis"]["show_plots"],
             )
