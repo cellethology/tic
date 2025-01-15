@@ -12,7 +12,7 @@ import numpy as np
 import multiprocessing
 
 import pandas as pd
-from spacegm.data import InfDataLoader
+from spacegm.data import CellularGraphDataset, InfDataLoader
 import torch
 from torch.utils.data import RandomSampler
 
@@ -540,6 +540,55 @@ def find_subgraph_by_region_and_node(dataset, region_id, center_node_idx):
         raise KeyError(f"Subgraph for region {region_id} and center node {center_node_idx} not found.")
 
     return subgraph
+
+def get_neighborhood_cell_ids(dataset, region_id, center_cell_id):
+    """
+    Retrieve the neighborhood cell IDs for a given center cell ID in a subgraph.
+
+    Args:
+        dataset (CellularGraphDataset): The dataset instance.
+        region_id (str): The region ID in the dataset.
+        center_cell_id (int): The center cell ID for which the neighborhood is being queried.
+
+    Returns:
+        list: A list of cell IDs corresponding to the neighborhood of the center cell.
+    """
+    # Step 1: Find the region index for the given region_id
+    try:
+        region_idx = dataset.region_ids.index(region_id)
+    except ValueError:
+        raise ValueError(f"Region ID '{region_id}' not found in the dataset.")
+
+    # Step 2: Load the raw graph for the region to map cell IDs to node indices
+    graph_path = os.path.join(dataset.raw_dir, f"{region_id}.gpkl")
+    if not os.path.exists(graph_path):
+        raise FileNotFoundError(f"Raw graph file not found for region: {region_id}")
+
+    nx_graph = pickle.load(open(graph_path, "rb"))
+    node_to_cell_map = {node: data.get("cell_id", None) for node, data in nx_graph.nodes(data=True)}
+    cell_to_node_map = {v: k for k, v in node_to_cell_map.items() if v is not None}
+
+    if center_cell_id not in cell_to_node_map:
+        raise ValueError(f"Cell ID {center_cell_id} not found in region {region_id}")
+
+    center_node_idx = cell_to_node_map[center_cell_id]
+
+    # Step 3: Retrieve the subgraph for the center node
+    subgraph = dataset.get_subgraph(region_idx, center_node_idx)
+
+    # Step 4: Find neighborhood node indices in the subgraph
+    neighborhood_node_indices = subgraph.edge_index[1].unique().tolist()  # Neighbor indices
+    neighborhood_node_indices = [
+        node_idx for node_idx in neighborhood_node_indices if node_idx != center_node_idx
+    ]
+
+    # Step 5: Map neighborhood node indices back to cell IDs
+    neighborhood_cell_ids = [
+        node_to_cell_map[node_idx] for node_idx in neighborhood_node_indices if node_idx in node_to_cell_map
+    ]
+
+    return neighborhood_cell_ids
+
 
 #----------------------------------
 # Helper Functions 
