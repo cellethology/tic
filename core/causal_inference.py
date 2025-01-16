@@ -2,219 +2,268 @@
 # core/causal_inference.py
 """
 Created on Wed Jan 15 18:03 2025
+Last modified on [last modification date]
 
 @author: Jiahao Zhang
-@Description: 
+@Description: This module is designed to facilitate causal inference analysis within the context of biological research,
+              particularly focusing on the analysis of cellular behavior based on biomarker data. It provides a robust framework
+              for applying various statistical methods to discern causal relationships from complex datasets.
+
+              The module integrates several causal inference methods including Granger Causality, Linear Regression with Controls,
+              each encapsulated within its own class. These classes inherit from a common abstract base class,
+              ensuring that each method adheres to a consistent interface for analysis and visualization.
+
+              The main functionality includes:
+              - Data loading and preprocessing to prepare it for causal analysis.
+              - Execution of different causal inference strategies.
+              - Visualization of inference results to aid in interpretation and presentation.
 """
-from concurrent.futures import ThreadPoolExecutor
+
+from abc import ABC, abstractmethod
+from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.metrics import log_loss
 from adapters.space_gm_adapter import get_neighborhood_cell_ids
 from statsmodels.tsa.stattools import grangercausalitytests
-from tqdm import tqdm
+from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from scipy import stats
 #----------------------------------
 # Helper Functions 
 #----------------------------------
+COLUMN_MAPPING = {
+    'region_id': 'REGION_ID', # pseudotime.csv
+    'cell_id': 'CELL_ID', # pseudotime.csv
+    'pseudotime': 'PSEUDOTIME', # pseudotime.csv
+    'ACQUISITION_ID': 'REGION_ID', # {expression}.csv
+    # 'CELL_ID': 'CELL_ID', # {expression}.csv
+    'CLUSTER_LABEL': 'CELL_TYPE' # {cell_types}.csv
+}
+ALL_BIOMARKERS = ["CD11b", "CD14", "CD15", "CD163", "CD20", "CD21", "CD31", "CD34", "CD3e", "CD4", "CD45", "CD45RA", "CD45RO", "CD68", "CD8", "CollagenIV", "HLA-DR", "Ki67", "PanCK", "Podoplanin", "Vimentin", "aSMA"]
+ALL_CELL_TYPES = ["APC", "B cell", "CD4 T cell", "CD8 T cell", "Granulocyte", "Lymph vessel", "Macrophage", "Naive immune cell", "Stromal / Fibroblast", "Tumor", "Tumor (CD15+)", "Tumor (CD20+)", "Tumor (CD21+)", "Tumor (Ki67+)", "Tumor (Podo+)", "Vessel", "Unassigned"]
 
-def compute_biomarker_matrix(dataset, region_id, center_cell_id, raw_dir, cell_type_mapping):
+
+def load_data(file_path, column_mapping):
+    # Load the data
+    df = pd.read_csv(file_path)
+    # Apply the column renaming mapping
+    def apply_column_mapping(df, mapping):
+        # Apply column renaming only for columns that exist in both the DataFrame and the mapping
+        valid_mapping = {old: new for old, new in mapping.items() if old in df.columns}
+        df.rename(columns=valid_mapping, inplace=True)
+
+        # Check and log if any expected columns are missing after attempting to rename
+        # missing_columns = [new for old, new in mapping.items() if old not in df.columns and new in df.columns]
+        # if missing_columns:
+        #     print(f"Note: Expected columns not found in the DataFrame and were not renamed: {missing_columns}")
+        return df
+
+    df = apply_column_mapping(df, column_mapping)
+    return df
+
+def load_and_prepare_data(dataset, pseudotime_file, raw_dir, included_cell_types=ALL_CELL_TYPES, included_biomarkers=ALL_BIOMARKERS, sparsity_threshold=0.1):
+    """
+    Load pseudotime data and compute biomarker matrices for cell neighborhoods.
+    Filters out variables with high sparsity or constant values before analysis.
+
+    Args:
+        dataset: CellularGraphDataset or similar for accessing cell neighborhood data.
+        pseudotime_file (str): Path to the CSV file containing pseudotime data.
+        raw_dir (str): Directory containing additional cell and biomarker data.
+        included_cell_types (list): Optional list of cell types to include in the analysis.
+        included_biomarkers (list): Optional list of biomarkers to include in the analysis.
+        sparsity_threshold (float): The threshold for filtering out sparse variables (default is 0.1, meaning >90% zeros).
+
+    Returns:
+        CausalInferenceInput: Data structured for causal inference analysis.
+    """
+    pseudotime_df = load_data(pseudotime_file, COLUMN_MAPPING)
+    identifiers = []
+    y_variable = []
+    x_variables = {}
+
+    for _, row in pseudotime_df.iterrows():
+        region_id = row['REGION_ID']
+        cell_id = row['CELL_ID']
+        pseudotime = row['PSEUDOTIME']
+
+        biomarker_matrix = compute_biomarker_matrix(
+            dataset, region_id, cell_id, raw_dir,
+            included_cell_types=included_cell_types, 
+            included_biomarkers=included_biomarkers
+        )
+
+        identifiers.append([region_id, cell_id])
+        y_variable.append(pseudotime)
+
+        for biomarker in included_biomarkers:
+            for cell_type in included_cell_types:
+                x_key = f"{cell_type}_{biomarker}"
+                value = biomarker_matrix.get(biomarker, pd.Series(index=biomarker_matrix.index)).get(cell_type, 0)
+                if x_key not in x_variables:
+                    x_variables[x_key] = []
+                x_variables[x_key].append(value)
+
+    # Filter out variables with high sparsity or constant values
+    x_variables = {k: v for k, v in x_variables.items() if (np.mean(np.array(v) != 0) > sparsity_threshold and np.unique(v).size > 1)}
+
+    return CausalInferenceInput(identifiers=identifiers, y_variable=y_variable, x_variables=x_variables)
+
+def compute_biomarker_matrix(dataset, region_id, center_cell_id, raw_dir, included_cell_types=None, included_biomarkers=None):
     """
     Compute the biomarker matrix for cells in a specified neighborhood.
 
     Args:
         dataset (CellularGraphDataset): The dataset instance.
-        region_id (str): The region ID to search for.
-        center_cell_id (int): The center cell ID.
-        raw_dir (str): Path to the raw data directory.
-        cell_type_mapping (dict): Mapping of all possible cell types (keys as strings).
+        region_id (str): Region ID to search for.
+        center_cell_id (int): Central cell ID whose neighborhood is considered.
+        raw_dir (str): Directory containing cell types and biomarker data.
+        included_cell_types (list): Optional list of cell types to include.
+        included_biomarkers (list): Optional list of biomarkers to include.
 
     Returns:
-        pd.DataFrame: A DataFrame representing the N x M biomarker matrix, indexed by cell type names.
+        pd.DataFrame: A DataFrame representing the biomarker matrix, indexed by cell type names.
     """
-    # Load cell types and expression data for the entire region to optimize file access
-    cell_types_df = pd.read_csv(f"{raw_dir}/{region_id}.cell_types.csv")
-    expression_df = pd.read_csv(f"{raw_dir}/{region_id}.expression.csv")
+    # Load cell types and expression data
+    cell_types_path = f"{raw_dir}/{region_id}.cell_types.csv"
+    expression_path = f"{raw_dir}/{region_id}.expression.csv"
+    cell_types_df = load_data(cell_types_path, COLUMN_MAPPING)
+    expression_df = load_data(expression_path, COLUMN_MAPPING)
 
-    # Retrieve IDs of neighboring cells and filter data for those cells only
+    # Filter for neighborhood cells
     neighborhood_cell_ids = get_neighborhood_cell_ids(dataset, region_id, center_cell_id)
     neighborhood_df = cell_types_df[cell_types_df['CELL_ID'].isin(neighborhood_cell_ids)]
     expression_subset = expression_df[expression_df['CELL_ID'].isin(neighborhood_cell_ids)]
 
     # Merge the filtered cell type and expression data
-    merged_df = pd.merge(neighborhood_df, expression_subset, on='CELL_ID')
-    if 'CLUSTER_LABEL' in merged_df.columns:
-        merged_df.rename(columns={'CLUSTER_LABEL': 'CELL_TYPE'}, inplace=True)
+    merged_df = pd.merge(neighborhood_df, expression_subset, on='CELL_ID', how='outer')
+
+    # Ensure all specified cell types and biomarkers are included
+    if included_cell_types is not None:
+        merged_df['CELL_TYPE'] = merged_df['CELL_TYPE'].fillna(pd.Series(included_cell_types))
+    if included_biomarkers is not None:
+        for biomarker in included_biomarkers:
+            if biomarker not in merged_df:
+                merged_df[biomarker] = 0
 
     # Compute average biomarker expressions for each cell type
-    biomarker_columns = [col for col in merged_df.columns if col not in ['CELL_ID', 'REGION_ID', 'CELL_TYPE', 'ACQUISITION_ID']]
-    biomarker_matrix = merged_df.groupby('CELL_TYPE')[biomarker_columns].mean()
-
-    # Ensure all cell types are represented in the matrix
-    all_cell_types = list(cell_type_mapping.keys())
-    biomarker_matrix = biomarker_matrix.reindex(all_cell_types, fill_value=0)
+    biomarker_columns = [col for col in merged_df.columns if col not in ['CELL_ID', 'REGION_ID', 'CELL_TYPE']]
+    biomarker_matrix = merged_df.groupby('CELL_TYPE')[biomarker_columns].mean().fillna(0)
 
     return biomarker_matrix
 
-def prepare_granger_inputs(dataset, raw_dir, pseudotime_file, cell_type_mapping, max_workers=4):
-    """
-    Prepare inputs for Granger causality analysis including pseudo-time values and biomarker matrices.
+#----------------------------------
+# Data Class for Causal Inference
+#----------------------------------
 
-    Args:
-        dataset (CellularGraphDataset): The dataset instance.
-        raw_dir (str): Path to the raw data directory.
-        pseudotime_file (str): Path to the pseudo-time CSV file.
-        cell_type_mapping (dict): Mapping of all possible cell types (keys as strings).
-        max_workers (int): Number of threads for multithreading.
-
-    Returns:
-        tuple: Pseudo-time values, biomarker matrices, and lists of cell types and biomarkers.
-    """
-    pseudotime_df = pd.read_csv(pseudotime_file)
-    if not {'region_id', 'cell_id', 'pseudotime'}.issubset(pseudotime_df.columns):
-        raise ValueError("Pseudo-time file is missing required columns.")
-
-    pseudo_time_values = pseudotime_df['pseudotime'].to_numpy()
-    biomarker_matrices = []
-
-    # Process each cell concurrently to prepare biomarker matrices
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [
-            executor.submit(
-                compute_biomarker_matrix,
-                dataset,
-                row['region_id'],
-                row['cell_id'],
-                raw_dir,
-                cell_type_mapping
-            ) for index, row in pseudotime_df.iterrows()
-        ]
-
-        for future in tqdm(futures, total=len(futures), desc="Processing cells"):
-            try:
-                biomarker_matrix = future.result()
-                biomarker_matrices.append(biomarker_matrix.to_numpy())
-            except Exception as e:
-                print(f"Error processing a cell: {e}")
-                biomarker_matrices.append(np.zeros((len(cell_type_mapping), len(biomarker_matrix.columns))))
-
-    neighborhood_matrices = np.array(biomarker_matrices)
-    return pseudo_time_values, neighborhood_matrices, list(cell_type_mapping.keys()), list(biomarker_matrix.columns)
-
-def prepare_granger_inputs(dataset, raw_dir, pseudotime_file, cell_type_mapping, max_workers=4):
-    """
-    Prepare data for Granger causality analysis.
-
-    Args:
-        dataset (CellularGraphDataset): The dataset instance.
-        raw_dir (str): Path to the raw data directory.
-        pseudotime_file (str): Path to the pseudo-time CSV file.
-        cell_type_mapping (dict): Mapping of all possible cell types (keys as strings).
-        max_workers (int): Number of threads for multithreading.
-
-    Returns:
-        tuple: A tuple containing:
-            - np.ndarray: 1D array of pseudo-time values (length S).
-            - np.ndarray: 3D array of biomarker matrices (shape S x N x M).
-    """
-    # Step 1: Load pseudo-time data
-    pseudotime_df = pd.read_csv(pseudotime_file)
-
-    # Validate columns
-    if not {"region_id", "cell_id", "pseudotime"}.issubset(pseudotime_df.columns):
-        raise ValueError("The pseudo-time file must contain 'region_id', 'cell_id', and 'pseudotime' columns.")
-
-    # Step 2: Initialize storage for biomarker matrices and pseudo-time values
-    pseudo_time_values = pseudotime_df["pseudotime"].to_numpy()
-    biomarker_matrices = []
-
-    # Step 3: Define a worker function for parallel computation
-    def process_cell(row):
-        region_id = row["region_id"]
-        cell_id = row["cell_id"]
-        return compute_biomarker_matrix(
-            dataset=dataset,
-            region_id=region_id,
-            center_cell_id=cell_id,
-            raw_dir=raw_dir,
-            cell_type_mapping=cell_type_mapping
-        )
-
-    # Step 4: Use ThreadPoolExecutor for parallel processing
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = [
-            executor.submit(process_cell, row)
-            for _, row in pseudotime_df.iterrows()
-        ]
-
-        # Collect results
-        for future in tqdm(futures, total=len(futures), desc="Processing cells"):
-            try:
-                biomarker_matrix = future.result()
-                biomarker_matrices.append(biomarker_matrix.to_numpy())
-            except Exception as e:
-                print(f"Error processing a cell: {e}")
-                biomarker_matrices.append(np.zeros((len(cell_type_mapping), len(biomarker_matrix.columns))))
-
-    # Step 5: Convert biomarker matrices to a single 3D array
-    neighborhood_matrices = np.array(biomarker_matrices)  # Shape: (S x N x M)
-    cell_type_names = list(cell_type_mapping.keys())  
-    biomarker_names = [col for col in biomarker_matrix.columns]  
-
-    return pseudo_time_values, neighborhood_matrices, cell_type_names, biomarker_names
+class CausalInferenceInput(BaseModel):
+    identifiers: List[List[Any]] = Field(..., description="Unique identifiers for each study object, e.g., region and cell IDs.")
+    y_variable: List[Any] = Field(..., description="The dependent variable for causal inference, e.g., PSEUDOTIME.")
+    x_variables: Dict[str, List[Any]] = Field(..., description="Independent variables for causal inference, structured by cell type and biomarker.")
 
 #----------------------------------
 # Core: Casual Inference
-# Key Input: pseudo_time (np.ndarray): 1D array of pseudo-time (length S).
-#            neighborhood_matrices (np.ndarray): 3D array of neighborhood expression matrices (shape S x N x M).
 #----------------------------------
 
-def compute_granger_causality(pseudo_time, neighborhood_matrices, max_lag=3, significance_level=0.05, cell_type_names = None, biomarker_names = None):
-    """
-    Perform Granger causality analysis between pseudo-time and neighborhood expression components.
-    To Visualize the results, you can use the following function:
-        from utils.visualization import visualize_granger_results
-    Args:
-        pseudo_time (np.ndarray): 1D array of pseudo-time (length S).
-        neighborhood_matrices (np.ndarray): 3D array of neighborhood expression matrices (shape S x N x M).
-        max_lag (int): Maximum number of lags for Granger causality test.
-        significance_level (float): Significance level for the test.
+class CausalInferenceMethod(ABC):
+    @abstractmethod
+    def analyze(self, data: CausalInferenceInput) -> Any:
+        """
+        Perform causal analysis on the provided data.
+        Args:
+            data (CausalInferenceInput): Data structured for causal inference analysis.
+        Returns:
+            Any: Results of the causal analysis, structure depending on the method used.
+        """
+        pass
 
-    Returns:
-        pd.DataFrame: DataFrame with Granger causality results (N x M).
-    """
-    S, N, M = neighborhood_matrices.shape
-    results_matrix = np.zeros((N, M))  # To store p-values
+    @abstractmethod
+    def visualize(self, results: pd.DataFrame):
+        """
+        Plot the results of the causal analysis.
+        Args:
+            results (pd.DataFrame): DataFrame containing the results of a causal analysis.
+        """
+        pass
 
-    # Flatten neighborhood matrices to (S, N*M)
-    flattened_matrices = neighborhood_matrices.reshape(S, N * M)
+class GrangerCausality(CausalInferenceMethod):
+    def analyze(self, data: CausalInferenceInput) -> pd.DataFrame:
+        results = {}
+        for x_key, values in data.x_variables.items():
+            combined_data = pd.DataFrame({'Y': data.y_variable, 'X': values})
+            try:
+                test_result = grangercausalitytests(combined_data, maxlag=2, verbose=False)
+                min_p_value = min(test[1][0]['ssr_ftest'][1] for test in test_result.items())
+                results[x_key] = min_p_value
+            except Exception as e:
+                print(f"Error processing {x_key}: {e}")
+                continue
 
-    for idx in range(flattened_matrices.shape[1]):  # Iterate over N*M components
-        component_series = flattened_matrices[:, idx]
+        return pd.DataFrame.from_dict(results, orient='index', columns=['P-Value'])
 
-        # Combine pseudo_time and component_series into a DataFrame
-        data = np.column_stack((pseudo_time, component_series))
-        data = pd.DataFrame(data, columns=["pseudo_time", f"component_{idx}"])
+    def visualize(self, results: pd.DataFrame):
+        if results.empty:
+            print("No results to display.")
+            return
 
+        results_sorted = results.sort_values(by='P-Value').head(10)  # Visualize the top 10 results by P-Value
+        results_sorted.plot(kind='bar', legend=False)
+        plt.title('Top 10 Granger Causality Results')
+        plt.xlabel('Variable Pairs')
+        plt.ylabel('P-Value')
+        plt.show()
+
+class LinearRegressionWithControls(CausalInferenceMethod):
+    def analyze(self, data: CausalInferenceInput) -> pd.DataFrame:
+        results = {}
+        model = LinearRegression()
+        for x_key, values in data.x_variables.items():
+            if pd.Series(values).nunique() <= 1:  # Avoid variables with constant values
+                continue
+
+            X = pd.DataFrame({k: v for k, v in data.x_variables.items() if k != x_key})  # Control variables
+            y = pd.Series(values)
+            if X.empty:
+                continue  # Avoid fitting a model with no explanatory variables
+
+            model.fit(X, y)
+            p_values = stats.t.ppf(1 - 0.05, df=len(y) - X.shape[1] - 1)  # p-values calculation
+
+            results[x_key] = {'Coefficient': model.coef_, 'P-Value': p_values}
+
+        return pd.DataFrame(results).T  
+
+    def visualize(self, results: pd.DataFrame):
+        if results.empty:
+            print("No results to display.")
+            return
+
+        # Sorting the P-Values and taking top 10 for visualization
         try:
-            # Perform Granger causality test
-            test_result = grangercausalitytests(data, max_lag, verbose=False)
-            min_p_value = min([test_result[lag][0]["ssr_ftest"][1] for lag in range(1, max_lag + 1)])
+            sorted_results = results.sort_values(by='P-Value', ascending=True).head(10)
+            sorted_results['P-Value'].plot(kind='bar')
+            plt.title('Top 10 Linear Regression Results by P-Value')
+            plt.xlabel('Variable Pairs')
+            plt.ylabel('P-Value')
+            plt.show()
         except Exception as e:
-            print(f"Error in Granger test for component {idx}: {e}")
-            min_p_value = 1.0
+            print(f"Error visualizing results: {e}")
 
-        # Store p-value in the results matrix
-        results_matrix[idx // M, idx % M] = min_p_value
 
-    # Apply significance threshold
-    significant_matrix = (results_matrix < significance_level).astype(int)
 
-    return pd.DataFrame(
-        results_matrix, 
-        index=[f"CellType_{i}" for i in range(N)] if cell_type_names is None else cell_type_names,
-        columns=[f"Biomarker_{j}" for j in range(M)] if biomarker_names is None else biomarker_names
-    ), pd.DataFrame(
-        significant_matrix, 
-        index=[f"CellType_{i}" for i in range(N)] if cell_type_names is None else cell_type_names,
-        columns=[f"Biomarker_{j}" for j in range(M)] if biomarker_names is None else biomarker_names
-    )
+def run_causal_inference_analysis(data: CausalInferenceInput, method_type='GrangerCausality'):
+    if method_type == 'GrangerCausality':
+        method = GrangerCausality()
+    elif method_type == 'LinearRegressionWithControls':
+        method = LinearRegressionWithControls()
+    else:
+        raise ValueError("Unsupported method type provided.")
+
+    # Perform analysis
+    results = method.analyze(data)
+    method.visualize(results)
+
+    return results
 
