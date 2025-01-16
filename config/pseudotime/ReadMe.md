@@ -40,3 +40,5 @@ general:
   device: "mps"  # Set to "cuda", "mps", or "cpu" depending on your environment
   random_seed: 42  # Random seed for reproducibility
   n_clusters: 2  # Number of clusters for pseudo-time analysis
+
+```
