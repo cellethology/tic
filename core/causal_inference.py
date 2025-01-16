@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# core/causal_inference.py
 """
 Created on Wed Jan 15 18:03 2025
 
@@ -15,22 +16,9 @@ from tqdm import tqdm
 # Helper Functions 
 #----------------------------------
 
-def load_pseudotime(pseudotime_file):
-    """
-    Load pseudo-time data from a CSV file.
-
-    Args:
-        pseudotime_file (str): Path to the pseudo-time CSV file.
-
-    Returns:
-        pd.DataFrame: DataFrame with columns ['region_id', 'cell_id', 'pseudotime'].
-    """
-    pseudotime_df = pd.read_csv(pseudotime_file)
-    return pseudotime_df
-
 def compute_biomarker_matrix(dataset, region_id, center_cell_id, raw_dir, cell_type_mapping):
     """
-    Compute the N x M matrix of biomarker averages for neighborhood cells.
+    Compute the biomarker matrix for cells in a specified neighborhood.
 
     Args:
         dataset (CellularGraphDataset): The dataset instance.
@@ -40,38 +28,76 @@ def compute_biomarker_matrix(dataset, region_id, center_cell_id, raw_dir, cell_t
         cell_type_mapping (dict): Mapping of all possible cell types (keys as strings).
 
     Returns:
-        pd.DataFrame: A DataFrame representing the N x M biomarker matrix, indexed by cell type names (str).
+        pd.DataFrame: A DataFrame representing the N x M biomarker matrix, indexed by cell type names.
     """
-    # Step 1: Retrieve neighborhood cell IDs
+    # Load cell types and expression data for the entire region to optimize file access
+    cell_types_df = pd.read_csv(f"{raw_dir}/{region_id}.cell_types.csv")
+    expression_df = pd.read_csv(f"{raw_dir}/{region_id}.expression.csv")
+
+    # Retrieve IDs of neighboring cells and filter data for those cells only
     neighborhood_cell_ids = get_neighborhood_cell_ids(dataset, region_id, center_cell_id)
-    
-    # Step 2: Load necessary data
-    cell_types_file = f"{raw_dir}/{region_id}.cell_types.csv"
-    expression_file = f"{raw_dir}/{region_id}.expression.csv"
-    
-    cell_types_df = pd.read_csv(cell_types_file)
-    expression_df = pd.read_csv(expression_file)
-    
-    # Step 3: Filter for neighborhood cell IDs
-    neighborhood_df = cell_types_df[cell_types_df["CELL_ID"].isin(neighborhood_cell_ids)].copy()
-    expression_subset = expression_df[expression_df["CELL_ID"].isin(neighborhood_cell_ids)].copy()
-    
-    # Step 4: Merge cell types with biomarker expressions
-    merged_df = pd.merge(neighborhood_df, expression_subset, on="CELL_ID")
-    
-    # Step 5: Rename `CLUSTER_LABEL` to `CELL_TYPE` if necessary
-    if "CLUSTER_LABEL" in merged_df.columns:
-        merged_df.rename(columns={"CLUSTER_LABEL": "CELL_TYPE"}, inplace=True)
-    
-    # Step 6: Compute the average biomarker values per cell type
-    biomarker_columns = [col for col in merged_df.columns if col not in ["CELL_ID", "REGION_ID", "CELL_TYPE", "ACQUISITION_ID"]]
-    biomarker_matrix = merged_df.groupby("CELL_TYPE")[biomarker_columns].mean()
-    
-    # Step 7: Reindex to include all cell types from `cell_type_mapping` keys
-    all_cell_types = list(cell_type_mapping.keys())  # Use the keys (str) from the mapping
+    neighborhood_df = cell_types_df[cell_types_df['CELL_ID'].isin(neighborhood_cell_ids)]
+    expression_subset = expression_df[expression_df['CELL_ID'].isin(neighborhood_cell_ids)]
+
+    # Merge the filtered cell type and expression data
+    merged_df = pd.merge(neighborhood_df, expression_subset, on='CELL_ID')
+    if 'CLUSTER_LABEL' in merged_df.columns:
+        merged_df.rename(columns={'CLUSTER_LABEL': 'CELL_TYPE'}, inplace=True)
+
+    # Compute average biomarker expressions for each cell type
+    biomarker_columns = [col for col in merged_df.columns if col not in ['CELL_ID', 'REGION_ID', 'CELL_TYPE', 'ACQUISITION_ID']]
+    biomarker_matrix = merged_df.groupby('CELL_TYPE')[biomarker_columns].mean()
+
+    # Ensure all cell types are represented in the matrix
+    all_cell_types = list(cell_type_mapping.keys())
     biomarker_matrix = biomarker_matrix.reindex(all_cell_types, fill_value=0)
-    
+
     return biomarker_matrix
+
+def prepare_granger_inputs(dataset, raw_dir, pseudotime_file, cell_type_mapping, max_workers=4):
+    """
+    Prepare inputs for Granger causality analysis including pseudo-time values and biomarker matrices.
+
+    Args:
+        dataset (CellularGraphDataset): The dataset instance.
+        raw_dir (str): Path to the raw data directory.
+        pseudotime_file (str): Path to the pseudo-time CSV file.
+        cell_type_mapping (dict): Mapping of all possible cell types (keys as strings).
+        max_workers (int): Number of threads for multithreading.
+
+    Returns:
+        tuple: Pseudo-time values, biomarker matrices, and lists of cell types and biomarkers.
+    """
+    pseudotime_df = pd.read_csv(pseudotime_file)
+    if not {'region_id', 'cell_id', 'pseudotime'}.issubset(pseudotime_df.columns):
+        raise ValueError("Pseudo-time file is missing required columns.")
+
+    pseudo_time_values = pseudotime_df['pseudotime'].to_numpy()
+    biomarker_matrices = []
+
+    # Process each cell concurrently to prepare biomarker matrices
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [
+            executor.submit(
+                compute_biomarker_matrix,
+                dataset,
+                row['region_id'],
+                row['cell_id'],
+                raw_dir,
+                cell_type_mapping
+            ) for index, row in pseudotime_df.iterrows()
+        ]
+
+        for future in tqdm(futures, total=len(futures), desc="Processing cells"):
+            try:
+                biomarker_matrix = future.result()
+                biomarker_matrices.append(biomarker_matrix.to_numpy())
+            except Exception as e:
+                print(f"Error processing a cell: {e}")
+                biomarker_matrices.append(np.zeros((len(cell_type_mapping), len(biomarker_matrix.columns))))
+
+    neighborhood_matrices = np.array(biomarker_matrices)
+    return pseudo_time_values, neighborhood_matrices, list(cell_type_mapping.keys()), list(biomarker_matrix.columns)
 
 def prepare_granger_inputs(dataset, raw_dir, pseudotime_file, cell_type_mapping, max_workers=4):
     """
