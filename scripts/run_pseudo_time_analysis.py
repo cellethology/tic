@@ -1,10 +1,11 @@
 import os
+import random
 from omegaconf import OmegaConf, DictConfig
 from typing import Any
 import pandas as pd
+import numpy as np
 
 from spacegm.data import CellularGraphDataset
-
 from adapters.embedding import prepare_embeddings
 from adapters.sampler import CustomSubgraphSampler
 from core.pseudotime_analysis import dimensionality_reduction_and_clustering, perform_pseudotime_analysis
@@ -19,12 +20,18 @@ def run_pipeline(config: DictConfig):
     """
     print(OmegaConf.to_yaml(config))
     
+    # Set global random seed
+    seed = config.general.get("random_seed", 42)
+    np.random.seed(seed)
+    random.seed(seed)
+    print(f"Random seed set to {seed}.")
+
     # Step 1: Initialize Dataset
     dataset = CellularGraphDataset(config.general["data_root"], **config.dataset)
     print("Dataset initialized.")
 
     # Step 2: Initialize Sampler
-    sampler = CustomSubgraphSampler(config.general.raw_dir)
+    sampler = CustomSubgraphSampler(config.general.raw_dir, seed=seed)
     selected_cells = sampler.sample(
         total_samples=config.sampler.total_samples,
         regions=config.sampler.regions,
@@ -34,7 +41,6 @@ def run_pipeline(config: DictConfig):
 
     # Step 3: Prepare Embeddings
     cell_embedding = prepare_embeddings(dataset, selected_cells, config.embedding)
-    # cell_embedding = add_attributes_from_raw_data(cell_embedding, raw_dir=config.general.raw_dir)
     print("Embeddings prepared.")
 
     # Step 4: Analyze Each Embedding Method
@@ -52,7 +58,7 @@ def run_pipeline(config: DictConfig):
             n_pca_components=config.embedding.get("n_pca_components", 20),
             cluster_method=config.embedding.get("cluster_method", "kmeans"),
             n_clusters=config.embedding.get("n_clusters", 10),
-            seed=config.general.get("random_seed", 42)
+            seed=seed  
         )
         cell_embedding.attributes["cluster_labels"] = cluster_labels.tolist()
         print(f"Dimensionality reduction and clustering completed for {embedding_key}.")
@@ -89,6 +95,6 @@ def run_pipeline(config: DictConfig):
 
 
 if __name__ == "__main__":
-    config_path = "/Users/zhangjiahao/Project/tic/config/pseudotime/new.yaml"
+    config_path = "./config/pseudotime/new.yaml"
     config = OmegaConf.load(config_path)
     run_pipeline(config)

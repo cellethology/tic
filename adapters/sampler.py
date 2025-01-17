@@ -10,9 +10,10 @@ import random
 from spacegm.data import CellularGraphDataset
 
 class CustomSubgraphSampler:
-    def __init__(self, raw_dir):
+    def __init__(self, raw_dir, seed=None):
         self.raw_dir = raw_dir
         self.cell_data = {}
+        self.seed = seed  
         self.load_data()
 
     def load_data(self):
@@ -25,7 +26,6 @@ class CustomSubgraphSampler:
             cell_types_path = os.path.join(self.raw_dir, f'{region_id}.cell_types.csv')
             expression_path = os.path.join(self.raw_dir, f'{region_id}.expression.csv')
 
-            # Assume each file contains a 'CELL_ID' column for merging
             data = pd.read_csv(cell_data_path)
             types = pd.read_csv(cell_types_path)
             expression = pd.read_csv(expression_path)
@@ -64,8 +64,7 @@ class CustomSubgraphSampler:
         if cells.empty:
             return pd.DataFrame()
         samples_per_region = total_samples // num_regions
-        return cells.sample(min(len(cells), samples_per_region))
-
+        return cells.sample(min(len(cells), samples_per_region), random_state=self.seed)  
 #------------------------------------------------------------
 # Helper functions for retrieving subgraphs from the dataset
 #------------------------------------------------------------
