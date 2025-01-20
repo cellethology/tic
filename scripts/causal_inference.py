@@ -41,6 +41,7 @@ def perform_causal_analysis(cfg, dataset):
         included_cell_types=cfg.causal.included_cell_types,
         included_biomarkers=cfg.causal.included_biomarkers,
         sparsity_threshold=cfg.causal.sparsity_threshold,
+        target_biomarker=cfg.causal.target_biomarker,
     )
 
     # Run causal inference analysis

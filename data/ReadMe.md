@@ -57,7 +57,7 @@ Ensure your dataset follows the structure outlined below:
 
 ### Biomarker Expression (`voronoi/{region_id}.expression.csv`)
 - Biomarker expression levels for each cell:
-    | CELL_ID | REGION_ID | BIOMARKER1 | BIOMARKER2 |
+    | CELL_ID | ACQUISITION_ID | BIOMARKER1 | BIOMARKER2 |
     |---------|-----------|------------|------------|
     | 0       | region1   | 0.5        | 1.1        |
     | 1       | region1   | 0.8        | 2.3        |

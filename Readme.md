@@ -51,23 +51,50 @@ TIC/
 └── setup.py            # Installation script
 
 ```
-### PseudoTime Analysis output dir
-The results of the pseudo-time analysis are stored in a structured directory as follows:
-```
-outputs/
-├── embedding_analysis/
-│   ├── {embedding_key}/
-│   │   ├── expression/
-│   │   │   ├── biomarker_trends.png                    # Biomarker trends over pseudo-time
-│   │   │   ├── cluster_biomarker_summary.csv           # Aggregated biomarker data
-│   │   │   └── cluster_summary.csv                     # Clustering summary
-│   │   └── pseudotime/
-│   │       ├── start_node_{n}/                         # Pseudo-time results for start node {n}
-│   │       │   ├── Biomarkers_trends_vs_pseudotime.png # Biomarker trends over pseudo-time
-│   │       │   ├── Neighborhood_Composition_trends_vs_pseudotime.png # Neighborhood composition trends
-│   │       │   ├── pseudotime.csv                      # Computed pseudo-time values
-│   │       └── pseudotime_visualization.png            # Visualization of pseudo-time trajectories
-│   ├── umap/
-│   │   ├── umap_vs_cell_types.png                      # UMAP embeddings colored by cell types
 
+## Working Pipeline:
+### Step 1: Prepare Space-gm Dataset
+To begin using TIC, you first need to prepare the Space-gm dataset. Space-gm constructs graphs based on cellular micro-environments that will later be used for pseudo-time analysis.
+
+Run the following command to preprocess the data:
+```bash
+python scripts/process_spacegm_data.py --data_root <path_to_data_root> --num_workers <number_of_workers>
 ```
+--data_root: Path to the root directory containing your raw data.
+--num_workers: Number of parallel workers to use for data processing (adjust depending on your system's resources).
+This script will prepare the necessary files, including the graph representations of the cellular micro-environments, to be used in the next steps.
+### Step 2: Perform Pseudo-time Analysis
+After processing the Space-gm data, you'll need to set up the configuration for the pseudo-time analysis. This will involve specifying parameters such as the graph structure, the starting points for pseudo-time estimation, and other relevant configurations.
+
+1. Set up configuration:
+
+* Navigate to the configuration directory: {project_root}/config/pseudotime/.
+* Open and adjust the new.yaml file based on your dataset and analysis needs. This configuration file contains parameters that guide the pseudo-time analysis process.
+* For more details, refer to the config/pseudotime/ReadMe.md file for documentation on the parameters you can adjust.
+
+2. Run pseudo-time analysis: 
+After configuring the new.yaml file, execute the following script to run the pseudo-time analysis:
+```bash
+python scripts/pseudotime_analysis.py
+```
+This script will compute the pseudo-time trajectory using the graph constructed in Step 1. The output will include the computed pseudo-time values for each cell, which can be further analyzed and visualized.
+
+### Step 3: Visualize Pseudo-time
+Once the pseudo-time analysis is completed, you can visualize the trajectory of the cellular micro-environment over pseudo-time.
+
+To visualize the results, open the Jupyter notebook: 
+```bash
+notebook/visualize.ipynb
+```
+This notebook will guide you through the process of plotting pseudo-time trajectories, showing how different cellular features change over time.
+
+### Step 4: Perform Causal Inference
+After obtaining the pseudo-time trajectories, you may be interested in investigating causal relationships within your data. TIC integrates tools for causal inference to explore the drivers of cellular state transitions.
+
+1. Set up configuration: Similar to the pseudo-time setup, navigate to the configuration directory {project_root}/config/pseudotime/, and configure the causal inference parameters in the new.yaml file.
+
+2. Run causal inference: Once the configuration is set up, execute the following script to perform causal inference:
+```bash
+python scripts/causal_inference.py
+```
+This step will analyze the dependencies between cellular markers and compute causal relationships, potentially helping identify key regulatory factors in cellular state transitions.

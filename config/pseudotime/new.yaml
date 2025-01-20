@@ -6,7 +6,7 @@ general:
   show_plots: True # whether to show plots or not
 
 sampler:
-  total_samples: 10000 # total number of samples to generate
+  total_samples: 1000 # total number of samples to generate
   regions: 'all' # list of regions to sample from, 'all' for all regions . eg: ['region1', 'region2']
   cell_types: ['Tumor'] # list of cell types to sample from, 'all' for all cell types. eg: ['cell_type1', 'cell_type2']
 
@@ -19,19 +19,21 @@ embedding:
 pseudotime:
   start_nodes: [0, 1] # list of start nodes for pseudotime analysis, from 0 to n_clusters-1
 
-causal:
+causal: # For scripts/causal_inference.py
   pseudotime_file: "/Users/zhangjiahao/Project/tic/data/example/output/embedding_analysis/expression_vectors/pseudotime/start_node_0/pseudotime.csv" # pseudotime file to use for causal inference
   method: 'GrangerCausality'         # Causal inference method to use ('GrangerCausality' or 'LinearRegressionWithControls')
-  included_cell_types:                       # Cell types to include in the analysis
+  included_cell_types:                       # Cell types to include in the analysis: to consist X variables
     - Tumor
-    - Stromal
-    - Immune
-  included_biomarkers:                       # Biomarkers to include in the analysis
+    - Naive immune cell
+    - CD4 T cell
+    - CD8 T cell
+  included_biomarkers:                       # Biomarkers to include in the analysis: to consist X variables
     - PanCK
     - aSMA
     - CD45
     - Vimentin
   sparsity_threshold: 0.1                    # Filter threshold for sparsity in biomarker data
+  target_biomarker: 'PanCK'                 # Target biomarker for causal inference:Your Y variable
   visualization:                             # Visualization settings
     top_results: 10                          # Number of top results to visualize by P-Value
     output_dir: ${general.output_dir}/visualization     # Output directory for visualizations  

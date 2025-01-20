@@ -3,74 +3,9 @@ from matplotlib import pyplot as plt
 import seaborn as sns
 import pandas as pd
 from utils.data_transform import apply_transformations
-
-def plot_biomarker_vs_pseudotime(aggregated_data, output_dir=None, method=None, transforms=None, use_bins=True):
-    """
-    Plot biomarker expression across pseudotime with optional transformations.
-
-    Args:
-        aggregated_data (dict): Aggregated biomarker data by pseudotime.
-        output_dir (str, optional): Directory to save the output PNG file.
-        method (str, optional): Method for pseudotime (used in labels).
-        transforms (list of callable, optional): List of transformation functions to apply.
-        use_bins (bool): Whether pseudotime is binned.
-    """
-    # Apply transformations if provided
-    if transforms:
-        aggregated_data = apply_transformations(aggregated_data, transforms)
-
-    plt.figure(figsize=(12, 6))
-    for biomarker, data in aggregated_data.items():
-        plt.plot(data["bin"], data["value"], label=biomarker)
-
-    # Use a default value for method if it's None
-    method_label = f"{method} Pseudotime" if method is not None else "Pseudotime"
-    plt.xlabel(f"{method_label} (binned)" if use_bins else method_label)
-    plt.ylabel("Biomarker Expression Level")
-    plt.title("Pseudotime vs Biomarker Expression Levels")
-    plt.legend()
-    plt.show()
-
-    if output_dir is not None:
-        os.makedirs(output_dir, exist_ok=True)
-        plot_path = os.path.join(output_dir, "biomarker_vs_pseudotime.png")
-        plt.savefig(plot_path)
-        plt.close()
-        print(f"Biomarker trends saved to {plot_path}")
-
-
-def plot_filtering_process(embeddings, cluster_labels, filtered_embeddings, filtered_labels, output_path=None):
-    """
-    Visualize embeddings before and after filtering.
-
-    Args:
-        embeddings (np.ndarray): Original embeddings.
-        cluster_labels (np.ndarray): Original cluster labels.
-        filtered_embeddings (np.ndarray): Filtered embeddings.
-        filtered_labels (np.ndarray): Filtered cluster labels.
-        output_path (str, optional): Path to save the plot.
-    """
-    plt.figure(figsize=(12, 6))
-
-    # Original embeddings
-    plt.subplot(1, 2, 1)
-    plt.scatter(embeddings[:, 0], embeddings[:, 1], c=cluster_labels, cmap='tab10', alpha=0.5)
-    plt.title("Original Embeddings")
-    plt.xlabel("UMAP Dimension 1")
-    plt.ylabel("UMAP Dimension 2")
-
-    # Filtered embeddings
-    plt.subplot(1, 2, 2)
-    plt.scatter(filtered_embeddings[:, 0], filtered_embeddings[:, 1], c=filtered_labels, cmap='tab10', alpha=0.7)
-    plt.title("Filtered Embeddings")
-    plt.xlabel("UMAP Dimension 1")
-    plt.ylabel("UMAP Dimension 2")
-
-    plt.tight_layout()
-    if output_path:
-        plt.savefig(output_path)
-        print(f"Filtering visualization saved to {output_path}")
-    plt.show()
+import numpy as np
+from scipy.interpolate import interp1d
+from typing import Any, Dict, List, Optional, Callable
 
 #--------------------------------
 # Cluster-wise biomarker averages
@@ -101,69 +36,6 @@ def plot_biomarker_bar_chart(cluster_summary, visualization_kws, output_path=Non
         plt.savefig(output_path)
         print(f"Bar chart saved to {output_path}")
     plt.show()
-#-------------------------------------
-# Visualize neighborhood composition along pseudotime trajectory
-#-------------------------------------
-def visualize_neighborhood_composition(
-    aggregated_data,
-    visualization_kwargs,
-    output_dir,
-    show_plots=True,
-):
-    """
-    Visualize neighborhood composition along pseudotime.
-
-    Args:
-        aggregated_data (pd.DataFrame): DataFrame containing aggregated neighborhood composition data.
-            - Index: Binned pseudotime values or raw pseudotime values (if binning is disabled).
-            - Columns: One column per cell type and additional metadata columns.
-        visualization_kwargs (list): Custom visualization configurations.
-            - Example: ["Vessel", "avg(Tumor+Vessel)"]
-        output_dir (str): Directory to save plots.
-        show_plots (bool): Whether to display plots interactively.
-
-    Returns:
-        None
-    """
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Filter cell types for visualization
-    visualization_data = {}
-    for key in visualization_kwargs:
-        if key.startswith("avg(") and key.endswith(")"):
-            # Extract and average specified cell types
-            avg_keys = key[4:-1].split("+")
-            if all(col in aggregated_data.columns for col in avg_keys):
-                visualization_data[key] = aggregated_data[avg_keys].mean(axis=1)
-            else:
-                print(f"Warning: Some cell types in '{key}' are not present in the data.")
-        elif key in aggregated_data.columns:
-            # Add individual cell type data
-            visualization_data[key] = aggregated_data[key]
-        else:
-            print(f"Warning: '{key}' not found in the aggregated data and will be ignored.")
-
-    # Visualization
-    plt.figure(figsize=(10, 6))
-    for label, values in visualization_data.items():
-        plt.plot(aggregated_data.index, values, label=label)
-
-    plt.title("Neighborhood Composition vs Pseudotime")
-    plt.xlabel("Pseudotime")
-    plt.ylabel("Normalized Composition")
-    plt.legend(loc="upper left")
-    plt.tight_layout()
-
-    # Save plot
-    plot_path = os.path.join(output_dir, "neighborhood_composition_vs_pseudotime.png")
-    plt.savefig(plot_path)
-
-    if show_plots:
-        plt.show()
-    else:
-        plt.close()
-
-    print(f"Plot saved to {plot_path}")
 
 def plot_trends(
     aggregated_data,
@@ -278,60 +150,152 @@ def plot_umap_vs_cell_types(umap_embeddings, cell_types, cell_type_mapping, outp
         plt.show()
     else:
         plt.close()
-#-------------------------------------
-# Visualize Casual Inferece Results
-#-------------------------------------
+    
+##########################################
+# Visualize feature trends vs pseudotime #
+##########################################
+class Transform:
+    def __init__(self, pseudotime_csv_path: str, raw_dir: str):
+        self.pseudotime_csv_path = pseudotime_csv_path
+        self.raw_dir = raw_dir
 
-def visualize_granger_results(p_values_df, significance_df, significance_level=0.05, output_path=None):
-    """
-    Visualize Granger causality results as heatmaps.
+    def normalize(self, data: pd.Series) -> pd.Series:
+        """Normalize data to the range [0, 1]."""
+        return (data - data.min()) / (data.max() - data.min())
 
-    Args:
-        p_values_df (pd.DataFrame): DataFrame with p-values from Granger causality analysis (N x M).
-        significance_df (pd.DataFrame): DataFrame with binary significance results (0/1) (N x M).
-        significance_level (float): Threshold for determining significance.
-        output_path (str, optional): Path to save the plots. If None, display interactively.
+    def smooth(self, data: pd.Series, window_size: int = 5) -> pd.Series:
+        """Smooth data using a rolling window average."""
+        return data.rolling(window=window_size, min_periods=1).mean()
 
-    Returns:
-        None
-    """
-    plt.figure(figsize=(16, 8))
+    def binning(self, merged_df: pd.DataFrame, x_key: str, num_bins: int, overlap: float) -> pd.Series:
+        """Bin the data for x_key into `num_bins` bins with `overlap`."""
+        min_x, max_x = merged_df[x_key].min(), merged_df[x_key].max()
+        bin_width = (max_x - min_x) / num_bins
+        step_size = bin_width * (1 - overlap)
+        bins = np.arange(min_x, max_x + step_size, step_size)
+        return pd.cut(merged_df[x_key], bins=bins, labels=False, include_lowest=True)
 
-    # Heatmap for p-values
-    plt.subplot(1, 2, 1)
-    sns.heatmap(
-        p_values_df,
-        annot=True,
-        fmt=".3f",
-        cmap="coolwarm",
-        cbar=True,
-        linewidths=0.5,
-        linecolor='gray',
-    )
-    plt.title(f"Granger Causality (p-values)\nSignificance Level = {significance_level}")
-    plt.xlabel("Biomarkers")
-    plt.ylabel("Cell Types")
+    def visualize_features_vs_pseudotime(
+        self,
+        y_keys: List[str],
+        x_key: str = "pseudotime",
+        output_dir: str = "./",
+        x_transform: Optional[Dict[str, Any]] = None,
+        y_transform: Optional[List[Callable]] = None,
+        show_plots: bool = True,
+    ):
+        """
+        Visualize features (e.g., biomarkers) vs pseudotime with x-axis binning and y-axis transformations.
+        """
+        # Load pseudotime CSV
+        pseudotime_df = pd.read_csv(self.pseudotime_csv_path)
+        pseudotime_df["region_id"] = pseudotime_df["region_id"].astype(str)
+        pseudotime_df["cell_id"] = pseudotime_df["cell_id"].astype(str)
 
-    # Heatmap for significance (binary)
-    plt.subplot(1, 2, 2)
-    sns.heatmap(
-        significance_df,
-        annot=True,
-        fmt="d",
-        cmap="viridis",
-        cbar=False,
-        linewidths=0.5,
-        linecolor='gray',
-    )
-    plt.title("Significance Map (0 = Not Significant, 1 = Significant)")
-    plt.xlabel("Biomarkers")
-    plt.ylabel("Cell Types")
+        # Initialize aggregated data
+        aggregated_data = {x_key: []}
+        for y_key in y_keys:
+            aggregated_data[y_key] = []
 
-    plt.tight_layout()
+        # Process each region in the pseudotime data
+        for region_id in pseudotime_df["region_id"].unique():
+            # Load the corresponding raw expression file
+            expression_file_path = os.path.join(self.raw_dir, f"{region_id}.expression.csv")
+            if not os.path.exists(expression_file_path):
+                print(f"No matching data for region '{region_id}'. Skipping.")
+                continue
 
-    # Save or show the plot
-    if output_path:
-        plt.savefig(output_path, dpi=300)
-        print(f"Visualization saved to {output_path}")
-    else:
-        plt.show()
+            expression_df = pd.read_csv(expression_file_path)
+            expression_df.rename(columns={"ACQUISITION_ID": "region_id", "CELL_ID": "cell_id"}, inplace=True)
+            expression_df["region_id"] = expression_df["region_id"].astype(str)
+            expression_df["cell_id"] = expression_df["cell_id"].astype(str)
+
+            # Filter pseudotime data for the current region
+            region_df = pseudotime_df[pseudotime_df["region_id"] == region_id]
+
+            # Merge with pseudotime data
+            merged_df = region_df.merge(expression_df, on=["region_id", "cell_id"], how="inner")
+
+            # Apply x-axis binning by total number of bins
+            if x_transform and x_transform.get("method") == "binning":
+                num_bins = x_transform.get("num_bins", 100)
+                overlap = x_transform.get("overlap", 0.2)
+                merged_df["binned_" + x_key] = self.binning(merged_df, x_key, num_bins, overlap)
+                binned_key = "binned_" + x_key
+            else:
+                binned_key = x_key
+
+            # Apply y-axis transformations
+            for y_key in y_keys:
+                if y_key in merged_df.columns:
+                    y_data = merged_df[y_key]
+                    if y_transform:
+                        for transform_func in y_transform:
+                            y_data = transform_func(y_data)
+                    merged_df[y_key] = y_data
+                else:
+                    print(f"Feature '{y_key}' not found in region '{region_id}'. Skipping.")
+
+            # Aggregate data by bins
+            if binned_key.startswith("binned_"):
+                grouped = merged_df.groupby(binned_key).mean(numeric_only=True).reset_index()
+            else:
+                grouped = merged_df
+
+            # Collect the aggregated results
+            for y_key in y_keys:
+                if y_key in grouped.columns:
+                    aggregated_data[x_key].extend(grouped[binned_key] if binned_key.startswith("binned_") else grouped[x_key])
+                    aggregated_data[y_key].extend(grouped[y_key])
+                else:
+                    aggregated_data[y_key].extend([np.nan] * len(grouped[x_key]))
+
+        # Ensure all arrays in aggregated_data have the same length
+        max_length = max(len(values) for values in aggregated_data.values())
+        for key, values in aggregated_data.items():
+            if len(values) < max_length:
+                aggregated_data[key].extend([np.nan] * (max_length - len(values)))
+
+        # Create a DataFrame
+        aggregated_df = pd.DataFrame(aggregated_data)
+
+        # Plot data
+        plt.figure(figsize=(10, 6))
+        for y_key in y_keys:
+            if y_key in aggregated_df.columns:
+                # Interpolate for smooth plotting
+                x_values = aggregated_df[x_key]
+                y_values = aggregated_df[y_key]
+
+                # Drop NaN values for interpolation
+                valid_indices = ~np.isnan(x_values) & ~np.isnan(y_values)
+                x_values = x_values[valid_indices]
+                y_values = y_values[valid_indices]
+
+                # Use linear interpolation for smooth plotting
+                interpolator = interp1d(x_values, y_values, kind="linear", fill_value="extrapolate")
+                x_smooth = np.linspace(x_values.min(), x_values.max(), 500)  # Increase points for smooth curve
+                y_smooth = interpolator(x_smooth)
+
+                # Plot the trend
+                plt.plot(
+                    x_smooth,
+                    y_smooth,
+                    label=y_key,
+                    alpha=0.8,
+                    linestyle="-",
+                )
+
+        # Configure the plot
+        plt.xlabel(x_key)
+        plt.ylabel("Feature Value")
+        plt.title("Feature Trends vs Pseudotime")
+        plt.legend()
+        plt.grid(True)
+
+        # Save and/or display the plot
+        output_path = os.path.join(output_dir, "features_vs_pseudotime_continuous.png")
+        plt.savefig(output_path)
+        if show_plots:
+            plt.show()
+        print(f"Plot saved to {output_path}")

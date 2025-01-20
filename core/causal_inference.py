@@ -20,15 +20,15 @@ Last modified on [last modification date]
 """
 
 from abc import ABC, abstractmethod
+import os
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import log_loss
 from adapters.space_gm_adapter import get_neighborhood_cell_ids
 from statsmodels.tsa.stattools import grangercausalitytests
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LinearRegression
 from scipy import stats
 
 from core.constant import ALL_CELL_TYPES, ALL_BIOMARKERS, COLUMN_MAPPING
@@ -54,7 +54,28 @@ def load_data(file_path, column_mapping):
     df = apply_column_mapping(df, column_mapping)
     return df
 
-def load_and_prepare_data(dataset, pseudotime_file, raw_dir, included_cell_types=ALL_CELL_TYPES, included_biomarkers=ALL_BIOMARKERS, sparsity_threshold=0.1):
+def load_biomarker_data(region_id, cell_id, raw_dir, biomarker: str):
+    '''
+    Load Cell Level Biomarker Data for a given region and cell.
+    
+    Args:
+        region_id (str): The ID of the region to load data from.
+        cell_id (str): The ID of the cell to load data for.
+        raw_dir (str): Directory containing raw data files.
+        biomarker (str): The specific biomarker whose data is to be loaded.
+    
+    Returns:
+        float: The value of the biomarker for the specified cell, or 0 if not found.
+    '''
+    biomarker_file = os.path.join(raw_dir, f"{region_id}.expression.csv")
+    biomarker_df = pd.read_csv(biomarker_file, index_col='CELL_ID') 
+    if biomarker in biomarker_df.columns:
+        return biomarker_df.loc[cell_id, biomarker]
+    else:
+        return 0 
+
+
+def load_and_prepare_data(dataset, pseudotime_file, raw_dir, included_cell_types=ALL_CELL_TYPES, included_biomarkers=ALL_BIOMARKERS, sparsity_threshold=0.1, target_biomarker='PanCK'):
     """
     Load pseudotime data and compute biomarker matrices for cell neighborhoods.
     Filters out variables with high sparsity or constant values before analysis.
@@ -66,20 +87,25 @@ def load_and_prepare_data(dataset, pseudotime_file, raw_dir, included_cell_types
         included_cell_types (list): Optional list of cell types to include in the analysis.
         included_biomarkers (list): Optional list of biomarkers to include in the analysis.
         sparsity_threshold (float): The threshold for filtering out sparse variables (default is 0.1, meaning >90% zeros).
+        target_biomarker (str): The biomarker to be used as the dependent variable, e.g., 'PanCK'.
 
     Returns:
         CausalInferenceInput: Data structured for causal inference analysis.
     """
+    # Load pseudotime data
     pseudotime_df = load_data(pseudotime_file, COLUMN_MAPPING)
     identifiers = []
     y_variable = []
     x_variables = {}
 
+    # Iterate over the rows of the pseudotime data
     for _, row in pseudotime_df.iterrows():
         region_id = row['REGION_ID']
         cell_id = row['CELL_ID']
         pseudotime = row['PSEUDOTIME']
 
+
+        # Load expression data for the region and cell type
         biomarker_matrix = compute_biomarker_matrix(
             dataset, region_id, cell_id, raw_dir,
             included_cell_types=included_cell_types, 
@@ -87,8 +113,12 @@ def load_and_prepare_data(dataset, pseudotime_file, raw_dir, included_cell_types
         )
 
         identifiers.append([region_id, cell_id])
-        y_variable.append(pseudotime)
 
+        # Use load_biomarker_data to get the Y variable (target biomarker value)
+        y_value = load_biomarker_data(region_id, cell_id, raw_dir, target_biomarker)
+        y_variable.append(y_value)
+
+        # Set X variables (cell type and biomarker combination)
         for biomarker in included_biomarkers:
             for cell_type in included_cell_types:
                 x_key = f"{cell_type}_{biomarker}"
