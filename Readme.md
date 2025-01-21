@@ -55,6 +55,7 @@ TIC/
 ## Working Pipeline:
 ### Step 1: Prepare Space-gm Dataset
 To begin using TIC, you first need to prepare the Space-gm dataset. Space-gm constructs graphs based on cellular micro-environments that will later be used for pseudo-time analysis.
+You can download raw data from: https://zenodo.org/records/13179600
 
 Run the following command to preprocess the data:
 ```bash
