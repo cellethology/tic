@@ -1,12 +1,8 @@
-from typing import Any, Dict, List
 import numpy as np
-from pydantic import BaseModel, Field
 from spacegm.data import CellularGraphDataset
 from spacegm.embeddings_analysis import get_composition_vector
-from spacegm.features import get_feature_names
 
 from adapters.sampler import CustomSubgraphSampler, get_subgraph_by_cell
-from core.causal_inference import ALL_BIOMARKERS
 from core.pseudotime_analysis import CellEmbedding
 
 def initialize_dataset():

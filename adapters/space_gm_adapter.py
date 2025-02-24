@@ -12,7 +12,7 @@ import numpy as np
 import multiprocessing
 
 import pandas as pd
-from spacegm.data import CellularGraphDataset, InfDataLoader
+from spacegm.data import InfDataLoader
 import torch
 from torch.utils.data import RandomSampler
 
