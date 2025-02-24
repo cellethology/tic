@@ -1,4 +1,5 @@
 import os
+import random
 from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_MAPPING_UPMC
 import torch
 import pickle
@@ -224,10 +225,78 @@ class TumorCellGraphDataset(Dataset):
     def __len__(self):
         return len(self.region_ids)
 
+
+class SubgraphSampler(torch.utils.data.IterableDataset):
+    def __init__(self, dataset, k=3, batch_size=32, shuffle=True, drop_last=False):
+        """
+        Args:
+            dataset (TumorCellGraphDataset): The dataset object containing graph data.
+            k (int): The number of hops for the k-hop subgraph.
+            batch_size (int): The number of subgraphs in each batch.
+            shuffle (bool): Whether to shuffle the data before sampling.
+            drop_last (bool): Whether to drop the last incomplete batch (if the data size is not divisible by batch size).
+        """
+        self.dataset = dataset
+        self.k = k
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.drop_last = drop_last
+        self.region_ids = self.dataset.region_ids
+        
+        if self.shuffle:
+            # Shuffle the indices of region_ids
+            shuffled_indices = torch.randperm(len(self.region_ids)).tolist()
+            self.region_ids = [self.region_ids[i] for i in shuffled_indices]  # Reorder region_ids based on shuffled indices
+
+    def __len__(self):
+        """
+        Returns the number of batches in the dataset.
+        """
+        return len(self.region_ids) // self.batch_size
+
+    def __iter__(self):
+        """
+        Iterate over the dataset and return a batch of subgraphs.
+        """
+        for i in range(0, len(self.region_ids), self.batch_size):
+            # Get the region ids for the current batch
+            batch_region_ids = self.region_ids[i:i + self.batch_size]
+            # Randomly select a set of cell_ids as the center nodes for each subgraph
+            batch_cell_ids = self.get_random_cell_ids(batch_region_ids)
+
+            subgraphs = []
+            for region_id, cell_id in zip(batch_region_ids, batch_cell_ids):
+                # Sample a k-hop subgraph for each region and cell_id
+                subgraph = self.sample_subgraph(region_id, cell_id)
+                subgraphs.append(subgraph)
+
+            yield subgraphs
+
+    def get_random_cell_ids(self, batch_region_ids):
+        """
+        Randomly selects a cell_id for each region in the batch to serve as the center node for the subgraph.
+        """
+        batch_cell_ids = []
+        for region_id in batch_region_ids:
+            data = self.dataset.process_graph(region_id)  # Get the graph data for the region
+            cell_ids = list(data.cell_id_to_node_idx.keys())
+            # Randomly choose one cell_id as the center node
+            batch_cell_ids.append(random.choice(cell_ids)) 
+
+        return batch_cell_ids
+
+    def sample_subgraph(self, region_id, cell_id):
+        """
+        Samples a k-hop subgraph for a given region and cell_id.
+        """
+        return self.dataset.get_subgraph(region_id, cell_id, self.k)
+
 if __name__ == '__main__':
-    dataset = TumorCellGraphDataset(dataset_root = "/Users/zhangjiahao/Project/tic/data/example",
-                                    node_features = ['center_coord','biomarker_expression','cell_type']
-                                    )
-    example_data = dataset[0]   
-    subgraph = dataset.get_subgraph('UPMC_c001_v001_r001_reg001', 99, k=3)
-    print(subgraph)
+    dataset = TumorCellGraphDataset(
+        dataset_root="/Users/zhangjiahao/Project/tic/data/example",
+        node_features=['center_coord', 'biomarker_expression', 'cell_type']
+    )
+    sampler = SubgraphSampler(dataset, k=3, batch_size=10, shuffle=True)
+
+    for batch in sampler:
+        print(batch)
