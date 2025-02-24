@@ -1,0 +1,17 @@
+# main.yaml
+trainer:
+  num_steps: 100000
+  batch_size: 8
+  learning_rate: 0.001
+  output_dir: "/Users/zhangjiahao/Project/tic/results/train/${now:%Y-%m-%d_%H-%M-%S}"
+  log_dir: "${trainer.output_dir}/logs"
+  checkpoint_dir: "${trainer.output_dir}/checkpoints"
+
+model:
+  num_layer: 2
+  emb_dim: 256
+  gnn_type: "gin"
+
+dataset:
+  dataset_root: "/Users/zhangjiahao/Project/tic/data/example"
+  node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]

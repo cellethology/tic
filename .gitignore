@@ -5,7 +5,7 @@ data/*
 
 #-------------ignore hydra output----------
 outputs/
-
+results/
 #-------------ignore test files----------
 test/
 
