@@ -1,4 +1,4 @@
-CELL_ID,CLUSTER_LABEL
+CELL_ID,CELL_TYPE
 1,Tumor (Podo+)
 2,Tumor (CD20+)
 3,CD4 T cell

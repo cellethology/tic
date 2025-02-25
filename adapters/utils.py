@@ -19,11 +19,11 @@ def get_cell_ids_by_type(region_id, cell_types, dataset_root):
     df = pd.read_csv(cell_types_file)
     
     # Ensure that the 'CELL_ID' and 'CELL_TYPE' columns are present
-    if 'CELL_ID' not in df.columns or 'CLUSTER_LABEL' not in df.columns:
-        raise ValueError(f"Columns 'CELL_ID' and 'CLUSTER_LABEL' are required in {cell_types_file}")
+    if 'CELL_ID' not in df.columns or 'CELL_TYPE' not in df.columns:
+        raise ValueError(f"Columns 'CELL_ID' and 'CELL_TYPE' are required in {cell_types_file}")
     
     # Filter cell ids based on the desired cell types
-    filtered_df = df[df['CLUSTER_LABEL'].isin(cell_types)]
+    filtered_df = df[df['CELL_TYPE'].isin(cell_types)]
     
     # Return the list of cell_ids that match the specified cell types
     return filtered_df['CELL_ID'].tolist()

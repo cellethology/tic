@@ -1,6 +1,6 @@
 # main.yaml
 trainer:
-  num_steps: 100000
+  num_steps: 1000000
   batch_size: 8
   learning_rate: 0.001
   output_dir: "/Users/zhangjiahao/Project/tic/results/train/${now:%Y-%m-%d_%H-%M-%S}"
@@ -13,5 +13,5 @@ model:
   gnn_type: "gin"
 
 dataset:
-  dataset_root: "/Users/zhangjiahao/Project/tic/data/example"
+  dataset_root: "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
   node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]
