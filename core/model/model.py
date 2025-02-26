@@ -105,8 +105,7 @@ class GNN(torch.nn.Module):
 
 class GNN_pred(torch.nn.Module):
     """
-    GNN-based model for expression prediction task, where the focus is on predicting
-    biomarker expression for the center nodes in subgraphs (node-level prediction).
+    GNN-based model for predicting the center cell's biomarker expression in a subgraph.
     
     Args:
         num_layer (int): Number of GNN layers.
@@ -126,7 +125,7 @@ class GNN_pred(torch.nn.Module):
                  drop_ratio=0,
                  graph_pooling="mean",
                  gnn_type="gin",
-                 num_node_tasks=22):
+                 num_graph_tasks=22):
         super(GNN_pred, self).__init__()
         
         self.gnn = GNN(num_layer=num_layer,
@@ -151,45 +150,50 @@ class GNN_pred(torch.nn.Module):
         else:
             raise ValueError("Invalid graph pooling type.")
 
-        # Node prediction module for biomarker expression
-        self.node_pred_module = nn.Sequential(
+        # Center cell expression prediction module
+        self.center_cell_pred_module = nn.Sequential(
             nn.Linear(emb_dim, emb_dim),
             nn.LeakyReLU(),
             nn.Linear(emb_dim, emb_dim),
             nn.LeakyReLU(),
-            nn.Linear(emb_dim, num_node_tasks)
+            nn.Linear(emb_dim, num_graph_tasks),
+            nn.Sigmoid()  # Sigmoid to constrain output to the range [0, 1]
         )
 
     def forward(self, data):
         """
-        Forward pass for the node-level expression prediction task.
+        Forward pass for the subgraph-level expression prediction task (center cell prediction).
         
         Args:
             data (Data): PyG Data object containing 'x' (node features), 'edge_index', 'edge_attr', etc.
         
         Returns:
-            Tensor: Predicted node-level biomarker expression values.
+            Tensor: Graph-level embedding and center cell expression predictions (ranged between 0 and 1).
         """
+        # Get node embeddings from GNN layers
         node_representation = self.gnn(data)
 
-        # Apply the node prediction module
-        node_pred = self.node_pred_module(node_representation)
-        
-        return node_pred
+        # Apply graph pooling to get the graph-level embedding
+        graph_embedding = self.pool(node_representation, data.batch)  # data.batch holds graph indices
+
+        # Predict the center cell's biomarker expression based on the graph-level embedding
+        center_cell_pred = self.center_cell_pred_module(graph_embedding)
+
+        return graph_embedding, center_cell_pred
 
     def compute_loss(self, predictions, ground_truth, mask):
         """
-        Compute the loss for the masked biomarker prediction task.
+        Compute the loss for the center cell's biomarker expression prediction task.
         
         Args:
-            predictions (Tensor): The predicted biomarker expressions for the nodes.
+            predictions (Tensor): The predicted biomarker expressions for the center cell.
             ground_truth (Tensor): The true biomarker expression values.
             mask (Tensor): Mask indicating which nodes' biomarker expressions are to be predicted.
         
         Returns:
             Tensor: The loss value.
         """
-        # Only calculate loss for the masked nodes
+        # Only calculate loss for the masked nodes (center cell in this case)
         masked_predictions = predictions[mask]
         masked_ground_truth = ground_truth[mask]
         

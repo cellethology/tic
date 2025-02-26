@@ -1,0 +1,13 @@
+inference:
+  checkpoint_path: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/checkpoints/checkpoint_25_4000.pth"  # Path to the model checkpoint
+  batch_size: 64  # Batch size for inference
+  dataset_root: "/Users/zhangjiahao/Project/tic/data/example"  # Path to dataset
+  node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]  # Node features to use
+  output_dir: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/embeddings"  # Directory to store inference results (embeddings and predictions)
+  device: "cpu"  # Device to run inference on, can be "cuda" or "cpu"
+
+model:
+  num_layer: 3
+  emb_dim: 512
+  gnn_type: "gin"
+  drop_ratio: 0.0

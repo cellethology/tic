@@ -1,17 +1,23 @@
 # main.yaml
 trainer:
-  num_steps: 1000000
-  batch_size: 8
+  num_epochs: 1000 
+  num_steps: 10000 # early stop
+  batch_size: 64
   learning_rate: 0.001
   output_dir: "/Users/zhangjiahao/Project/tic/results/train/${now:%Y-%m-%d_%H-%M-%S}"
   log_dir: "${trainer.output_dir}/logs"
   checkpoint_dir: "${trainer.output_dir}/checkpoints"
+  resume_training: False   # Set to true to resume training from the last checkpoint
+  start_epoch: 0  # The epoch from which to resume
+
 
 model:
-  num_layer: 2
-  emb_dim: 256
+  num_layer: 3
+  emb_dim: 512
   gnn_type: "gin"
+  drop_ratio: 0.25
 
 dataset:
-  dataset_root: "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
+  dataset_root: "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
   node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]
+  cell_types: ['Tumor'] # ["Tumor","Tumor (CD15+)","Tumor (CD20+)","Tumor (CD21+)","Tumor (Ki67+)","Tumor (Podo+)"]
