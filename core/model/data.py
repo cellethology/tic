@@ -1,10 +1,11 @@
+import logging
 import os
 import numpy as np
 import pickle
 import pandas as pd
 import torch
 from torch_geometric.data import Dataset, DataLoader
-from torch_geometric.data import Data
+from torch_geometric.data import Data, Batch
 from torch_geometric.utils import k_hop_subgraph
 from core.model.feature import process_biomarker_expression
 from spacegm.utils import BIOMARKERS_UPMC, CELL_TYPE_MAPPING_UPMC
@@ -303,7 +304,11 @@ class TumorCellGraphDataset(Dataset):
 
         if os.path.exists(cache_filename):
             with open(cache_filename, 'rb') as f:
-                return pickle.load(f)
+                
+                subgraph_data = pickle.load(f)
+                if self.transform:
+                    subgraph_data = self.transform(subgraph_data)
+                return subgraph_data
 
         data = self.process_graph(region_id)
         node_idx = data.cell_id_to_node_idx[cell_id]
@@ -325,15 +330,16 @@ class TumorCellGraphDataset(Dataset):
             feature_indices=self.feature_indices,
             region_id=region_id,
             cell_id=cell_id,
+            subset=subset, # node indices in the subgraph, relative to the original graph. 
         )
-
-        # Apply transform if exists
-        if self.transform:
-            subgraph_data = self.transform(subgraph_data)
 
         with open(cache_filename, 'wb') as f:
             pickle.dump(subgraph_data, f)
 
+        # Apply transform if exists
+        if self.transform:
+            subgraph_data = self.transform(subgraph_data)
+            
         return subgraph_data
 
     def __getitem__(self, idx):
@@ -360,11 +366,12 @@ class RegionCellSubgraphDataset(Dataset):
     """
     A custom dataset for fetching subgraphs for each region-cell pair.
     """
-    def __init__(self, dataset, region_cell_ids):
+    def __init__(self, dataset, region_cell_ids, log_file="subgraph_errors.log"):
         """
         Args:
             dataset (TumorCellGraphDataset): The TumorCellGraphDataset instance containing the data.
             region_cell_ids (dict): Dictionary of region IDs and corresponding cell IDs.
+            log_file (str, optional): The file where errors will be logged. Default is 'subgraph_errors.log'.
         """
         self.dataset = dataset
         self.region_cell_ids = region_cell_ids
@@ -372,14 +379,41 @@ class RegionCellSubgraphDataset(Dataset):
         # Generate all region-cell pairs (region_id, cell_id)
         self.region_cell_pairs = [(region_id, cell_id) for region_id, cell_ids in region_cell_ids.items() for cell_id in cell_ids]
 
+        # Set up the logger with the specified log file
+        logging.basicConfig(filename=log_file, level=logging.ERROR)
+        self.logger = logging.getLogger()
+
     def __getitem__(self, idx):
         """
         Retrieves the subgraph for the specified region-cell pair.
         """
         region_id, cell_id = self.region_cell_pairs[idx]
-        subgraph_data = self.dataset.get_subgraph(region_id, cell_id)
+        
+        if region_id not in self.dataset.region_cell_ids:
+            # Log missing region and skip
+            self.logger.error(f"Region ID {region_id} not found in dataset.")
+            return self.get_empty_graph()  # Return a valid empty graph
+        
+        if cell_id not in self.dataset.region_cell_ids[region_id]:
+            # Log missing cell in region and skip
+            self.logger.error(f"Cell ID {cell_id} not found for Region ID {region_id}.")
+            return self.get_empty_graph()  # Return a valid empty graph
 
-        return subgraph_data
+        try:
+            # Try to fetch the subgraph for the given region and cell
+            subgraph_data = self.dataset.get_subgraph(region_id, cell_id)
+            
+            if subgraph_data is None:
+                # If no subgraph is found, log the error and return a valid empty graph
+                self.logger.error(f"Subgraph for Region ID {region_id}, Cell ID {cell_id} is None.")
+                return self.get_empty_graph()  # Return a valid empty graph
+                
+            return subgraph_data
+        
+        except KeyError as e:
+            # Log the error and skip this pair if the region/cell is not found
+            self.logger.error(f"KeyError: Region ID {region_id}, Cell ID {cell_id} not found. Error: {str(e)}")
+            return self.get_empty_graph()  # Return a valid empty graph
 
     def __len__(self):
         """
@@ -387,7 +421,13 @@ class RegionCellSubgraphDataset(Dataset):
         """
         return len(self.region_cell_pairs)
 
-def get_region_cell_subgraph_dataloader(dataset, batch_size=1, shuffle=True):
+    def get_empty_graph(self):
+        """
+        Returns a valid empty graph.
+        """
+        return Data(x=torch.empty(0, 0), edge_index=torch.empty(2, 0), y=torch.empty(0))
+
+def get_region_cell_subgraph_dataloader(dataset, batch_size=1, shuffle=True,log_file="subgraph_errors.log"):
     """
     Returns a DataLoader that iterates through all region-cell pair subgraphs.
     
@@ -399,8 +439,14 @@ def get_region_cell_subgraph_dataloader(dataset, batch_size=1, shuffle=True):
     Returns:
         DataLoader: A DataLoader for iterating over region-cell subgraphs.
     """
-    # Create a dataset for region-cell pairs
-    region_cell_subgraph_dataset = RegionCellSubgraphDataset(dataset, dataset.region_cell_ids)
 
-    # Return the DataLoader
-    return DataLoader(region_cell_subgraph_dataset, batch_size=batch_size, shuffle=shuffle)
+    region_cell_subgraph_dataset = RegionCellSubgraphDataset(dataset, dataset.region_cell_ids,log_file)
+
+    def custom_collate_fn(batch):
+        # Filter out invalid or empty graphs
+        batch = [data for data in batch if data is not None and len(data.x) > 0 and len(data.edge_index) > 0]
+        if len(batch) == 0:
+            return Batch()  
+        return Batch.from_data_list(batch)
+
+    return DataLoader(region_cell_subgraph_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate_fn)

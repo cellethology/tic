@@ -1,3 +1,4 @@
+import csv
 import os
 import random
 import numpy as np
@@ -21,14 +22,14 @@ def set_seed(seed:int = 1120):
     print(f"Random seed {seed} has been set.")
 
 # Function to initialize the dataset and data loader
-def initialize_dataset_and_dataloader(cfg, device):
+def initialize_dataset_and_dataloader(cfg):
     dataset = TumorCellGraphDataset(
         dataset_root=cfg.dataset.dataset_root,
         node_features=cfg.dataset.node_features,
         transform=mask_biomarker_expression,
         cell_types=cfg.dataset.cell_types  
     )
-    dataloader = get_region_cell_subgraph_dataloader(dataset, cfg.trainer.batch_size, shuffle=True)
+    dataloader = get_region_cell_subgraph_dataloader(dataset, cfg.trainer.batch_size, shuffle=True,log_file=os.path.join(cfg.trainer.log_dir, 'dataloader.log'))
     return dataloader
 
 # Function to initialize the model
@@ -69,6 +70,21 @@ def load_checkpoint(model, optimizer, checkpoint_dir, epoch, step_counter, devic
         return checkpoint['step_counter'], checkpoint['total_loss']
     return step_counter, 0
 
+# Function to write region-cell pairs to CSV
+def log_region_cell_pairs(region_id, cell_id, csv_file="region_cell_pairs.csv"):
+    # Ensure the file exists and open it in append mode
+    file_exists = os.path.isfile(csv_file)
+    
+    with open(csv_file, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        
+        # If the file does not exist, write the header first
+        if not file_exists:
+            writer.writerow(["Region ID", "Cell ID"])  # Writing header
+        
+        # Write the region-cell pair
+        writer.writerow([region_id, cell_id])
+
 # Function for training the model
 def train(cfg: DictConfig):
     set_seed()
@@ -77,11 +93,14 @@ def train(cfg: DictConfig):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Training on device: {device}")
 
-    dataloader = initialize_dataset_and_dataloader(cfg, device)
+    dataloader = initialize_dataset_and_dataloader(cfg)
     model = initialize_model(cfg, device)
     optimizer = initialize_optimizer(model, cfg)
     writer = initialize_tensorboard(cfg)
     checkpoint_dir = create_checkpoint_dir(cfg)
+    region_cell_logging_file = os.path.join(cfg.trainer.log_dir, "region_cell_pairs.csv")
+
+    
 
     # 2. Initialize training variables
     step_counter = 0
@@ -98,6 +117,10 @@ def train(cfg: DictConfig):
         
         # Iterate over the DataLoader for each batch
         for batch in tqdm(dataloader, desc=f"Training Epoch: {epoch + 1}", unit="batch"):
+            if batch is None:
+                # Skip the batch if it contains invalid data (None)
+                continue
+
             try:
                 optimizer.zero_grad()  # Zero the gradients for each batch
 
@@ -123,6 +146,9 @@ def train(cfg: DictConfig):
 
                 # Log loss to TensorBoard
                 writer.add_scalar('Loss/train', loss.item(), step_counter)
+
+                for i, (region_id, cell_id) in enumerate(zip(batch.region_id, batch.cell_id)):
+                    log_region_cell_pairs(region_id, int(cell_id), csv_file=region_cell_logging_file)
 
                 # Save checkpoints every 1000 steps
                 if step_counter % 1000 == 0:
@@ -156,9 +182,7 @@ def train(cfg: DictConfig):
 
     # Close TensorBoard writer
     writer.close()
-
-
-@hydra.main(config_path="../config/train", config_name="main")
+@hydra.main(config_path="../../config/train", config_name="main")
 def main(cfg: DictConfig):
     train(cfg)
 
