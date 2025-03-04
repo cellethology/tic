@@ -13,6 +13,8 @@ setup(
         "hydra-core>=1.2.0",
         "umap-learn>=0.5.0",
         "statsmodels>=0.12.2",
+        "semopy",
+        
     ],
     extras_require={
         "submodules": [

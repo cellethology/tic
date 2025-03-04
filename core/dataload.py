@@ -1,7 +1,9 @@
+import os
 import pandas as pd
 
 from core.data.cell import Biomarkers, Cell
-from core.data.microEnvironment import MicroE
+from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
+from core.data.plot import plot_microe_graph, plot_tissue_graph
 from core.data.tissue import Tissue
 
 
@@ -51,7 +53,17 @@ def process_region_to_tissue(raw_dir, region_id):
 if __name__ == "__main__":
     raw_dir = "/Users/zhangjiahao/Project/tic/data/example/voronoi"
     tissue = process_region_to_tissue(raw_dir,region_id="UPMC_c001_v001_r001_reg001")
-    print(tissue.tissue_id)
 
-    microE = MicroE(tissue.cells[0], tissue.cells)
-    print(microE.neighbors)
+    start_time = os.times()
+    print(f"Start time: {start_time}")
+    print(tissue.tissue_id)
+    tissue.to_graph(node_feature_fn=node_feature_fn, edge_index_fn=edge_index_fn, edge_attr_fn=edge_attr_fn)
+    end_time = os.times()
+    print(f"End time: {end_time}")
+    print(f"Total time: {end_time[4] - start_time[4]}")
+    plot_tissue_graph(tissue)
+
+    microE = tissue.get_microenvironment(tissue.cells[0].cell_id, k=3)
+    neiborhood_biomarker_matrix = microE.get_neighborhood_biomarker_matrix()
+    print(neiborhood_biomarker_matrix.shape)
+    plot_microe_graph(microE)
