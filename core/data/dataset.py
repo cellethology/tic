@@ -13,8 +13,11 @@ class MicroEDataset(InMemoryDataset):
     """
     A PyG InMemoryDataset for generating microenvironment-level Data objects for GNN training.
     It builds Tissue objects from raw single-cell CSV data, extracts MicroE subgraphs around each cell,
-    and returns a Data object with associated region id and cell id. The dataset supports filtering the center cell 
-    based on specified cell types.
+    and returns a Data object with associated region_id and cell_id. The dataset supports filtering 
+    the center cell based on specified cell types.
+
+    Additionally, this version saves each raw (untransformed) MicroE graph as a .pt file
+    before any pre_transform is applied.
     """
 
     def __init__(self,
@@ -35,7 +38,6 @@ class MicroEDataset(InMemoryDataset):
         :param microe_neighbor_cutoff: Distance threshold for filtering neighbors.
         :param subset_cells: If True, sample a subset of cells for large tissues.
         :param center_cell_types: List of cell types to consider as center cells for MicroE extraction.
-                                  Defaults to ["Tumor"].
         """
         self.root = root
         self.region_ids = region_ids
@@ -45,7 +47,7 @@ class MicroEDataset(InMemoryDataset):
         self.center_cell_types = center_cell_types
         super().__init__(root, transform, pre_transform)
         
-        # Load the processed data and slices (cached during process())
+        # After processing, load the collated dataset from disk:
         self.data, self.slices = torch.load(self.processed_paths[0])
 
     @property
@@ -67,38 +69,44 @@ class MicroEDataset(InMemoryDataset):
         # List of expected raw CSV file names for each region.
         files = []
         for rid in self.region_ids:
-            files.extend([f"{rid}.cell_data.csv", 
-                          f"{rid}.cell_features.csv",
-                          f"{rid}.cell_types.csv", 
-                          f"{rid}.expression.csv"])
+            files.extend([
+                f"{rid}.cell_data.csv",
+                f"{rid}.cell_features.csv",
+                f"{rid}.cell_types.csv",
+                f"{rid}.expression.csv"
+            ])
         return files
 
     @property
     def processed_file_names(self):
-        # Define a single processed file combining all microenvironment graphs.
+        """
+        Single processed file combining all microenvironment graphs after optional pre_transform.
+        Raw micrographs are saved individually in .pt files, but this is the 'final' dataset file.
+        """
         fname = f"microe_dataset_{len(self.region_ids)}_k{self.k}_cutoff{self.microe_neighbor_cutoff}.pt"
         return [fname]
 
     def download(self):
-        # No auto-download implemented; assume data exists in raw_dir.
+        # No auto-download implemented; assume data is local under raw_dir.
         pass
 
     def process(self):
         """
-        Process raw CSV files to generate microenvironment subgraphs.
-        For each region:
-         1. Load or build the Tissue object.
-         2. Convert Tissue to a graph (if not already done).
-         3. Extract microenvironment (MicroE) subgraphs for each (or a subset of) cell.
-         4. Filter center cells based on the provided cell types.
-         5. Attach region_id and cell_id to each Data object.
-         6. Collate all Data objects into an InMemoryDataset.
+        Process raw CSV files to generate microenvironment subgraphs:
+          1) Load or build the Tissue object
+          2) Convert Tissue to a graph (if not done)
+          3) Extract MicroE subgraphs for each center cell
+          4) Save the raw micro_graph (before pre_transform) to .pt 
+          5) If pre_transform is defined, transform the micro_graph
+          6) Collect all final Data objects into an InMemoryDataset
         """
         data_list = []
 
         for rid in self.region_ids:
             print(f"[MicroEDataset] Processing Tissue {rid} ...")
-            tissue_cache_path = os.path.join(self.processed_dir, f"{rid}.pt")
+
+            # 1) Load or build Tissue
+            tissue_cache_path = os.path.join(self.processed_dir, f"Tissue_{rid}.pt")
             if os.path.exists(tissue_cache_path):
                 tissue = torch.load(tissue_cache_path)
             else:
@@ -106,34 +114,42 @@ class MicroEDataset(InMemoryDataset):
                 tissue.to_graph(node_feature_fn, edge_index_fn, edge_attr_fn)
                 torch.save(tissue, tissue_cache_path)
 
-            cell_list = tissue.cells
-            # Filter cells to only include those with a cell type in center_cell_types.
-            cell_list = [cell for cell in cell_list if cell.cell_type in self.center_cell_types]
+            # Filter center cells by type
+            cell_list = [c for c in tissue.cells if c.cell_type in self.center_cell_types]
 
+            # Optionally subset for large tissues
             if self.subset_cells:
                 cell_list = np.random.choice(cell_list, size=min(100, len(cell_list)), replace=False)
 
             for cell in cell_list:
                 center_id = cell.cell_id
-                micro_env = tissue.get_microenvironment(center_id,
-                                                        k=self.k,
-                                                        microe_neighbor_cutoff=self.microe_neighbor_cutoff)
-                micro_graph = micro_env.graph
-                
-                # Attach region_id and cell_id as attributes to the Data object.
-                micro_graph.region_id = rid
-                micro_graph.cell_id = center_id
+                micro_env = tissue.get_microenvironment(
+                    center_id,
+                    k=self.k,
+                    microe_neighbor_cutoff=self.microe_neighbor_cutoff
+                )
+                micro_graph = micro_env.graph  # A PyG Data object
 
+                # 2) Save the raw micro_graph before any pre_transform
+                raw_micro_graph_path = os.path.join(self.processed_dir, f"MicroE_{rid}_{center_id}.pt")
+                torch.save(micro_graph, raw_micro_graph_path)
+
+                # 3) If pre_transform is provided, apply it now
                 if self.pre_transform is not None:
                     micro_graph = self.pre_transform(micro_graph)
 
+                # Attach region/cell meta info:
+                micro_graph.region_id = rid
+                micro_graph.cell_id = center_id
+
                 data_list.append(micro_graph)
 
+        # Collate all micro_graph data into a single file for the InMemoryDataset
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
 
     def len(self):
-        # Return the number of microenvironment subgraphs in the dataset.
+        # Number of microenvironment subgraphs in the final dataset
         return self.slices['x'].size(0) - 1
 
 if __name__ == "__main__":
@@ -147,5 +163,5 @@ if __name__ == "__main__":
         transform = mask_transform
     )
     print(len(dataset))  # number of MicroE subgraphs
-    subgraph_0 = dataset[1]  # a PyG Data object
+    subgraph_0 = dataset[0]  # a PyG Data object
     print(subgraph_0)

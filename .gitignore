@@ -1,5 +1,6 @@
 data/*
 data/example/subgraph
+data/example/Cache
 !data/
 !data/example
 !data/ReadMe.md
