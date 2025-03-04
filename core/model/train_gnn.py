@@ -1,3 +1,4 @@
+# train_gnn.py
 import csv
 import os
 import random
@@ -6,11 +7,13 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
+from torch_geometric.loader import DataLoader
 import hydra
 from omegaconf import DictConfig
+from core.data.dataset import MicroEDataset
+from core.model.feature import biomarker_pretransform
 from core.model.model import GNN_pred
-from core.model.data import TumorCellGraphDataset, get_region_cell_subgraph_dataloader
-from core.model.transform import mask_biomarker_expression
+from core.model.transform import mask_transform
 import time
 
 def set_seed(seed:int = 1120):
@@ -23,13 +26,28 @@ def set_seed(seed:int = 1120):
 
 # Function to initialize the dataset and data loader
 def initialize_dataset_and_dataloader(cfg):
-    dataset = TumorCellGraphDataset(
-        dataset_root=cfg.dataset.dataset_root,
-        node_features=cfg.dataset.node_features,
-        transform=mask_biomarker_expression,
-        cell_types=cfg.dataset.cell_types  
+    """
+    Initializes the MicroEDataset and wraps it into a PyG DataLoader.
+    """
+    # Initialize the dataset using the configuration parameters.
+    dataset = MicroEDataset(
+        root=cfg.dataset.dataset_root,
+        region_ids=cfg.dataset.region_ids,           # e.g., a list of region IDs
+        k=cfg.dataset.k,                             # k-hop for microenvironment extraction
+        transform=mask_transform,                    # Transform function for masked learning tasks
+        pre_transform=biomarker_pretransform,                          # Optionally, add a pre_transform function
+        microe_neighbor_cutoff=cfg.dataset.microe_neighbor_cutoff,
+        subset_cells=cfg.dataset.subset_cells,       # Whether to sample a subset of cells for large tissues
+        center_cell_types=cfg.dataset.center_cell_types  # e.g., ["Tumor"] or other allowed types
     )
-    dataloader = get_region_cell_subgraph_dataloader(dataset, cfg.trainer.batch_size, shuffle=True,log_file=os.path.join(cfg.trainer.log_dir, 'dataloader.log'))
+    
+    # Create the PyG DataLoader to collate Data objects into a Batch.
+    dataloader = DataLoader(
+        dataset,
+        batch_size=cfg.trainer.batch_size,
+        shuffle=True
+    )
+    
     return dataloader
 
 # Function to initialize the model
@@ -129,8 +147,10 @@ def train(cfg: DictConfig):
 
                 # Forward pass through the model
                 graph_embedding, center_cell_pred = model(batch)
-                mask = batch.mask  # Masked indices for biomarker expression values (where the mask is applied)
-                ground_truth = batch.y  # Unmasked biomarker values (ground truth)
+
+                center_cell_pred = center_cell_pred.flatten() # [B*22]
+                mask = batch.mask  # Masked indices for biomarker expression values (where the mask is applied) [B*22] 
+                ground_truth = batch.y  # Unmasked biomarker values (ground truth) [B*22]
 
                 # Compute loss
                 loss = model.compute_loss(center_cell_pred, ground_truth, mask)

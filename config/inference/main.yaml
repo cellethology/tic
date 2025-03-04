@@ -1,8 +1,6 @@
 inference:
   checkpoint_path: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/checkpoints/checkpoint_25_4000.pth"  # Path to the model checkpoint
   batch_size: 64  # Batch size for inference
-  dataset_root: "/Users/zhangjiahao/Project/tic/data/example"  # Path to dataset
-  node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]  # Node features to use
   output_dir: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/embeddings"  # Directory to store inference results (embeddings and predictions)
   device: "cpu"  # Device to run inference on, can be "cuda" or "cpu"
 
@@ -11,3 +9,11 @@ model:
   emb_dim: 512
   gnn_type: "gin"
   drop_ratio: 0.0
+
+dataset:
+  dataset_root: "/Users/zhangjiahao/Project/tic/data/example" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
+  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"]
+  k: 3 # k-hop for microenvironment extraction
+  microe_neighbor_cutoff: 200.0
+  subset_cells: false
+  center_cell_types: ['Tumor'] # ["Tumor","Tumor (CD15+)","Tumor (CD20+)","Tumor (CD21+)","Tumor (Ki67+)","Tumor (Podo+)"]

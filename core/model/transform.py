@@ -1,6 +1,8 @@
 import torch
 import random
 
+from core.constant import ALL_BIOMARKERS
+
 def mask_biomarker_expression(data, mask_ratio=0.2):
     """
     Mask a portion of the biomarker_expression for a given data object.
@@ -38,4 +40,48 @@ def mask_biomarker_expression(data, mask_ratio=0.2):
     # Store the mask tensor in the data object
     data.mask = mask_tensor
     
+    return data
+
+
+
+# transform function 
+
+def mask_transform(data):
+    """
+    Transform function for masked learning tasks.
+    
+    1. Sets the target `y` by copying the last len(ALL_BIOMARKERS) dimensions
+       of the center cell's (assumed to be the first node) feature vector.
+    2. Applies random masking to the last len(ALL_BIOMARKERS) dimensions of 
+       all nodes' features with a masking ratio uniformly sampled from 0 to 0.2.
+       
+    :param data: A PyG Data object with attribute `x` (node features).
+    :return: The modified Data object with new attributes `x` (masked) and `y` (target).
+    """
+    num_biomarkers = len(ALL_BIOMARKERS)
+    
+    # Ensure node features are a tensor (if not already)
+    if not isinstance(data.x, torch.Tensor):
+        data.x = torch.tensor(data.x, dtype=torch.float)
+    
+    # Copy the last num_biomarkers dimensions of the center cell's features as target y.
+    # In MicroE, center cell is always at index 0
+    data.y = data.x[0, -num_biomarkers:].clone()
+    
+    # Randomly determine a masking ratio between 0 and 0.2
+    mask_ratio = random.uniform(0, 0.2)
+    
+    # For all nodes, apply the masking to the last num_biomarkers features.
+    num_nodes = data.x.size(0)
+    biomarker_features = data.x[:, -num_biomarkers:]
+    
+    # Create a mask tensor where each element is 1 with probability (1 - mask_ratio)
+    # and 0 with probability mask_ratio.
+    mask = (torch.rand(num_nodes, num_biomarkers) > mask_ratio).float()
+    
+    # Apply the mask to the biomarker features
+    data.x[:, -num_biomarkers:] = biomarker_features * mask
+
+    data.mask = mask[0,:].bool() 
+    data.mask = ~data.mask # true for masked biomarkers, false for known biomarkers
     return data

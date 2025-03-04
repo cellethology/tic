@@ -1,22 +1,38 @@
 import os
 import torch
-import numpy as np
-from core.model.model import GNN_pred
-from core.model.data import TumorCellGraphDataset, get_region_cell_subgraph_dataloader
+from torch_geometric.loader import DataLoader
 import hydra
 from omegaconf import DictConfig
 from tqdm import tqdm
 
-from core.data.cell import CellInfo
+from core.data.dataset import MicroEDataset
+from core.model.feature import biomarker_pretransform
+from core.model.model import GNN_pred
 
-
-# Function to initialize the dataset and data loader for inference
-def initialize_dataset_and_dataloader(cfg, device):
-    dataset = TumorCellGraphDataset(
-        dataset_root=cfg.inference.dataset_root,
-        node_features=cfg.inference.node_features,
+# Function to initialize the dataset and data loader
+def initialize_dataset_and_dataloader(cfg):
+    """
+    Initializes the MicroEDataset and wraps it into a PyG DataLoader.
+    """
+    # Initialize the dataset using the configuration parameters.
+    dataset = MicroEDataset(
+        root=cfg.dataset.dataset_root,
+        region_ids=cfg.dataset.region_ids,           # e.g., a list of region IDs
+        k=cfg.dataset.k,                             # k-hop for microenvironment extraction
+        transform=None,                    # Transform function for masked learning tasks
+        pre_transform=biomarker_pretransform,                          # Optionally, add a pre_transform function
+        microe_neighbor_cutoff=cfg.dataset.microe_neighbor_cutoff,
+        subset_cells=cfg.dataset.subset_cells,       # Whether to sample a subset of cells for large tissues
+        center_cell_types=cfg.dataset.center_cell_types  # e.g., ["Tumor"] or other allowed types
     )
-    dataloader = get_region_cell_subgraph_dataloader(dataset, batch_size=1, shuffle=False)
+    
+    # Create the PyG DataLoader to collate Data objects into a Batch.
+    dataloader = DataLoader(
+        dataset,
+        batch_size=cfg.inference.batch_size,
+        shuffle=False
+    )
+    
     return dataloader
 
 # Function to initialize the model for inference
@@ -45,7 +61,7 @@ def run_inference(cfg: DictConfig):
     print(f"Using device: {device}")
 
     # Initialize Dataset, DataLoader, and Model
-    dataloader = initialize_dataset_and_dataloader(cfg, device)
+    dataloader = initialize_dataset_and_dataloader(cfg)
     model = initialize_model(cfg, device)
 
     # Load the trained model
@@ -62,21 +78,6 @@ def run_inference(cfg: DictConfig):
 
             # Forward pass to get graph-level embeddings and center cell predictions
             graph_embeddings, center_cell_pred = model(batch)
-
-            # Iterate over each cell in the batch to store the embedding and other info
-            for i, (region_id, cell_id) in enumerate(zip(batch.region_id, batch.cell_id)):
-                # Create a CellInfo object for the current cell
-                cell_info = CellInfo(
-                    region_id=region_id,
-                    cell_id=int(cell_id),
-                    raw_dir=os.path.join(cfg.inference.dataset_root, "voronoi"),
-                    embedding=graph_embeddings[i].cpu().numpy(),  # Store the embedding
-                    pseudotime=None  # Placeholder for pseudotime (can be updated later if needed)
-                )
-
-                # Save the CellInfo object
-                embedding_filename = os.path.join(cfg.inference.output_dir, f"{region_id}_{cell_id}_embedding.pkl")
-                cell_info.save(embedding_filename)  # Save the CellInfo object
 
     print("Inference complete.")
 

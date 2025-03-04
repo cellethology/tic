@@ -18,6 +18,9 @@ model:
   drop_ratio: 0.25
 
 dataset:
-  dataset_root: "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
-  node_features: ["center_coord", "SIZE", "cell_type", "biomarker_expression"]
-  cell_types: ['Tumor'] # ["Tumor","Tumor (CD15+)","Tumor (CD20+)","Tumor (CD21+)","Tumor (Ki67+)","Tumor (Podo+)"]
+  dataset_root: "/Users/zhangjiahao/Project/tic/data/example" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
+  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"]
+  k: 3 # k-hop for microenvironment extraction
+  microe_neighbor_cutoff: 200.0
+  subset_cells: false
+  center_cell_types: ['Tumor'] # ["Tumor","Tumor (CD15+)","Tumor (CD20+)","Tumor (CD21+)","Tumor (Ki67+)","Tumor (Podo+)"]

@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 from torch_geometric.data import Data
-from torch_geometric.utils import k_hop_subgraph, subgraph
 
 from core.constant import MICROE_NEIGHBOR_CUTOFF
 from core.data.microe import MicroE
@@ -62,21 +61,26 @@ class Tissue:
         """
         Extract the k-hop microenvironment for the specified center cell using the precomputed Tissue graph.
         
-        This function leverages the PyG graph (whose edge_index is based on node indices) to extract a subgraph 
-        corresponding to the microenvironment, including node features, edge indices, and edge attributes.
-        Additionally, it filters the microenvironment so that only cells within a distance threshold 
-        (MICROE_NEIGHBOR_CUTOFF) from the center cell are retained.
+        This function:
+        1. Extracts the k-hop subgraph from the Tissue graph.
+        2. Reorders (reindexes) the subgraph so that the center cell becomes index 0.
+        3. Ensures that the ordering of microE.cells is consistent with the node ordering in microE.graph.
+        4. Filters the subgraph so that only nodes (cells) within microe_neighbor_cutoff from the center cell are retained.
         
         :param center_cell_id: The unique identifier for the center cell.
         :param k: The number of hops (k-hop subgraph) to include in the microenvironment.
         :param microe_neighbor_cutoff: The distance threshold for filtering neighboring cells.
-        :return: A MicroE object representing the microenvironment, with its graph attribute set.
+        :return: A MicroE object representing the microenvironment, with graph, cells, and neighbors updated.
         :raises ValueError: If the Tissue graph is not computed or the center cell is not found.
         """
+        from torch_geometric.utils import k_hop_subgraph, subgraph
+        import numpy as np
+        import torch
+
         if self.graph is None:
             raise ValueError("Tissue graph has not been computed. Please call to_graph() first.")
 
-        # Find the index of the center cell in self.cells (node ordering is 0, 1, 2, ..., N-1)
+        # Find the center cell's index in self.cells.
         center_index = None
         for idx, cell in enumerate(self.cells):
             if cell.cell_id == center_cell_id:
@@ -85,59 +89,80 @@ class Tissue:
         if center_index is None:
             raise ValueError("Center cell not found in Tissue.")
 
-        # Directly extract the k-hop subgraph using the Tissue's edge_index.
+        # Extract the k-hop subgraph using the Tissue's edge_index.
+        # mapping indicates the index of the center cell within the subgraph.
         subset, sub_edge_index, mapping, edge_mask = k_hop_subgraph(
             center_index, num_hops=k, edge_index=self.graph.edge_index,
             relabel_nodes=True, num_nodes=len(self.cells)
         )
 
-        # Extract edge attributes if available using the edge_mask.
+        # Get edge attributes if available.
         if hasattr(self.graph, 'edge_attr') and self.graph.edge_attr is not None:
             sub_edge_attr = self.graph.edge_attr[edge_mask]
         else:
             sub_edge_attr = None
 
-        # Retrieve the list of cells corresponding to the nodes in the subgraph.
+        # Get the list of cells corresponding to the nodes in the subgraph.
         micro_cells = [self.cells[i] for i in subset.tolist()]
-        center_cell = self.get_cell_by_id(center_cell_id)
 
-        # Instantiate a MicroE object using the extracted cells.
+        # Determine the center cell's index in the subgraph from mapping.
+        center_sub_idx = mapping.item() if torch.is_tensor(mapping) else mapping
+
+        # ----- Reindex: Move the center node to index 0 -----
+        n = len(micro_cells)
+        # Create a permutation that moves center_sub_idx to position 0.
+        perm = [center_sub_idx] + list(range(0, center_sub_idx)) + list(range(center_sub_idx + 1, n))
+        perm_tensor = torch.tensor(perm, dtype=torch.long)
+
+        # Reorder node features according to the new permutation.
+        old_x = self.graph.x[subset]  # Original node features of the subgraph.
+        new_x = old_x[perm_tensor]
+
+        # To update edge indices, compute the inverse permutation.
+        inv_perm = torch.argsort(perm_tensor)
+        new_edge_index = inv_perm[sub_edge_index]
+
+        # Edge attributes remain the same.
+        new_edge_attr = sub_edge_attr
+
+        # Reorder the micro_cells list accordingly.
+        micro_cells = [micro_cells[i] for i in perm]
+
+        # Now, the center cell is at index 0.
+        center_cell = micro_cells[0]
+
+        # Build the initial microenvironment graph.
+        micro_graph = Data(x=new_x, edge_index=new_edge_index, edge_attr=new_edge_attr)
+
+        # Instantiate a MicroE object.
         micro_env = MicroE(center_cell, micro_cells, graph=None)
-        micro_env.graph = Data(x=self.graph.x[subset], edge_index=sub_edge_index, edge_attr=sub_edge_attr)
+        micro_env.graph = micro_graph
 
-        # --- Filtering: Retain only cells within MICROE_NEIGHBOR_CUTOFF from the center cell ---
-        # For each cell in the microenvironment, compute its Euclidean distance from the center cell.
+        # ----- Filtering: Retain only cells within the distance threshold -----
         filtered_indices = []
         for i, cell in enumerate(micro_cells):
             dist = np.linalg.norm(np.array(cell.pos) - np.array(center_cell.pos))
             if dist <= microe_neighbor_cutoff:
                 filtered_indices.append(i)
+        # Ensure that the center cell is included.
+        if 0 not in filtered_indices:
+            filtered_indices.insert(0, 0)
 
-        # Ensure the center cell is included.
-        if not any(cell.cell_id == center_cell.cell_id for i, cell in enumerate(micro_cells) if i in filtered_indices):
-            for i, cell in enumerate(micro_cells):
-                if cell.cell_id == center_cell.cell_id:
-                    filtered_indices.append(i)
-                    break
-
-        # Convert the filtered indices to a tensor.
         filtered_indices_tensor = torch.tensor(filtered_indices, dtype=torch.long)
-        # Induce a subgraph from the current microenvironment graph using the filtered node indices.
-        new_edge_index, new_edge_attr = subgraph(
+        filt_edge_index, filt_edge_attr = subgraph(
             filtered_indices_tensor, micro_env.graph.edge_index, micro_env.graph.edge_attr,
             relabel_nodes=True, num_nodes=micro_env.graph.num_nodes
         )
-        new_x = micro_env.graph.x[filtered_indices_tensor]
+        filt_x = micro_env.graph.x[filtered_indices_tensor]
 
-        # Update the MicroE graph with the filtered subgraph.
-        micro_env.graph = Data(x=new_x, edge_index=new_edge_index, edge_attr=new_edge_attr)
-        
-        # Update the cell lists accordingly.
-        filtered_micro_cells = [micro_cells[i] for i in filtered_indices]
-        # Neighbors: all filtered cells except the center cell.
-        filtered_neighbors = [cell for cell in filtered_micro_cells if cell.cell_id != center_cell.cell_id]
-        micro_env.neighbors = filtered_neighbors
-        micro_env.cells = filtered_micro_cells
+        # Update micro_cells to match the filtered nodes.
+        micro_cells = [micro_cells[i] for i in filtered_indices]
+
+        # Update the microenvironment graph.
+        micro_env.graph = Data(x=filt_x, edge_index=filt_edge_index, edge_attr=filt_edge_attr)
+        micro_env.cells = micro_cells
+        # Set neighbors: all filtered cells except the center cell.
+        micro_env.neighbors = [cell for i, cell in enumerate(micro_cells) if i != 0]
 
         return micro_env
 

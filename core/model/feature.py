@@ -1,5 +1,8 @@
 import numpy as np
 from scipy.stats import rankdata
+import torch
+
+from core.constant import ALL_BIOMARKERS
 
 def process_biomarker_expression(biomarker_expr_list, method='rank', lb=0, ub=1):
     """
@@ -41,3 +44,46 @@ def process_biomarker_expression(biomarker_expr_list, method='rank', lb=0, ub=1)
         raise ValueError(f"Expression process method {method} not recognized")
     
     return ranked_expr
+
+def biomarker_pretransform(data, method='rank', lb=0, ub=1):
+    """
+    Pre-transform function to process biomarker expression data in the PyG Data object.
+
+    This function:
+      1. Extracts the last len(ALL_BIOMARKERS) dimensions from each node's feature vector,
+         which correspond to the biomarker expression values.
+      2. Processes these values using the `process_biomarker_expression` function.
+      3. Replaces the original biomarker expression values in data.x with the processed values.
+
+    Args:
+        data (torch_geometric.data.Data): The PyG Data object containing node features in attribute `x`.
+        method (str): The processing method to use (default is 'rank').
+        lb (float): Lower bound for normalization (default is 0).
+        ub (float): Upper bound for normalization (default is 1).
+
+    Returns:
+        torch_geometric.data.Data: The updated Data object with processed biomarker expression values.
+    """
+    num_biomarkers = len(ALL_BIOMARKERS)
+    
+    # Ensure that data.x is a torch.Tensor
+    if not isinstance(data.x, torch.Tensor):
+        data.x = torch.tensor(data.x, dtype=torch.float)
+    
+    # Extract the biomarker expression values (assumed to be in the last num_biomarkers columns)
+    biomarker_values = data.x[:, -num_biomarkers:].cpu().numpy()
+    
+    # Process each node's biomarker expression independently.
+    processed_values = []
+    for row in biomarker_values:
+        processed_row = process_biomarker_expression(row, method=method, lb=lb, ub=ub)
+        processed_values.append(processed_row)
+    
+    processed_values = np.array(processed_values)
+    
+    # Replace the original biomarker expression part with the processed values.
+    new_x = data.x.clone()
+    new_x[:, -num_biomarkers:] = torch.tensor(processed_values, dtype=new_x.dtype, device=new_x.device)
+    data.x = new_x
+    
+    return data
