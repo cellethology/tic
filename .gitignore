@@ -1,15 +1,32 @@
+# Ignore all files in the data/ folder
 data/*
-data/example/subgraph
-data/example/Cache
+
+# Unignore the data/ folder itself
 !data/
-!data/example
+
+# Ignore all files in data/example/...
+data/example/*
+
+# Unignore the Raw folder and its contents under data/example
+!data/example/Raw/
+!data/example/Raw/**
+
+# Unignore additional files/folders that we want to keep
+!data/example/metadata
 !data/ReadMe.md
 
-#-------------ignore hydra output----------
+# ------------- ignore hydra output -------------
 outputs/
 results/
-#-------------ignore test files----------
+
+# ------------- ignore test files -------------
 test/
+release.sh
+
+
+
+
+
 
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files

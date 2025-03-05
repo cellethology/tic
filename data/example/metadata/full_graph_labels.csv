@@ -1,5 +1,0 @@
-REGION_ID,survival_status,survival_day,status,hpvstatus,recurred,isrecurrence
-UPMC_c001_v001_r001_reg001,0,1001,DOC,5,0,0
-UPMC_c001_v001_r001_reg004,0,61,DOD,0,0,0
-UPMC_c001_v001_r001_reg009,1,1194,NED,5,0,0
-UPMC_c001_v001_r001_reg014,1,1194,NED,5,0,0
