@@ -54,7 +54,7 @@ class CustomSubgraphSampler:
         if cell_types == 'all':
             return cells
         else:
-            return cells[cells['CLUSTER_LABEL'].isin(cell_types)]
+            return cells[cells['CELL_TYPE'].isin(cell_types)]
 
     def _sample_cells(self, cells, total_samples, num_regions):
         if cells.empty:

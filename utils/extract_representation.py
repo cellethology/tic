@@ -1,14 +1,23 @@
+# extract_representation.py
 import os
 import torch
 from torch.utils.data import DataLoader
 from core.data.dataset import MicroEDataset, MicroEWrapperDataset, collate_microe  
 
-
+def get_region_ids_from_raw(root: str) -> list:
+    raw_dir = os.path.join(root, "Raw")
+    if not os.path.exists(raw_dir):
+        raise FileNotFoundError(f"Raw data directory not found at {raw_dir}")
+    
+    region_ids = list({fname.split('.')[0] for fname in os.listdir(raw_dir) if fname.endswith(".cell_data.csv")})
+    
+    return region_ids
 # Main script for pseudo time analysis
 def main():
     # Set the root directory and region IDs (modify paths as needed)
-    root = "/Users/zhangjiahao/Project/tic/data/example/"  # Adjust to your data root containing 'Raw' and 'Cache'
-    region_ids = ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"]  # List your region/tissue IDs
+    root = "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"  # Adjust to your data root containing 'Raw' and 'Cache'
+    region_ids = get_region_ids_from_raw(root)
+    print(f"num of Tissue:{len(region_ids)}")
     
     # Create the MicroEDataset.
     dataset = MicroEDataset(

@@ -1,6 +1,6 @@
 general:
   raw_dir: "/Users/zhangjiahao/Project/tic/data/example/voronoi" # directory containing raw data: {cell_data}.csv,{expression}.csv,{cell_features}.csv, {cell_types}.csv
-  output_dir: "/Users/zhangjiahao/Project/tic/data/example/output" # output directory for pseudotime analysis
+  output_dir: "/Users/zhangjiahao/Project/tic/data/example/output2" # output directory for pseudotime analysis
   data_root: "/Users/zhangjiahao/Project/tic/data/example" # root directory for your CellularGraphDataset to initialize, see space-gm tutorial for more details
   random_seed: 42 # random seed for reproducibility
   show_plots: True # whether to show plots or not

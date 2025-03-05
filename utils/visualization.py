@@ -93,7 +93,7 @@ def plot_trends(
 
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        plot_path = os.path.join(output_dir, f"{ylabel.replace(' ', '_')}_trends_vs_pseudotime.png")
+        plot_path = os.path.join(output_dir, f"{ylabel.replace(' ', '_')}_trends_vs_pseudotime.svg")
         plt.savefig(plot_path)
         print(f"Plot saved to {plot_path}")
 
@@ -142,7 +142,7 @@ def plot_umap_vs_cell_types(umap_embeddings, cell_types, cell_type_mapping, outp
     # Save or show the plot
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        plot_path = os.path.join(output_dir, "umap_vs_cell_types.png")
+        plot_path = os.path.join(output_dir, "umap_vs_cell_types.svg")
         plt.savefig(plot_path, bbox_inches="tight")
         print(f"UMAP vs Cell Types plot saved to {plot_path}")
 
@@ -294,7 +294,7 @@ class Transform:
         plt.grid(True)
 
         # Save and/or display the plot
-        output_path = os.path.join(output_dir, "features_vs_pseudotime_continuous.png")
+        output_path = os.path.join(output_dir, "features_vs_pseudotime_continuous.svg")
         plt.savefig(output_path)
         if show_plots:
             plt.show()

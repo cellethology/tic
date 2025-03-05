@@ -114,5 +114,5 @@ class SlingshotMethod(PseudotimeMethod):
         slingshot.plotter.clusters(axes[1], color_mode='pseudotime', s=5)
 
         plt.tight_layout()
-        plt.savefig(f"{output_dir}/pseudotime_visualization.png")
+        plt.savefig(f"{output_dir}/pseudotime_visualization.svg")
         plt.close()

@@ -9,7 +9,7 @@ class Clustering:
         method (str): Clustering method ("kmeans" or "agg").
         n_clusters (int): Number of clusters to form.
     """
-    def __init__(self, method: str = "kmeans", n_clusters: int = 10):
+    def __init__(self, method: str = "kmeans", n_clusters: int = 10, random_state: int = 42):
         """
         Initialize the clustering method.
 
@@ -19,6 +19,7 @@ class Clustering:
         """
         self.method = method
         self.n_clusters = n_clusters
+        self.random_state = random_state
 
     def cluster(self, embeddings: np.ndarray) -> np.ndarray:
         """
@@ -47,7 +48,7 @@ class Clustering:
         Returns:
             np.ndarray: Cluster labels for KMeans.
         """
-        model = KMeans(n_clusters=self.n_clusters)
+        model = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
         return model.fit_predict(embeddings)
 
     def _agg_cluster(self, embeddings: np.ndarray) -> np.ndarray:
