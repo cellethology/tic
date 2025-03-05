@@ -16,7 +16,7 @@ class MicroE:
       - Provide access interfaces for the center cell and neighbors.
       - Convert the microenvironment into a PyG graph using provided feature functions.
     """
-    def __init__(self, center_cell, neighbors, graph=None):
+    def __init__(self, center_cell, neighbors, tissue_id, graph=None):
         """
         Initialize a MicroE object.
         
@@ -27,6 +27,7 @@ class MicroE:
         self.center_cell = center_cell
         self.neighbors = neighbors  # Neighboring cells list
         self.cells = [center_cell] + neighbors  # Complete list (center + neighbors)
+        self.tissue_id = tissue_id
         self.graph = graph  # Precomputed PyG graph (if available)
     
     def get_center_cell(self):

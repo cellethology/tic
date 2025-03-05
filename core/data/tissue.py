@@ -135,7 +135,7 @@ class Tissue:
         micro_graph = Data(x=new_x, edge_index=new_edge_index, edge_attr=new_edge_attr)
 
         # Instantiate a MicroE object.
-        micro_env = MicroE(center_cell, micro_cells, graph=None)
+        micro_env = MicroE(center_cell, micro_cells, tissue_id=self.tissue_id,graph=None)
         micro_env.graph = micro_graph
 
         # ----- Filtering: Retain only cells within the distance threshold -----

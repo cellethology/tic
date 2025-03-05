@@ -6,14 +6,17 @@ These functions handle graph-based visualizations,
 coloring cells by cell type, and distinguishing center cells in MicroE.
 """
 
+from matplotlib import ticker
 import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import torch
 
+from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
 from core.data.microe import MicroE
 from core.data.tissue import Tissue
+from core.model.feature import process_biomarker_expression
 
 ###############################################################################
 #                           Tissue Plotting Functions                         #
@@ -114,8 +117,9 @@ def plot_microe_graph(microe: MicroE, figsize=(6, 6), save_path=None):
     type_to_color = {t: cmap(i) for i, t in enumerate(unique_types)}
 
     # Convert edge_index to NumPy if it's a tensor
-    edge_index = microe.graph.edge_index.cpu().numpy() if isinstance(microe.graph.edge_index, torch.Tensor) \
-                 else microe.graph.edge_index
+    edge_index = (microe.graph.edge_index.cpu().numpy() 
+                  if isinstance(microe.graph.edge_index, torch.Tensor) 
+                  else microe.graph.edge_index)
 
     plt.figure(figsize=figsize)
 
@@ -125,7 +129,7 @@ def plot_microe_graph(microe: MicroE, figsize=(6, 6), save_path=None):
         (x1, y1), (x2, y2) = coords[src], coords[tgt]
         plt.plot([x1, x2], [y1, y2], c='gray', linewidth=0.7, alpha=0.7, zorder=1)
 
-    # Plot neighbors (all cells except the center cell, assumed at index 0)
+    # Plot neighbors (all cells except the center cell)
     if len(coords) > 1:
         neighbor_coords = coords[1:]
         neighbor_colors = [type_to_color.get(ct, 'k') for ct in cell_types[1:]]
@@ -133,7 +137,7 @@ def plot_microe_graph(microe: MicroE, figsize=(6, 6), save_path=None):
                     neighbor_coords[:, 1],
                     s=30, c=neighbor_colors, edgecolor='k', linewidth=0.5, zorder=2)
     
-    # Highlight the center cell (assumed to be at index 0)
+    # Highlight the center cell (MicroE center cell at index 0)
     center_coords = coords[0]
     plt.scatter(center_coords[0], center_coords[1],
                 s=100, c='red', marker='*', edgecolor='k', linewidth=1.2,
@@ -156,11 +160,99 @@ def plot_microe_graph(microe: MicroE, figsize=(6, 6), save_path=None):
     legend_handles = [mpatches.Patch(color=type_to_color[t], label=t) for t in unique_types]
     plt.legend(handles=legend_handles, loc='lower right', title='Cell Types')
     
-    plt.title(f"Graph Plot - MicroE Center {microe.center_cell.cell_id}")
+    title_str = (f"MicroE Graph\n"
+                 f"(Center Cell: {microe.center_cell.cell_id}, Tissue: {microe.tissue_id})")
+    plt.title(title_str, fontsize=12)
     plt.axis('equal')
 
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
+    else:
+        plt.show()
+    
+
+def plot_microe_biomarker_matrix(microe, 
+                                 biomarkers: list = ALL_BIOMARKERS, 
+                                 cell_types: list = ALL_CELL_TYPES,
+                                 norm_method: str = 'rank', 
+                                 lb: float = 0, 
+                                 ub: float = 1,
+                                 cmap: str = 'viridis', 
+                                 figsize: tuple = (8, 6),
+                                 save_path: str = None):
+    """
+    Visualize the neighborhood biomarker matrix of a MicroE as a heatmap.
+    
+    Steps:
+      1) Obtain the N×M matrix via microe.get_neighborhood_biomarker_matrix(), 
+         where N is the number of cell types and M is the number of biomarkers.
+      2) For each row (cell type), apply process_biomarker_expression to 
+         normalize the row's values to [0, 1].
+      3) Label each row with the cell type name plus the neighbor count for that type.
+      4) Show the total neighbor count in the bottom-left corner of the plot.
+      5) Display the full set of biomarkers (columns) and cell types (rows) as axis labels.
+
+    :param microe: A MicroE object with .neighbors and get_neighborhood_biomarker_matrix().
+    :param biomarkers: List of biomarker names. Defaults to ALL_BIOMARKERS.
+    :param cell_types: List of cell types. Defaults to ALL_CELL_TYPES.
+    :param norm_method: Normalization method ('rank', 'linear', 'log', or 'raw'). Default is 'rank'.
+    :param lb: Lower bound for normalization (used by 'linear' or 'log').
+    :param ub: Upper bound for normalization (used by 'linear' or 'log').
+    :param cmap: Matplotlib colormap for the heatmap.
+    :param figsize: Tuple specifying (width, height) of the figure.
+    :param save_path: If provided, saves the figure to this path; otherwise shows it interactively.
+    """
+    # Get the raw biomarker matrix (N x M).
+    raw_matrix = microe.get_neighborhood_biomarker_matrix(biomarkers, cell_types)
+    n_types, n_biomarkers = raw_matrix.shape
+
+    # Normalize each row to [0, 1].
+    processed_rows = []
+    for i in range(n_types):
+        row = raw_matrix[i, :]
+        processed_row = process_biomarker_expression(row, method=norm_method, lb=lb, ub=ub)
+        processed_rows.append(processed_row)
+    processed_matrix = np.array(processed_rows)
+
+    # Build row labels with cell type + neighbor count.
+    row_labels = []
+    for ctype in cell_types:
+        ctype_count = sum(1 for cell in microe.neighbors if cell.cell_type == ctype)
+        row_labels.append(f"{ctype} ({ctype_count})")
+
+    # Create the heatmap.
+    fig, ax = plt.subplots(figsize=figsize)
+    cax = ax.imshow(processed_matrix, interpolation='nearest', cmap=cmap, aspect='auto')
+
+    # X-axis: biomarkers
+    ax.set_xticks(np.arange(n_biomarkers))
+    ax.set_xticklabels(biomarkers, rotation=45, ha='right', fontsize=10)
+
+    # Y-axis: cell types (with counts)
+    ax.set_yticks(np.arange(n_types))
+    ax.set_yticklabels(row_labels, fontsize=10)
+
+    # Show total neighbor count in bottom-left corner
+    num_neighbors = len(microe.neighbors)
+    ax.text(0.01, 0.01, f"Neighbors: {num_neighbors}", transform=ax.transAxes,
+            fontsize=12, verticalalignment='bottom', horizontalalignment='left',
+            bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+
+    # Add colorbar
+    fig.colorbar(cax, ax=ax)
+
+    ax.set_xlabel("Biomarkers", fontsize=12)
+    ax.set_ylabel("Cell Types", fontsize=12)
+
+    title_str = (f"Neighbor Biomarker Matrix\n"
+                 f"(Center Cell: {microe.center_cell.cell_id}, Tissue: {microe.tissue_id})")
+    ax.set_title(title_str, fontsize=12)
+
+    fig.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close(fig)
     else:
         plt.show()

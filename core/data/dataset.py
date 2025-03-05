@@ -5,6 +5,7 @@ from torch_geometric.data import InMemoryDataset
 from typing import List
 
 from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
+from core.data.microe import MicroE
 from core.model.feature import biomarker_pretransform
 from core.model.transform import mask_transform
 from utils.dataload import process_region_to_tissue
@@ -151,6 +152,14 @@ class MicroEDataset(InMemoryDataset):
     def len(self):
         # Number of microenvironment subgraphs in the final dataset
         return self.slices['x'].size(0) - 1
+    
+    def get_microE(self, region_id, cell_id) -> MicroE:
+        raw_micro_graph_path = os.path.join(self.processed_dir, f"MicroE_{region_id}_{cell_id}.pt")
+        return torch.load(raw_micro_graph_path)
+    
+    def get_Tissue(self, region_id):
+        tissue_cache_path = os.path.join(self.processed_dir, f"Tissue_{region_id}.pt")
+        return torch.load(tissue_cache_path)
 
 if __name__ == "__main__":
     dataset = MicroEDataset(
