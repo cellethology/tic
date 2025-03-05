@@ -35,9 +35,9 @@ cd ../..
 pip install -e .
 ```
 ### Dependencies
-All required Python dependencies are listed in requirements.txt. If you need a dedicated environment, you can create one (for example, with conda or virtualenv) and then install dependencies:
+All required Python dependencies are listed in setup.py. If you need a dedicated environment, you can create one (for example, with conda or virtualenv) and then install dependencies:
 ``` 
-conda create -n tic_env python=3.8
+conda create -n tic_env python=3.10
 conda activate tic_env
 pip install -r requirements.txt
 ```

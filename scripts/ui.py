@@ -1,5 +1,4 @@
 import os
-import yaml
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +10,6 @@ import streamlit as st
 from core.constant import ALL_BIOMARKERS
 from utils.extract_representation import extract_center_cells, save_center_cells
 from utils.pseudotime_inference import (run_pseudotime_analysis, 
-                                        load_cells, 
                                         select_subset, 
                                         extract_embeddings, 
                                         attach_reduced_embedding)
@@ -27,6 +25,7 @@ center_cells_file = st.sidebar.text_input("Center Cells File", "center_cells.pt"
 exp_dir = st.sidebar.text_input("Experiment Directory", "results/experiment")
 representation_key = st.sidebar.selectbox("Representation Key", 
                                             options=["raw_expression", "neighbor_composition", "nn_embedding"],
+                                            # options=["raw_expression", "neighbor_composition", "nn_embedding"], Not Support nn_embedding this version
                                             index=0)
 dr_method = st.sidebar.selectbox("Dimensionality Reduction Method", options=["PCA", "UMAP"], index=0)
 n_components = st.sidebar.number_input("Number of Components", min_value=1, value=2, step=1)
