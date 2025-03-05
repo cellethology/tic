@@ -19,3 +19,33 @@ EDGE_TYPES = {
 }
 
 MICROE_NEIGHBOR_CUTOFF = 200 # 200pixels ~ 70 um
+
+
+# Here is an example of how to use the COLUMN_MAPPING and FILE_MAPPING constants:
+FILE_MAPPING = {
+    'coords': "{region_id}.cell_data.csv",
+    'features': "{region_id}.cell_features.csv",
+    'types': "{region_id}.cell_types.csv",
+    'expression': "{region_id}.expression.csv"
+}
+
+# The key is the formal name of the column, and the value is the name used in the your own dataset.
+# Do column mapping for each file type.
+COLUMN_MAPPING = {
+    'coords': {
+        'CELL_ID': 'ID',
+        'X': 'X_COORD',
+        'Y': 'Y_COORD'
+    },
+    'features': {
+        'CELL_ID': 'ID',
+        'SIZE': 'CELL_SIZE'
+    },
+    'types': {
+        'CELL_ID': 'ID',
+        'CELL_TYPE': 'TYPE'
+    },
+    'expression': {
+        'CELL_ID': 'ID'
+    }
+}

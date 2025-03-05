@@ -6,7 +6,6 @@ These functions handle graph-based visualizations,
 coloring cells by cell type, and distinguishing center cells in MicroE.
 """
 
-from matplotlib import ticker
 import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt

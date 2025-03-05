@@ -8,7 +8,7 @@ from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
 from core.data.microe import MicroE
 from core.model.feature import biomarker_pretransform
 from core.model.transform import mask_transform
-from utils.dataload import process_region_to_tissue
+from utils.dataload import process_region_to_tissue_generic
 
 class MicroEDataset(InMemoryDataset):
     """
@@ -111,7 +111,7 @@ class MicroEDataset(InMemoryDataset):
             if os.path.exists(tissue_cache_path):
                 tissue = torch.load(tissue_cache_path)
             else:
-                tissue = process_region_to_tissue(self.raw_dir, rid)
+                tissue = process_region_to_tissue_generic(self.raw_dir, rid)
                 tissue.to_graph(node_feature_fn, edge_index_fn, edge_attr_fn)
                 torch.save(tissue, tissue_cache_path)
 
