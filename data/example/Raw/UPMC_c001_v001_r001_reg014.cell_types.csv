@@ -1,0 +1,6474 @@
+CELL_ID,CELL_TYPE
+66887,Tumor (CD21+)
+66888,Tumor (CD20+)
+66889,Tumor (CD15+)
+66890,CD4 T cell
+66891,B cell
+66892,Granulocyte
+66893,Granulocyte
+66894,Granulocyte
+66895,Tumor (CD21+)
+66896,Tumor (Podo+)
+66897,Tumor (CD21+)
+66898,Tumor (CD21+)
+66899,Tumor (CD20+)
+66900,Tumor (Ki67+)
+66901,Macrophage
+66902,CD4 T cell
+66903,Tumor (CD20+)
+66904,Tumor (CD20+)
+66905,Tumor (CD21+)
+66906,Granulocyte
+66907,Tumor (CD20+)
+66908,Macrophage
+66909,Macrophage
+66910,Granulocyte
+66911,Macrophage
+66912,Tumor (Podo+)
+66913,Granulocyte
+66914,Tumor (CD15+)
+66915,Tumor (Ki67+)
+66916,Tumor (CD20+)
+66917,Tumor (CD20+)
+66918,CD4 T cell
+66919,Tumor
+66920,Tumor (Podo+)
+66921,Tumor (Ki67+)
+66922,Tumor (CD20+)
+66923,Tumor (CD21+)
+66924,Tumor (CD20+)
+66925,CD4 T cell
+66926,Stromal / Fibroblast
+66927,Vessel
+66928,Tumor (CD20+)
+66929,Tumor (Podo+)
+66930,Stromal / Fibroblast
+66931,Tumor (Ki67+)
+66932,Tumor (CD20+)
+66933,Tumor (Podo+)
+66934,Lymph vessel
+66935,Stromal / Fibroblast
+66936,Tumor (Podo+)
+66937,Tumor (CD15+)
+66938,Macrophage
+66939,Stromal / Fibroblast
+66940,Tumor (Ki67+)
+66941,Tumor (Ki67+)
+66942,Tumor (Podo+)
+66943,Granulocyte
+66944,Tumor (CD21+)
+66945,Tumor (CD15+)
+66946,Tumor (Ki67+)
+66947,Tumor (CD21+)
+66948,Tumor (CD21+)
+66949,Tumor (Ki67+)
+66950,Tumor (Podo+)
+66951,Granulocyte
+66952,Tumor (Ki67+)
+66953,Macrophage
+66954,Tumor (Podo+)
+66955,Tumor (Podo+)
+66956,Macrophage
+66957,Tumor (Podo+)
+66958,Macrophage
+66959,Tumor (Podo+)
+66960,Tumor (Podo+)
+66961,Tumor (CD21+)
+66962,Macrophage
+66963,Granulocyte
+66964,Tumor (Podo+)
+66965,Macrophage
+66966,Tumor (CD20+)
+66967,Tumor (CD20+)
+66968,CD4 T cell
+66969,Tumor (Podo+)
+66970,Naive immune cell
+66971,Granulocyte
+66972,Tumor (CD20+)
+66974,Granulocyte
+66975,Tumor (CD15+)
+66977,Naive immune cell
+66978,Tumor (Podo+)
+66979,Macrophage
+66980,Macrophage
+66981,Granulocyte
+66982,Tumor
+66983,CD4 T cell
+66984,Macrophage
+66985,Tumor (CD15+)
+66986,Tumor (CD20+)
+66987,Tumor (CD15+)
+66988,Macrophage
+66989,Tumor (Podo+)
+66990,Granulocyte
+66991,APC
+66992,APC
+66993,Tumor (Podo+)
+66994,Tumor (CD15+)
+66995,Naive immune cell
+66996,Tumor (Podo+)
+66997,Tumor (CD21+)
+66998,Tumor (Podo+)
+66999,Stromal / Fibroblast
+67000,Tumor (CD21+)
+67002,CD4 T cell
+67003,Tumor (CD20+)
+67004,Granulocyte
+67005,Macrophage
+67006,Stromal / Fibroblast
+67007,Tumor (CD20+)
+67008,CD4 T cell
+67009,Stromal / Fibroblast
+67010,Tumor (CD20+)
+67011,Tumor (Podo+)
+67012,Tumor (CD15+)
+67013,CD4 T cell
+67014,Granulocyte
+67015,CD4 T cell
+67016,Tumor (Podo+)
+67017,Macrophage
+67018,Tumor (CD15+)
+67019,Tumor (Ki67+)
+67020,Stromal / Fibroblast
+67021,Tumor
+67022,Granulocyte
+67023,Granulocyte
+67024,CD4 T cell
+67025,Tumor (Ki67+)
+67026,Macrophage
+67027,Macrophage
+67028,Macrophage
+67029,Macrophage
+67030,Tumor (Podo+)
+67031,Stromal / Fibroblast
+67032,Tumor (Ki67+)
+67033,CD4 T cell
+67034,Tumor (Podo+)
+67035,Stromal / Fibroblast
+67036,Tumor (Podo+)
+67037,Naive immune cell
+67038,Naive immune cell
+67039,Tumor
+67040,Tumor (CD21+)
+67041,Tumor (CD21+)
+67042,Tumor (Ki67+)
+67043,Tumor (CD21+)
+67044,Stromal / Fibroblast
+67045,Macrophage
+67046,Tumor (CD20+)
+67047,Tumor (CD21+)
+67048,Granulocyte
+67049,Tumor (Podo+)
+67050,Stromal / Fibroblast
+67051,Granulocyte
+67052,Macrophage
+67053,Tumor (Podo+)
+67054,Tumor (Podo+)
+67055,Tumor (CD20+)
+67056,CD4 T cell
+67057,Macrophage
+67058,Tumor (CD20+)
+67059,Naive immune cell
+67060,Macrophage
+67061,Macrophage
+67062,Tumor (CD21+)
+67063,Tumor
+67064,Tumor (CD15+)
+67065,Tumor (CD15+)
+67066,Stromal / Fibroblast
+67067,CD8 T cell
+67068,Tumor (Ki67+)
+67069,Tumor (CD15+)
+67070,Tumor (Podo+)
+67071,Macrophage
+67072,Tumor (Ki67+)
+67073,Naive immune cell
+67074,Tumor (Podo+)
+67075,Granulocyte
+67076,Macrophage
+67077,Granulocyte
+67078,Macrophage
+67079,Tumor (CD20+)
+67080,Tumor (CD20+)
+67081,Tumor (CD20+)
+67082,Stromal / Fibroblast
+67083,Tumor (Podo+)
+67084,Tumor (Podo+)
+67085,Stromal / Fibroblast
+67086,Tumor (Podo+)
+67087,Tumor
+67088,Stromal / Fibroblast
+67089,Tumor (Podo+)
+67090,Tumor (Ki67+)
+67091,Granulocyte
+67092,Tumor (Podo+)
+67093,Tumor (Podo+)
+67094,CD4 T cell
+67095,Macrophage
+67096,Tumor (CD20+)
+67097,Tumor (CD15+)
+67098,Tumor (Podo+)
+67099,Stromal / Fibroblast
+67100,Granulocyte
+67101,Tumor (CD20+)
+67102,Granulocyte
+67103,Tumor (CD15+)
+67104,Stromal / Fibroblast
+67105,Naive immune cell
+67106,Granulocyte
+67107,Macrophage
+67108,Tumor (CD15+)
+67109,Tumor (CD15+)
+67110,Stromal / Fibroblast
+67111,Granulocyte
+67112,Tumor (CD20+)
+67113,Tumor (Ki67+)
+67114,Tumor
+67115,Tumor (Ki67+)
+67116,Granulocyte
+67117,Macrophage
+67118,Macrophage
+67119,Granulocyte
+67120,Tumor (Ki67+)
+67121,CD4 T cell
+67122,Tumor (Ki67+)
+67123,Vessel
+67124,Granulocyte
+67125,Macrophage
+67126,Vessel
+67127,Granulocyte
+67128,Tumor (CD21+)
+67129,Stromal / Fibroblast
+67130,Macrophage
+67131,Granulocyte
+67132,Macrophage
+67133,Tumor (Podo+)
+67134,Macrophage
+67135,Tumor (Podo+)
+67136,Stromal / Fibroblast
+67137,Macrophage
+67138,Tumor (Ki67+)
+67139,Granulocyte
+67140,Stromal / Fibroblast
+67141,Stromal / Fibroblast
+67142,Granulocyte
+67143,Tumor (Podo+)
+67144,Tumor (Ki67+)
+67145,Tumor (Podo+)
+67146,Tumor (Ki67+)
+67147,Tumor (Podo+)
+67148,CD4 T cell
+67149,Tumor (CD20+)
+67150,Tumor (CD15+)
+67151,Tumor (CD15+)
+67152,Tumor (Podo+)
+67153,CD8 T cell
+67154,Granulocyte
+67155,Tumor (CD15+)
+67156,Tumor (Podo+)
+67157,Tumor (Podo+)
+67158,Tumor (Ki67+)
+67159,Macrophage
+67160,Tumor (Ki67+)
+67161,Vessel
+67162,Tumor (CD15+)
+67163,Macrophage
+67164,Macrophage
+67165,Macrophage
+67166,CD4 T cell
+67167,Naive immune cell
+67168,Vessel
+67169,Lymph vessel
+67170,Tumor (Podo+)
+67171,Tumor (CD15+)
+67172,Tumor (CD20+)
+67173,Macrophage
+67174,Tumor (CD20+)
+67175,Tumor (Podo+)
+67176,Stromal / Fibroblast
+67177,Macrophage
+67178,Macrophage
+67179,Tumor (CD21+)
+67180,Tumor (CD15+)
+67181,Vessel
+67182,Granulocyte
+67183,Lymph vessel
+67184,Naive immune cell
+67185,Granulocyte
+67186,Tumor
+67187,Macrophage
+67188,Tumor (Ki67+)
+67189,CD8 T cell
+67190,Granulocyte
+67191,Stromal / Fibroblast
+67192,Granulocyte
+67194,Macrophage
+67195,Naive immune cell
+67196,Granulocyte
+67197,Tumor (Ki67+)
+67198,Macrophage
+67199,Tumor
+67200,Naive immune cell
+67201,Lymph vessel
+67202,Tumor (Podo+)
+67203,Tumor (Ki67+)
+67204,Tumor (Ki67+)
+67205,Tumor
+67206,Macrophage
+67207,Stromal / Fibroblast
+67208,Granulocyte
+67209,Granulocyte
+67210,Granulocyte
+67211,Granulocyte
+67212,Vessel
+67213,Naive immune cell
+67214,Granulocyte
+67215,Lymph vessel
+67216,Vessel
+67217,Vessel
+67218,Stromal / Fibroblast
+67219,Granulocyte
+67220,Tumor (Ki67+)
+67221,Stromal / Fibroblast
+67222,B cell
+67223,Tumor (CD20+)
+67224,Tumor (Podo+)
+67225,Naive immune cell
+67226,Stromal / Fibroblast
+67227,Macrophage
+67228,Tumor (Ki67+)
+67229,Macrophage
+67230,Vessel
+67231,Tumor (CD15+)
+67232,Stromal / Fibroblast
+67234,CD4 T cell
+67235,Naive immune cell
+67236,Granulocyte
+67237,Tumor (CD20+)
+67238,Tumor
+67239,CD8 T cell
+67240,CD4 T cell
+67241,Vessel
+67242,Tumor (CD21+)
+67243,Stromal / Fibroblast
+67244,Granulocyte
+67245,Macrophage
+67246,Macrophage
+67247,Granulocyte
+67248,Tumor (Podo+)
+67249,CD8 T cell
+67250,Macrophage
+67251,Macrophage
+67252,Granulocyte
+67253,Tumor (Ki67+)
+67254,Macrophage
+67255,CD4 T cell
+67256,Tumor (CD15+)
+67257,CD4 T cell
+67258,Tumor (CD15+)
+67259,Macrophage
+67260,Macrophage
+67261,Macrophage
+67262,Macrophage
+67263,Macrophage
+67264,Macrophage
+67265,Tumor (CD15+)
+67266,Tumor (CD21+)
+67267,Macrophage
+67268,Stromal / Fibroblast
+67269,Tumor (Podo+)
+67270,Granulocyte
+67271,Tumor (Ki67+)
+67272,Granulocyte
+67273,Naive immune cell
+67274,CD8 T cell
+67275,Vessel
+67276,Tumor
+67277,Granulocyte
+67278,Tumor (CD20+)
+67279,Granulocyte
+67280,Macrophage
+67281,Granulocyte
+67282,Tumor (Podo+)
+67283,Macrophage
+67284,Granulocyte
+67285,CD4 T cell
+67286,Vessel
+67287,Tumor (Podo+)
+67288,CD4 T cell
+67289,Stromal / Fibroblast
+67290,APC
+67291,CD4 T cell
+67292,Granulocyte
+67293,APC
+67294,Tumor (Ki67+)
+67295,Tumor (CD21+)
+67296,Tumor (Ki67+)
+67297,Naive immune cell
+67298,Naive immune cell
+67299,Macrophage
+67300,Macrophage
+67301,Macrophage
+67302,Tumor (CD20+)
+67303,Tumor (CD21+)
+67304,Macrophage
+67305,Tumor (CD15+)
+67306,Granulocyte
+67307,Tumor (Ki67+)
+67308,Macrophage
+67309,Granulocyte
+67310,Granulocyte
+67311,Vessel
+67312,Lymph vessel
+67313,Vessel
+67314,Vessel
+67315,Tumor (Ki67+)
+67316,APC
+67317,Stromal / Fibroblast
+67318,Macrophage
+67319,B cell
+67320,CD4 T cell
+67321,B cell
+67322,CD4 T cell
+67323,Granulocyte
+67324,Macrophage
+67325,CD4 T cell
+67326,Granulocyte
+67327,Granulocyte
+67328,Tumor (Ki67+)
+67329,Macrophage
+67330,CD4 T cell
+67331,Stromal / Fibroblast
+67332,Stromal / Fibroblast
+67333,CD4 T cell
+67334,Macrophage
+67335,Granulocyte
+67336,Granulocyte
+67337,Granulocyte
+67338,Macrophage
+67339,Macrophage
+67340,Macrophage
+67341,Tumor (CD15+)
+67342,CD4 T cell
+67343,Tumor
+67344,CD4 T cell
+67345,APC
+67346,Naive immune cell
+67347,Lymph vessel
+67348,Vessel
+67349,Tumor (CD21+)
+67350,Tumor (Ki67+)
+67351,Tumor (Podo+)
+67352,Macrophage
+67353,Macrophage
+67354,CD4 T cell
+67355,Granulocyte
+67356,Macrophage
+67357,Macrophage
+67358,Tumor (CD15+)
+67359,Tumor (CD21+)
+67360,Vessel
+67361,Stromal / Fibroblast
+67362,Granulocyte
+67363,Tumor (Podo+)
+67364,Granulocyte
+67365,Granulocyte
+67366,CD4 T cell
+67367,Tumor
+67368,CD4 T cell
+67369,Naive immune cell
+67370,Macrophage
+67372,CD4 T cell
+67373,Stromal / Fibroblast
+67374,Granulocyte
+67375,CD8 T cell
+67376,Naive immune cell
+67377,Stromal / Fibroblast
+67378,Stromal / Fibroblast
+67379,Vessel
+67380,CD4 T cell
+67381,Macrophage
+67382,Vessel
+67383,Stromal / Fibroblast
+67384,Granulocyte
+67385,Tumor (CD20+)
+67386,Tumor (CD21+)
+67387,Naive immune cell
+67388,CD4 T cell
+67389,Tumor
+67390,Vessel
+67391,CD4 T cell
+67392,CD4 T cell
+67393,Tumor (Podo+)
+67394,B cell
+67395,Macrophage
+67396,Stromal / Fibroblast
+67397,Tumor (CD21+)
+67398,Tumor (CD15+)
+67399,CD4 T cell
+67400,Granulocyte
+67401,Vessel
+67402,Tumor (CD15+)
+67403,Tumor (CD21+)
+67404,Macrophage
+67405,Granulocyte
+67406,Granulocyte
+67407,Macrophage
+67408,Vessel
+67409,Granulocyte
+67410,Lymph vessel
+67411,Vessel
+67412,Tumor (Podo+)
+67413,Macrophage
+67414,Tumor (CD20+)
+67415,Tumor (CD20+)
+67416,Macrophage
+67417,Stromal / Fibroblast
+67418,Macrophage
+67419,APC
+67420,Macrophage
+67421,Naive immune cell
+67422,Macrophage
+67423,Macrophage
+67424,B cell
+67425,CD8 T cell
+67426,Macrophage
+67427,CD4 T cell
+67428,Macrophage
+67429,Tumor (Ki67+)
+67430,Naive immune cell
+67431,Stromal / Fibroblast
+67433,Tumor (Ki67+)
+67434,Macrophage
+67435,APC
+67436,Granulocyte
+67437,Tumor (CD21+)
+67438,CD8 T cell
+67439,CD8 T cell
+67440,Granulocyte
+67441,Macrophage
+67442,Vessel
+67443,Granulocyte
+67444,Tumor (CD21+)
+67445,Vessel
+67446,Stromal / Fibroblast
+67447,CD4 T cell
+67448,Macrophage
+67449,Macrophage
+67450,Macrophage
+67451,Granulocyte
+67452,Macrophage
+67453,Macrophage
+67454,Tumor
+67455,Macrophage
+67456,Macrophage
+67457,Macrophage
+67458,Vessel
+67459,Macrophage
+67460,Granulocyte
+67461,APC
+67462,Macrophage
+67463,Macrophage
+67464,Tumor (Podo+)
+67465,Macrophage
+67466,Granulocyte
+67467,APC
+67468,Granulocyte
+67469,CD4 T cell
+67470,Stromal / Fibroblast
+67471,Macrophage
+67472,Stromal / Fibroblast
+67473,Granulocyte
+67474,Macrophage
+67475,Tumor (CD20+)
+67476,Macrophage
+67477,CD4 T cell
+67478,Vessel
+67479,Macrophage
+67480,Granulocyte
+67481,Macrophage
+67482,CD4 T cell
+67483,Granulocyte
+67484,Granulocyte
+67485,CD8 T cell
+67486,Naive immune cell
+67487,Naive immune cell
+67488,CD4 T cell
+67489,Granulocyte
+67490,Tumor (CD15+)
+67491,Macrophage
+67492,CD4 T cell
+67493,Macrophage
+67494,Tumor (CD20+)
+67495,Macrophage
+67496,Tumor (Podo+)
+67497,Granulocyte
+67498,Macrophage
+67499,Granulocyte
+67500,Macrophage
+67501,Tumor (Podo+)
+67502,CD8 T cell
+67503,CD4 T cell
+67504,Vessel
+67505,Macrophage
+67506,Granulocyte
+67507,Macrophage
+67508,APC
+67509,Vessel
+67510,Tumor (CD20+)
+67511,Tumor (Ki67+)
+67512,Macrophage
+67513,Vessel
+67514,Granulocyte
+67515,CD4 T cell
+67516,Tumor (CD20+)
+67517,Macrophage
+67518,Tumor (Ki67+)
+67519,Tumor (Ki67+)
+67520,APC
+67521,CD4 T cell
+67522,Stromal / Fibroblast
+67523,Granulocyte
+67524,Tumor (CD15+)
+67525,Stromal / Fibroblast
+67526,CD4 T cell
+67527,Granulocyte
+67528,Macrophage
+67529,Granulocyte
+67530,Granulocyte
+67531,Tumor (CD20+)
+67532,Vessel
+67533,Stromal / Fibroblast
+67534,Macrophage
+67535,Macrophage
+67536,Macrophage
+67537,Tumor
+67538,Naive immune cell
+67539,Vessel
+67540,Stromal / Fibroblast
+67541,Granulocyte
+67542,Tumor
+67543,CD4 T cell
+67545,CD8 T cell
+67546,Macrophage
+67547,Granulocyte
+67548,Granulocyte
+67549,Granulocyte
+67550,Tumor (Ki67+)
+67551,Macrophage
+67552,Tumor
+67553,Vessel
+67554,CD4 T cell
+67555,Macrophage
+67556,CD4 T cell
+67557,Macrophage
+67558,Granulocyte
+67559,Macrophage
+67560,Stromal / Fibroblast
+67561,Tumor (CD15+)
+67562,Tumor (Podo+)
+67563,Vessel
+67564,Vessel
+67565,Granulocyte
+67566,Macrophage
+67567,Granulocyte
+67568,Macrophage
+67569,Vessel
+67570,Stromal / Fibroblast
+67571,Granulocyte
+67572,Tumor (Podo+)
+67573,CD4 T cell
+67574,APC
+67575,CD4 T cell
+67576,Naive immune cell
+67577,CD4 T cell
+67578,Macrophage
+67579,Tumor (Ki67+)
+67580,CD4 T cell
+67581,Vessel
+67582,Macrophage
+67583,Tumor (Podo+)
+67584,CD4 T cell
+67585,Granulocyte
+67586,Stromal / Fibroblast
+67587,Tumor (CD20+)
+67588,Macrophage
+67589,Tumor (CD21+)
+67590,Stromal / Fibroblast
+67591,Vessel
+67592,Granulocyte
+67593,Granulocyte
+67594,Tumor (CD20+)
+67595,Macrophage
+67596,Macrophage
+67597,Macrophage
+67598,Tumor (Podo+)
+67599,Tumor (Podo+)
+67600,CD8 T cell
+67601,CD8 T cell
+67602,Macrophage
+67603,CD4 T cell
+67604,Granulocyte
+67605,Vessel
+67606,Tumor (Podo+)
+67607,Tumor (Ki67+)
+67608,Vessel
+67609,Macrophage
+67610,CD8 T cell
+67611,Vessel
+67612,Macrophage
+67613,Tumor (CD21+)
+67614,Stromal / Fibroblast
+67615,CD8 T cell
+67616,Granulocyte
+67617,CD4 T cell
+67618,CD8 T cell
+67619,Tumor (CD15+)
+67620,Tumor (CD20+)
+67621,Tumor (Podo+)
+67622,Granulocyte
+67623,Macrophage
+67624,Tumor (CD21+)
+67625,Stromal / Fibroblast
+67626,Macrophage
+67627,APC
+67628,CD4 T cell
+67629,Vessel
+67630,Vessel
+67631,CD8 T cell
+67632,Tumor
+67633,Tumor (Ki67+)
+67634,Stromal / Fibroblast
+67635,Macrophage
+67636,Granulocyte
+67637,Tumor (Ki67+)
+67638,CD8 T cell
+67639,CD4 T cell
+67640,Vessel
+67641,Naive immune cell
+67642,Macrophage
+67643,CD4 T cell
+67644,CD4 T cell
+67645,Tumor (Podo+)
+67646,Macrophage
+67647,Granulocyte
+67648,Granulocyte
+67649,Granulocyte
+67650,Tumor (Ki67+)
+67651,Tumor (Ki67+)
+67652,Tumor (Podo+)
+67653,Granulocyte
+67654,Tumor (Ki67+)
+67655,Tumor (Ki67+)
+67656,Tumor (Podo+)
+67657,Macrophage
+67658,Naive immune cell
+67659,Macrophage
+67660,Granulocyte
+67661,Granulocyte
+67662,Tumor (CD15+)
+67663,Tumor (CD20+)
+67664,CD4 T cell
+67665,CD4 T cell
+67666,Vessel
+67667,Tumor (CD15+)
+67668,B cell
+67669,B cell
+67670,Tumor (CD21+)
+67671,Tumor (Ki67+)
+67672,Macrophage
+67673,Granulocyte
+67674,Granulocyte
+67675,Tumor (CD20+)
+67676,CD4 T cell
+67677,Tumor (Ki67+)
+67678,Tumor (CD21+)
+67679,Granulocyte
+67680,Tumor (Ki67+)
+67681,Tumor (Ki67+)
+67682,CD4 T cell
+67683,Tumor (Podo+)
+67684,Stromal / Fibroblast
+67685,Granulocyte
+67686,Granulocyte
+67687,Granulocyte
+67688,Lymph vessel
+67689,Tumor (CD20+)
+67690,Tumor (CD15+)
+67691,Granulocyte
+67692,Vessel
+67693,Macrophage
+67694,Tumor (Ki67+)
+67695,Macrophage
+67696,Granulocyte
+67697,Tumor (Ki67+)
+67698,Macrophage
+67699,Granulocyte
+67700,CD4 T cell
+67701,Tumor (Podo+)
+67702,Tumor (CD20+)
+67703,Tumor (CD15+)
+67704,Macrophage
+67705,CD8 T cell
+67706,CD4 T cell
+67707,Tumor (Podo+)
+67708,Granulocyte
+67709,Granulocyte
+67710,Vessel
+67711,Granulocyte
+67712,Granulocyte
+67713,Tumor (CD20+)
+67714,Tumor
+67715,CD8 T cell
+67716,Macrophage
+67717,Vessel
+67718,Macrophage
+67719,Tumor (CD15+)
+67720,Tumor (CD20+)
+67721,Macrophage
+67722,Vessel
+67723,Tumor (Podo+)
+67724,CD8 T cell
+67725,CD4 T cell
+67726,CD8 T cell
+67727,CD4 T cell
+67728,Macrophage
+67729,Granulocyte
+67730,Granulocyte
+67731,Tumor (Ki67+)
+67732,Stromal / Fibroblast
+67733,Granulocyte
+67734,Vessel
+67735,Granulocyte
+67736,Tumor
+67737,Tumor
+67738,Tumor (Podo+)
+67739,Vessel
+67740,Stromal / Fibroblast
+67741,Granulocyte
+67742,Granulocyte
+67743,Tumor (CD20+)
+67744,CD4 T cell
+67745,Stromal / Fibroblast
+67746,Stromal / Fibroblast
+67747,Macrophage
+67748,Granulocyte
+67749,Tumor (Ki67+)
+67750,Tumor (Ki67+)
+67751,Tumor
+67752,Tumor (Podo+)
+67753,Tumor (CD21+)
+67754,Tumor (Ki67+)
+67755,Macrophage
+67756,Tumor (Ki67+)
+67757,Stromal / Fibroblast
+67758,CD4 T cell
+67759,Naive immune cell
+67760,Tumor
+67761,Naive immune cell
+67762,Tumor (Podo+)
+67763,CD8 T cell
+67764,CD4 T cell
+67765,CD4 T cell
+67766,Macrophage
+67767,Tumor (CD20+)
+67768,Macrophage
+67769,Macrophage
+67770,Macrophage
+67771,Granulocyte
+67773,Vessel
+67774,Vessel
+67775,Vessel
+67776,Tumor (CD15+)
+67777,Tumor (CD15+)
+67778,Macrophage
+67779,Vessel
+67780,Naive immune cell
+67781,Macrophage
+67782,Tumor (CD20+)
+67783,Macrophage
+67784,CD8 T cell
+67785,Macrophage
+67786,CD4 T cell
+67787,Granulocyte
+67788,Tumor
+67789,Vessel
+67790,Tumor (CD20+)
+67791,Granulocyte
+67792,Tumor (CD21+)
+67793,CD4 T cell
+67794,Granulocyte
+67795,Tumor
+67796,Tumor (Podo+)
+67797,Tumor (CD20+)
+67798,Macrophage
+67799,Macrophage
+67800,Tumor (CD21+)
+67801,CD8 T cell
+67802,Macrophage
+67803,Tumor (Podo+)
+67804,Naive immune cell
+67805,Tumor (Podo+)
+67806,CD4 T cell
+67807,Macrophage
+67808,Tumor (Podo+)
+67809,Lymph vessel
+67810,Macrophage
+67811,APC
+67812,Granulocyte
+67813,Stromal / Fibroblast
+67814,Tumor (CD21+)
+67815,Tumor (Podo+)
+67816,Macrophage
+67817,Stromal / Fibroblast
+67818,CD8 T cell
+67819,Naive immune cell
+67820,Naive immune cell
+67821,Granulocyte
+67822,Tumor (CD15+)
+67823,APC
+67824,Naive immune cell
+67825,Tumor (CD15+)
+67826,Macrophage
+67827,Naive immune cell
+67828,Granulocyte
+67829,Vessel
+67830,Tumor
+67831,Macrophage
+67832,Tumor (CD15+)
+67833,Tumor (Ki67+)
+67834,CD8 T cell
+67835,CD8 T cell
+67836,CD8 T cell
+67837,Tumor
+67838,Tumor
+67839,Tumor (Podo+)
+67840,Stromal / Fibroblast
+67841,Tumor (Podo+)
+67842,Naive immune cell
+67843,Macrophage
+67844,CD8 T cell
+67845,Stromal / Fibroblast
+67846,Tumor (Ki67+)
+67847,Stromal / Fibroblast
+67848,Stromal / Fibroblast
+67849,Tumor
+67850,Naive immune cell
+67851,Tumor (Podo+)
+67852,Stromal / Fibroblast
+67853,Macrophage
+67854,Tumor (CD20+)
+67855,Macrophage
+67856,Macrophage
+67857,Tumor
+67858,Tumor
+67859,Tumor (Podo+)
+67860,CD4 T cell
+67861,CD4 T cell
+67862,Tumor
+67863,Macrophage
+67864,Granulocyte
+67865,Stromal / Fibroblast
+67866,Tumor (Ki67+)
+67867,Tumor (CD20+)
+67868,Granulocyte
+67869,Tumor (CD20+)
+67870,Tumor (Podo+)
+67871,Stromal / Fibroblast
+67872,Tumor (Podo+)
+67873,CD4 T cell
+67874,Tumor (CD15+)
+67875,B cell
+67876,Vessel
+67877,Tumor (CD21+)
+67878,Tumor (Ki67+)
+67879,Tumor (Ki67+)
+67880,CD8 T cell
+67881,CD4 T cell
+67882,Tumor (Podo+)
+67883,Stromal / Fibroblast
+67884,CD8 T cell
+67885,Macrophage
+67886,Macrophage
+67887,Macrophage
+67888,Stromal / Fibroblast
+67889,Granulocyte
+67890,CD4 T cell
+67891,CD8 T cell
+67892,Stromal / Fibroblast
+67893,Tumor
+67894,APC
+67895,Tumor (CD20+)
+67896,CD4 T cell
+67897,CD4 T cell
+67898,CD4 T cell
+67899,Granulocyte
+67900,Macrophage
+67901,Naive immune cell
+67902,Tumor (Podo+)
+67903,Stromal / Fibroblast
+67904,Granulocyte
+67905,Tumor
+67906,Tumor (Podo+)
+67907,Tumor (Podo+)
+67908,Naive immune cell
+67909,Stromal / Fibroblast
+67910,Tumor (CD21+)
+67911,Macrophage
+67912,Macrophage
+67913,Tumor (Podo+)
+67914,Stromal / Fibroblast
+67915,Granulocyte
+67916,Vessel
+67917,Tumor (CD20+)
+67918,CD8 T cell
+67919,Tumor (CD15+)
+67920,Macrophage
+67921,CD4 T cell
+67922,Granulocyte
+67923,Tumor (CD15+)
+67924,Tumor (CD15+)
+67925,Stromal / Fibroblast
+67926,CD8 T cell
+67927,APC
+67928,Tumor (Podo+)
+67929,Tumor (Podo+)
+67930,CD4 T cell
+67931,Macrophage
+67932,Tumor (Ki67+)
+67933,CD4 T cell
+67934,Tumor (Podo+)
+67935,CD4 T cell
+67936,Vessel
+67937,Tumor (Ki67+)
+67938,Stromal / Fibroblast
+67939,Lymph vessel
+67940,CD4 T cell
+67941,Stromal / Fibroblast
+67942,Stromal / Fibroblast
+67943,Tumor (Podo+)
+67944,CD8 T cell
+67945,CD8 T cell
+67946,Tumor (CD21+)
+67947,Granulocyte
+67948,Stromal / Fibroblast
+67949,Granulocyte
+67950,Granulocyte
+67951,Stromal / Fibroblast
+67952,Tumor (CD21+)
+67953,Tumor (CD20+)
+67954,Tumor (Podo+)
+67955,Tumor
+67956,Tumor (Ki67+)
+67957,Granulocyte
+67958,Macrophage
+67959,Tumor (CD15+)
+67960,Macrophage
+67961,Tumor (Ki67+)
+67962,Tumor (CD20+)
+67963,Tumor (Ki67+)
+67964,CD4 T cell
+67965,CD4 T cell
+67966,Tumor
+67967,CD4 T cell
+67968,CD8 T cell
+67969,Stromal / Fibroblast
+67970,Macrophage
+67971,Tumor (Podo+)
+67972,CD4 T cell
+67973,Granulocyte
+67974,Tumor (CD15+)
+67975,Tumor
+67976,CD8 T cell
+67977,Stromal / Fibroblast
+67978,Tumor (CD20+)
+67979,CD8 T cell
+67980,Tumor (CD21+)
+67981,Vessel
+67982,Tumor (Ki67+)
+67983,Vessel
+67984,Tumor (Podo+)
+67985,Tumor (CD21+)
+67986,Granulocyte
+67987,Macrophage
+67988,Granulocyte
+67990,Stromal / Fibroblast
+67991,Macrophage
+67992,Vessel
+67993,Tumor (Ki67+)
+67994,Macrophage
+67995,CD4 T cell
+67996,Tumor (CD21+)
+67997,Tumor (CD20+)
+67998,Vessel
+67999,Stromal / Fibroblast
+68000,Vessel
+68001,Vessel
+68002,Stromal / Fibroblast
+68003,CD4 T cell
+68004,Stromal / Fibroblast
+68005,Vessel
+68006,Tumor (CD21+)
+68007,APC
+68008,Tumor (Ki67+)
+68009,Vessel
+68010,Stromal / Fibroblast
+68011,Naive immune cell
+68012,Lymph vessel
+68013,Tumor (CD20+)
+68015,Macrophage
+68016,Tumor
+68017,Tumor
+68018,Stromal / Fibroblast
+68019,Macrophage
+68020,CD4 T cell
+68021,CD4 T cell
+68022,Tumor (Podo+)
+68023,Vessel
+68024,Vessel
+68025,Tumor (Ki67+)
+68026,Tumor (Ki67+)
+68027,Stromal / Fibroblast
+68028,Granulocyte
+68029,Granulocyte
+68030,Tumor (CD20+)
+68031,Tumor (Podo+)
+68032,CD4 T cell
+68033,Stromal / Fibroblast
+68034,Vessel
+68035,Naive immune cell
+68036,Tumor
+68037,Stromal / Fibroblast
+68038,Stromal / Fibroblast
+68039,Tumor
+68040,Granulocyte
+68041,Tumor (Ki67+)
+68042,APC
+68043,Tumor
+68044,Stromal / Fibroblast
+68045,Macrophage
+68046,Macrophage
+68047,Tumor (Podo+)
+68048,Stromal / Fibroblast
+68049,CD4 T cell
+68050,Macrophage
+68051,Stromal / Fibroblast
+68052,Stromal / Fibroblast
+68053,Stromal / Fibroblast
+68054,Tumor (CD20+)
+68055,Tumor (Ki67+)
+68056,Stromal / Fibroblast
+68057,Macrophage
+68058,Lymph vessel
+68059,Macrophage
+68060,Stromal / Fibroblast
+68061,Tumor (CD20+)
+68062,Tumor (CD21+)
+68063,Tumor (Ki67+)
+68064,Tumor (CD21+)
+68065,CD4 T cell
+68066,Macrophage
+68067,Stromal / Fibroblast
+68068,Tumor (Ki67+)
+68069,Tumor (Ki67+)
+68070,Tumor (Ki67+)
+68071,Vessel
+68072,Tumor (CD20+)
+68073,Macrophage
+68074,Tumor (Podo+)
+68075,B cell
+68076,Tumor (CD15+)
+68077,Stromal / Fibroblast
+68078,Lymph vessel
+68079,Granulocyte
+68080,Tumor (Ki67+)
+68081,Macrophage
+68082,Vessel
+68083,CD4 T cell
+68084,Stromal / Fibroblast
+68085,CD8 T cell
+68086,Macrophage
+68087,Macrophage
+68088,Tumor (CD21+)
+68089,Vessel
+68090,Tumor (Podo+)
+68091,Tumor (Podo+)
+68092,Tumor
+68093,Macrophage
+68094,Macrophage
+68095,Tumor (Ki67+)
+68096,CD4 T cell
+68097,Vessel
+68098,Tumor (CD21+)
+68099,Stromal / Fibroblast
+68100,Stromal / Fibroblast
+68101,CD4 T cell
+68102,Macrophage
+68103,Macrophage
+68104,Tumor (Ki67+)
+68105,Tumor (Ki67+)
+68106,Vessel
+68107,Tumor (Ki67+)
+68108,Stromal / Fibroblast
+68109,Vessel
+68110,Tumor (CD21+)
+68111,Tumor (Ki67+)
+68112,Tumor (Ki67+)
+68113,Tumor (CD20+)
+68114,Tumor (CD20+)
+68115,CD8 T cell
+68116,Tumor
+68117,Tumor (CD21+)
+68118,Tumor (CD20+)
+68119,Stromal / Fibroblast
+68120,Tumor
+68121,Tumor (Ki67+)
+68122,Tumor (CD21+)
+68123,Stromal / Fibroblast
+68124,Stromal / Fibroblast
+68125,Macrophage
+68126,Macrophage
+68127,Tumor (CD20+)
+68128,Tumor
+68129,Stromal / Fibroblast
+68130,CD4 T cell
+68131,Vessel
+68132,Tumor (CD21+)
+68133,Vessel
+68134,Stromal / Fibroblast
+68135,Tumor
+68136,Tumor (Podo+)
+68137,Tumor (CD20+)
+68138,CD4 T cell
+68140,Tumor (CD21+)
+68141,Tumor (Podo+)
+68142,Tumor
+68143,Vessel
+68144,Tumor
+68145,Vessel
+68146,Tumor (CD20+)
+68147,CD8 T cell
+68148,Vessel
+68149,Tumor
+68150,Tumor (CD21+)
+68151,Tumor (Ki67+)
+68152,Tumor (Ki67+)
+68153,B cell
+68154,Granulocyte
+68155,Macrophage
+68156,Granulocyte
+68157,Tumor (Ki67+)
+68158,Tumor (CD20+)
+68159,Tumor (CD15+)
+68160,Tumor (CD20+)
+68161,Tumor (CD21+)
+68162,Vessel
+68163,Stromal / Fibroblast
+68164,Macrophage
+68165,Vessel
+68166,CD4 T cell
+68167,Macrophage
+68168,CD8 T cell
+68169,CD4 T cell
+68170,Tumor (CD20+)
+68171,Stromal / Fibroblast
+68172,Macrophage
+68173,Macrophage
+68174,Tumor (CD20+)
+68175,Tumor (CD21+)
+68176,Tumor (CD20+)
+68177,Tumor (Ki67+)
+68178,Stromal / Fibroblast
+68179,Vessel
+68180,Stromal / Fibroblast
+68181,Granulocyte
+68182,Tumor (CD21+)
+68183,Tumor (Ki67+)
+68184,Macrophage
+68185,Macrophage
+68186,CD4 T cell
+68187,Macrophage
+68188,Tumor (Podo+)
+68189,Stromal / Fibroblast
+68190,Stromal / Fibroblast
+68191,Vessel
+68192,CD8 T cell
+68193,Macrophage
+68194,Tumor
+68195,CD8 T cell
+68196,Lymph vessel
+68197,Tumor (Ki67+)
+68198,Macrophage
+68199,CD4 T cell
+68200,Tumor (CD21+)
+68201,Tumor
+68202,Stromal / Fibroblast
+68203,Tumor (Podo+)
+68204,Macrophage
+68205,CD8 T cell
+68206,Macrophage
+68207,Macrophage
+68208,Stromal / Fibroblast
+68209,Tumor (CD20+)
+68210,Tumor
+68211,Stromal / Fibroblast
+68212,Tumor (CD20+)
+68213,Tumor (CD15+)
+68214,Stromal / Fibroblast
+68215,Stromal / Fibroblast
+68216,CD8 T cell
+68217,Stromal / Fibroblast
+68218,Stromal / Fibroblast
+68219,CD4 T cell
+68220,Tumor (Podo+)
+68221,Granulocyte
+68222,Stromal / Fibroblast
+68223,CD4 T cell
+68224,Vessel
+68225,Vessel
+68226,Tumor (CD21+)
+68227,Macrophage
+68228,APC
+68229,Granulocyte
+68230,Tumor (Ki67+)
+68231,Tumor (CD20+)
+68232,Tumor (Ki67+)
+68233,Stromal / Fibroblast
+68234,Stromal / Fibroblast
+68235,CD4 T cell
+68236,CD4 T cell
+68237,APC
+68239,Tumor (CD15+)
+68240,CD4 T cell
+68241,Tumor
+68242,Macrophage
+68243,Tumor
+68244,Granulocyte
+68245,Vessel
+68246,Tumor (CD15+)
+68247,APC
+68248,APC
+68249,Tumor (CD20+)
+68250,Stromal / Fibroblast
+68251,Stromal / Fibroblast
+68252,Tumor (Ki67+)
+68253,Tumor (Ki67+)
+68254,Tumor (Podo+)
+68255,CD8 T cell
+68256,Stromal / Fibroblast
+68257,CD4 T cell
+68258,Tumor (Podo+)
+68259,Stromal / Fibroblast
+68260,Macrophage
+68261,Stromal / Fibroblast
+68262,CD4 T cell
+68263,Tumor (CD20+)
+68264,CD4 T cell
+68265,CD4 T cell
+68266,Stromal / Fibroblast
+68267,Macrophage
+68268,Stromal / Fibroblast
+68269,CD4 T cell
+68270,CD4 T cell
+68271,Tumor
+68272,Tumor (CD20+)
+68273,APC
+68274,Granulocyte
+68275,Stromal / Fibroblast
+68276,Granulocyte
+68277,APC
+68278,Tumor (Ki67+)
+68279,Stromal / Fibroblast
+68280,Tumor (Ki67+)
+68281,Tumor
+68283,Macrophage
+68284,Tumor
+68285,Tumor (Ki67+)
+68286,Tumor
+68287,Macrophage
+68288,Stromal / Fibroblast
+68289,Tumor
+68290,Tumor
+68291,Stromal / Fibroblast
+68292,Stromal / Fibroblast
+68293,CD4 T cell
+68294,CD4 T cell
+68295,Tumor
+68296,CD4 T cell
+68297,APC
+68298,Tumor (CD20+)
+68299,Macrophage
+68300,Stromal / Fibroblast
+68301,Tumor (CD20+)
+68302,CD8 T cell
+68303,Macrophage
+68304,CD4 T cell
+68305,Stromal / Fibroblast
+68306,Macrophage
+68307,Stromal / Fibroblast
+68308,Tumor (CD21+)
+68309,Tumor (CD20+)
+68310,CD8 T cell
+68311,Tumor
+68312,Tumor
+68313,Stromal / Fibroblast
+68314,Tumor
+68315,Tumor (CD20+)
+68316,Tumor (CD15+)
+68317,Granulocyte
+68318,Macrophage
+68319,CD8 T cell
+68320,Tumor (Ki67+)
+68321,Stromal / Fibroblast
+68322,Stromal / Fibroblast
+68323,Tumor (CD21+)
+68324,Tumor (Ki67+)
+68325,Macrophage
+68326,Tumor (CD15+)
+68327,Tumor (Ki67+)
+68328,Stromal / Fibroblast
+68329,Stromal / Fibroblast
+68330,Macrophage
+68331,Tumor (Podo+)
+68332,Tumor (Podo+)
+68333,Stromal / Fibroblast
+68334,CD4 T cell
+68335,Tumor (Ki67+)
+68336,Tumor
+68337,Stromal / Fibroblast
+68338,Naive immune cell
+68339,Macrophage
+68340,Macrophage
+68341,Granulocyte
+68342,Stromal / Fibroblast
+68343,Stromal / Fibroblast
+68344,Tumor
+68345,Granulocyte
+68346,Tumor (Ki67+)
+68347,Tumor
+68348,Tumor (CD20+)
+68350,Tumor (Ki67+)
+68351,CD8 T cell
+68352,Stromal / Fibroblast
+68353,Tumor (CD21+)
+68354,Tumor (Podo+)
+68355,CD4 T cell
+68356,Tumor (Podo+)
+68357,Macrophage
+68358,Stromal / Fibroblast
+68359,CD4 T cell
+68360,Tumor (Ki67+)
+68361,Tumor
+68362,Tumor
+68363,CD4 T cell
+68364,CD8 T cell
+68365,Tumor (Podo+)
+68366,Tumor
+68367,Naive immune cell
+68368,Granulocyte
+68369,APC
+68370,Stromal / Fibroblast
+68371,Macrophage
+68372,Tumor (CD15+)
+68373,Macrophage
+68374,CD8 T cell
+68375,CD4 T cell
+68376,CD4 T cell
+68377,Granulocyte
+68378,Tumor (Ki67+)
+68379,Tumor (CD20+)
+68380,Tumor (Ki67+)
+68381,Stromal / Fibroblast
+68382,Stromal / Fibroblast
+68383,Tumor (CD20+)
+68384,Stromal / Fibroblast
+68385,CD8 T cell
+68386,APC
+68387,Tumor
+68388,Tumor
+68389,CD4 T cell
+68390,Macrophage
+68391,Tumor (Podo+)
+68392,Stromal / Fibroblast
+68393,Tumor (CD21+)
+68394,CD4 T cell
+68395,APC
+68396,Stromal / Fibroblast
+68397,Tumor (Ki67+)
+68398,Tumor (Ki67+)
+68399,Tumor (Ki67+)
+68400,Tumor (CD15+)
+68401,Tumor
+68402,Macrophage
+68403,Stromal / Fibroblast
+68404,Macrophage
+68405,CD4 T cell
+68406,Macrophage
+68407,Tumor
+68408,Macrophage
+68409,Tumor (Ki67+)
+68410,APC
+68411,Tumor (CD20+)
+68412,APC
+68413,CD8 T cell
+68414,Macrophage
+68415,Macrophage
+68416,CD4 T cell
+68417,Macrophage
+68418,CD4 T cell
+68420,Tumor (CD20+)
+68421,CD4 T cell
+68422,Stromal / Fibroblast
+68424,Stromal / Fibroblast
+68425,Tumor
+68426,CD8 T cell
+68427,Tumor (CD20+)
+68428,CD4 T cell
+68429,Macrophage
+68430,Tumor
+68431,CD4 T cell
+68432,Vessel
+68433,Tumor (Ki67+)
+68434,CD4 T cell
+68435,Tumor
+68436,Tumor (Ki67+)
+68437,Tumor
+68438,Tumor (CD21+)
+68439,APC
+68440,Tumor
+68441,CD4 T cell
+68442,Tumor (CD21+)
+68443,APC
+68444,Tumor (Ki67+)
+68445,Stromal / Fibroblast
+68446,Macrophage
+68447,Granulocyte
+68448,Vessel
+68449,Tumor (Ki67+)
+68450,Tumor (CD20+)
+68451,Macrophage
+68452,Tumor
+68453,Tumor
+68454,Vessel
+68455,Tumor (CD20+)
+68456,Macrophage
+68457,Macrophage
+68458,Tumor
+68459,Tumor (Ki67+)
+68460,CD4 T cell
+68461,Stromal / Fibroblast
+68462,Tumor
+68463,Macrophage
+68464,Vessel
+68465,CD4 T cell
+68466,Stromal / Fibroblast
+68467,CD8 T cell
+68468,Stromal / Fibroblast
+68469,APC
+68470,Tumor (CD20+)
+68471,Stromal / Fibroblast
+68472,Vessel
+68473,Tumor (CD21+)
+68474,Macrophage
+68475,Tumor
+68476,Granulocyte
+68477,APC
+68478,Macrophage
+68479,Stromal / Fibroblast
+68480,CD8 T cell
+68481,CD4 T cell
+68482,Tumor (CD21+)
+68483,Macrophage
+68484,Vessel
+68485,Vessel
+68486,Stromal / Fibroblast
+68487,CD8 T cell
+68488,Tumor (Ki67+)
+68489,Tumor (Ki67+)
+68490,Granulocyte
+68491,CD4 T cell
+68492,Tumor (CD20+)
+68493,APC
+68494,Macrophage
+68495,Tumor (Ki67+)
+68496,Stromal / Fibroblast
+68497,CD4 T cell
+68498,Tumor
+68499,Vessel
+68500,Tumor (Ki67+)
+68501,Stromal / Fibroblast
+68502,Tumor (CD20+)
+68503,Stromal / Fibroblast
+68504,Tumor
+68505,Tumor (CD15+)
+68506,Tumor
+68507,Macrophage
+68508,Tumor (Podo+)
+68509,Tumor (CD20+)
+68510,Naive immune cell
+68511,Stromal / Fibroblast
+68512,Granulocyte
+68513,Tumor (Podo+)
+68514,Vessel
+68515,CD4 T cell
+68516,Stromal / Fibroblast
+68517,APC
+68518,Vessel
+68519,Tumor
+68520,Tumor (CD21+)
+68521,Stromal / Fibroblast
+68522,Tumor (CD15+)
+68523,CD4 T cell
+68524,CD4 T cell
+68525,Tumor (CD20+)
+68526,Tumor (Podo+)
+68527,CD4 T cell
+68528,Macrophage
+68529,Tumor (Ki67+)
+68530,Tumor (CD20+)
+68531,Tumor (CD20+)
+68532,Tumor (Podo+)
+68533,Tumor (Ki67+)
+68534,Tumor (CD21+)
+68535,Tumor (Podo+)
+68536,Macrophage
+68537,Vessel
+68538,Tumor (Podo+)
+68539,Stromal / Fibroblast
+68540,Tumor (CD20+)
+68541,Tumor
+68542,Vessel
+68543,Granulocyte
+68544,Macrophage
+68545,Macrophage
+68546,Macrophage
+68547,Tumor
+68548,Granulocyte
+68549,Stromal / Fibroblast
+68550,Macrophage
+68551,Macrophage
+68552,Vessel
+68553,Tumor (Ki67+)
+68554,Granulocyte
+68555,CD8 T cell
+68557,Tumor
+68558,Tumor
+68559,Tumor (CD15+)
+68560,Tumor
+68561,Tumor (Podo+)
+68562,Tumor (CD20+)
+68563,APC
+68564,Tumor (CD20+)
+68565,Stromal / Fibroblast
+68566,Stromal / Fibroblast
+68567,Vessel
+68568,Granulocyte
+68569,Tumor
+68570,Vessel
+68571,Tumor (CD20+)
+68572,Tumor (Ki67+)
+68573,Tumor (CD20+)
+68574,Tumor (CD20+)
+68575,Stromal / Fibroblast
+68576,Granulocyte
+68577,Tumor
+68578,Vessel
+68579,Stromal / Fibroblast
+68580,Tumor (Ki67+)
+68581,Vessel
+68582,Tumor (Ki67+)
+68583,Tumor (CD21+)
+68584,Macrophage
+68585,Tumor (CD15+)
+68586,Macrophage
+68587,CD4 T cell
+68588,Granulocyte
+68589,Macrophage
+68590,Tumor
+68591,CD4 T cell
+68592,Tumor (CD20+)
+68593,Macrophage
+68594,CD4 T cell
+68595,Tumor (CD21+)
+68596,Tumor (Podo+)
+68597,Macrophage
+68598,Stromal / Fibroblast
+68599,Vessel
+68600,Tumor (CD20+)
+68602,Lymph vessel
+68603,CD4 T cell
+68604,CD4 T cell
+68605,Stromal / Fibroblast
+68606,Tumor
+68607,Tumor (CD20+)
+68608,Tumor (Ki67+)
+68609,Tumor (CD20+)
+68610,Tumor
+68611,CD8 T cell
+68612,Stromal / Fibroblast
+68613,Tumor
+68614,Tumor (CD21+)
+68615,Macrophage
+68616,Tumor (CD20+)
+68617,Tumor
+68618,Tumor (CD21+)
+68619,CD4 T cell
+68620,APC
+68621,Tumor
+68622,Tumor (Podo+)
+68623,Vessel
+68624,CD4 T cell
+68625,Granulocyte
+68626,Macrophage
+68627,Tumor (Podo+)
+68628,Stromal / Fibroblast
+68629,Macrophage
+68630,Tumor (CD20+)
+68631,Tumor (CD20+)
+68632,Stromal / Fibroblast
+68633,Granulocyte
+68634,Vessel
+68635,Tumor (CD20+)
+68636,Naive immune cell
+68637,Macrophage
+68638,Tumor (Ki67+)
+68639,Macrophage
+68640,Granulocyte
+68641,Macrophage
+68642,Granulocyte
+68643,Stromal / Fibroblast
+68644,Tumor (Ki67+)
+68646,Tumor
+68647,Tumor (Podo+)
+68648,CD8 T cell
+68649,Tumor (CD15+)
+68650,Granulocyte
+68651,Tumor (Ki67+)
+68652,Macrophage
+68653,Tumor (Podo+)
+68654,Tumor (CD20+)
+68655,Macrophage
+68656,Tumor
+68657,Tumor (CD20+)
+68658,Granulocyte
+68659,CD4 T cell
+68660,CD4 T cell
+68661,CD8 T cell
+68662,Stromal / Fibroblast
+68663,Tumor (CD15+)
+68664,Naive immune cell
+68665,Tumor (CD15+)
+68666,CD8 T cell
+68667,Granulocyte
+68668,Macrophage
+68669,Macrophage
+68670,Granulocyte
+68671,Tumor (Ki67+)
+68672,APC
+68673,CD4 T cell
+68674,Macrophage
+68675,Lymph vessel
+68676,CD8 T cell
+68677,Granulocyte
+68678,Tumor
+68679,Stromal / Fibroblast
+68680,Tumor (CD21+)
+68681,Stromal / Fibroblast
+68682,Tumor (Ki67+)
+68683,Macrophage
+68684,Granulocyte
+68685,CD4 T cell
+68686,Granulocyte
+68687,CD4 T cell
+68688,Tumor
+68689,Granulocyte
+68690,CD8 T cell
+68691,CD4 T cell
+68692,Vessel
+68693,Tumor (Ki67+)
+68694,Macrophage
+68695,Tumor
+68696,CD4 T cell
+68697,Tumor
+68698,Tumor
+68699,Tumor (Ki67+)
+68700,Tumor (CD21+)
+68701,Stromal / Fibroblast
+68702,Granulocyte
+68703,Tumor (Podo+)
+68704,Tumor (Ki67+)
+68705,Vessel
+68706,CD4 T cell
+68707,Granulocyte
+68708,Granulocyte
+68709,Tumor (CD21+)
+68710,B cell
+68711,Granulocyte
+68712,Granulocyte
+68713,Granulocyte
+68714,Tumor (CD20+)
+68715,Tumor (Ki67+)
+68716,Tumor (Ki67+)
+68717,Granulocyte
+68718,CD4 T cell
+68719,Tumor
+68720,Vessel
+68721,Naive immune cell
+68722,Vessel
+68723,Tumor
+68724,Tumor (CD20+)
+68725,Granulocyte
+68726,CD8 T cell
+68727,Vessel
+68728,Tumor
+68729,Granulocyte
+68730,Tumor (Podo+)
+68731,CD4 T cell
+68732,Naive immune cell
+68733,CD4 T cell
+68734,Stromal / Fibroblast
+68735,Stromal / Fibroblast
+68736,Stromal / Fibroblast
+68737,CD4 T cell
+68738,Granulocyte
+68739,Macrophage
+68740,Macrophage
+68741,Stromal / Fibroblast
+68742,Tumor (CD15+)
+68743,CD4 T cell
+68744,Macrophage
+68745,Lymph vessel
+68746,Tumor
+68747,Macrophage
+68748,Macrophage
+68749,Tumor (CD21+)
+68750,CD4 T cell
+68751,Macrophage
+68752,Tumor
+68753,CD4 T cell
+68754,Granulocyte
+68755,CD4 T cell
+68756,Stromal / Fibroblast
+68757,Stromal / Fibroblast
+68758,Lymph vessel
+68759,Tumor (Ki67+)
+68760,Tumor (Ki67+)
+68761,Stromal / Fibroblast
+68762,Tumor (Podo+)
+68763,Tumor
+68764,Tumor
+68765,Tumor (CD20+)
+68766,Granulocyte
+68767,Tumor (CD20+)
+68768,Stromal / Fibroblast
+68769,Macrophage
+68770,Granulocyte
+68771,Tumor (CD20+)
+68772,Naive immune cell
+68773,Tumor (Ki67+)
+68774,CD8 T cell
+68775,Vessel
+68776,Tumor (Ki67+)
+68777,Tumor (CD15+)
+68778,Tumor (CD20+)
+68779,Macrophage
+68780,Granulocyte
+68781,Macrophage
+68782,Stromal / Fibroblast
+68783,Tumor
+68784,Tumor
+68785,Tumor (CD20+)
+68786,Tumor
+68787,Stromal / Fibroblast
+68788,Granulocyte
+68789,CD4 T cell
+68790,Macrophage
+68791,Tumor (CD21+)
+68792,CD4 T cell
+68793,CD8 T cell
+68794,CD4 T cell
+68795,Tumor (CD15+)
+68796,Macrophage
+68797,CD4 T cell
+68798,Macrophage
+68799,Tumor (Ki67+)
+68800,Macrophage
+68801,Stromal / Fibroblast
+68802,Macrophage
+68803,Tumor
+68804,Tumor (Podo+)
+68805,Stromal / Fibroblast
+68806,Stromal / Fibroblast
+68807,CD4 T cell
+68808,Macrophage
+68809,Stromal / Fibroblast
+68810,Granulocyte
+68811,Tumor (CD20+)
+68812,CD4 T cell
+68813,Granulocyte
+68814,CD8 T cell
+68815,Tumor (Ki67+)
+68816,Granulocyte
+68817,Macrophage
+68818,Lymph vessel
+68819,Macrophage
+68820,Granulocyte
+68821,Tumor (CD21+)
+68822,Vessel
+68823,Granulocyte
+68824,Tumor (Ki67+)
+68825,CD4 T cell
+68826,CD4 T cell
+68827,Vessel
+68828,Stromal / Fibroblast
+68829,Granulocyte
+68830,CD4 T cell
+68831,CD8 T cell
+68832,Stromal / Fibroblast
+68833,Tumor (Podo+)
+68834,Macrophage
+68835,Macrophage
+68836,CD4 T cell
+68837,Tumor (Ki67+)
+68838,Granulocyte
+68839,Vessel
+68840,Stromal / Fibroblast
+68841,Tumor (CD21+)
+68842,Tumor (CD20+)
+68843,Tumor (CD21+)
+68844,Granulocyte
+68845,Lymph vessel
+68846,Tumor
+68847,Tumor (CD21+)
+68848,APC
+68849,Tumor (CD21+)
+68850,Granulocyte
+68851,Lymph vessel
+68852,CD4 T cell
+68853,Tumor (CD21+)
+68854,Granulocyte
+68855,Granulocyte
+68856,Macrophage
+68857,Stromal / Fibroblast
+68858,Stromal / Fibroblast
+68859,Vessel
+68860,Macrophage
+68861,Macrophage
+68863,APC
+68864,Tumor (CD20+)
+68865,Tumor (Ki67+)
+68866,Granulocyte
+68867,Tumor (Podo+)
+68868,Granulocyte
+68869,Macrophage
+68870,Vessel
+68871,Tumor
+68872,Tumor
+68873,Tumor (CD20+)
+68874,Tumor (CD15+)
+68875,Stromal / Fibroblast
+68876,Tumor
+68877,CD4 T cell
+68878,Granulocyte
+68879,Vessel
+68880,Tumor
+68881,Tumor
+68882,Stromal / Fibroblast
+68884,CD4 T cell
+68885,Stromal / Fibroblast
+68886,Tumor (CD20+)
+68887,Stromal / Fibroblast
+68888,Granulocyte
+68889,Granulocyte
+68890,Granulocyte
+68891,Granulocyte
+68892,Stromal / Fibroblast
+68893,Tumor (CD21+)
+68894,CD4 T cell
+68895,Vessel
+68896,Tumor (Ki67+)
+68897,Tumor (Podo+)
+68898,Stromal / Fibroblast
+68899,Stromal / Fibroblast
+68900,Macrophage
+68901,CD8 T cell
+68902,Stromal / Fibroblast
+68903,Granulocyte
+68904,Stromal / Fibroblast
+68905,Tumor
+68906,Granulocyte
+68907,CD8 T cell
+68908,Stromal / Fibroblast
+68909,Macrophage
+68910,Stromal / Fibroblast
+68911,Tumor (Ki67+)
+68912,Stromal / Fibroblast
+68913,Tumor (Podo+)
+68914,Tumor (CD20+)
+68915,CD4 T cell
+68916,Granulocyte
+68917,CD8 T cell
+68918,Stromal / Fibroblast
+68919,CD4 T cell
+68920,CD4 T cell
+68921,Vessel
+68922,Stromal / Fibroblast
+68923,Stromal / Fibroblast
+68924,Tumor (CD15+)
+68925,Macrophage
+68926,Granulocyte
+68927,CD4 T cell
+68928,Lymph vessel
+68929,Macrophage
+68930,CD4 T cell
+68931,Tumor (Podo+)
+68932,Tumor (Podo+)
+68933,Macrophage
+68934,Vessel
+68935,Tumor (Podo+)
+68936,Granulocyte
+68937,Tumor (Podo+)
+68938,Tumor (CD20+)
+68939,Macrophage
+68940,Tumor (Podo+)
+68941,Macrophage
+68942,Tumor (CD20+)
+68943,Tumor (Podo+)
+68944,Vessel
+68945,Tumor (Ki67+)
+68946,Tumor
+68947,Macrophage
+68948,Tumor (Ki67+)
+68949,Granulocyte
+68950,Lymph vessel
+68951,Stromal / Fibroblast
+68952,Stromal / Fibroblast
+68953,Stromal / Fibroblast
+68954,Tumor (Podo+)
+68955,Stromal / Fibroblast
+68956,Stromal / Fibroblast
+68957,Stromal / Fibroblast
+68958,CD4 T cell
+68959,Granulocyte
+68960,Granulocyte
+68961,Stromal / Fibroblast
+68962,Macrophage
+68963,Granulocyte
+68964,Tumor (Podo+)
+68965,Stromal / Fibroblast
+68966,APC
+68967,Macrophage
+68968,CD4 T cell
+68969,Stromal / Fibroblast
+68970,Macrophage
+68971,Stromal / Fibroblast
+68972,CD8 T cell
+68973,Tumor (Podo+)
+68974,Stromal / Fibroblast
+68975,Macrophage
+68976,Macrophage
+68977,CD4 T cell
+68978,CD4 T cell
+68979,Tumor
+68980,Granulocyte
+68981,Granulocyte
+68982,Stromal / Fibroblast
+68983,Tumor (CD20+)
+68984,CD8 T cell
+68985,Granulocyte
+68986,Macrophage
+68987,Stromal / Fibroblast
+68988,Tumor (Ki67+)
+68989,Stromal / Fibroblast
+68990,CD8 T cell
+68991,Vessel
+68992,Vessel
+68993,Macrophage
+68994,Vessel
+68995,CD4 T cell
+68996,Stromal / Fibroblast
+68997,Tumor (CD20+)
+68998,Stromal / Fibroblast
+68999,Tumor (Podo+)
+69000,Macrophage
+69001,CD4 T cell
+69002,Stromal / Fibroblast
+69003,Tumor (CD21+)
+69004,Tumor (CD21+)
+69005,Tumor (CD20+)
+69006,Granulocyte
+69007,Stromal / Fibroblast
+69008,CD4 T cell
+69009,Vessel
+69010,Tumor (Podo+)
+69011,Tumor (Ki67+)
+69012,Tumor (Podo+)
+69013,Granulocyte
+69014,Tumor
+69015,Macrophage
+69016,Tumor (Podo+)
+69017,Macrophage
+69018,Tumor (Ki67+)
+69019,Tumor
+69020,CD4 T cell
+69021,Tumor (CD21+)
+69022,Tumor
+69023,APC
+69024,Tumor (Ki67+)
+69025,Macrophage
+69026,Tumor
+69027,Tumor
+69028,Macrophage
+69029,Stromal / Fibroblast
+69030,Vessel
+69031,Granulocyte
+69032,CD4 T cell
+69033,Granulocyte
+69034,CD4 T cell
+69035,Granulocyte
+69036,Tumor (Podo+)
+69037,Granulocyte
+69038,Vessel
+69039,Tumor
+69040,Naive immune cell
+69041,Tumor (CD20+)
+69042,Stromal / Fibroblast
+69043,Tumor
+69044,Granulocyte
+69045,Tumor (Podo+)
+69046,Stromal / Fibroblast
+69047,Stromal / Fibroblast
+69048,Tumor (Ki67+)
+69049,Tumor (CD15+)
+69050,Tumor (CD20+)
+69051,Vessel
+69052,Stromal / Fibroblast
+69053,Vessel
+69054,Tumor (CD20+)
+69055,Granulocyte
+69056,Tumor (CD15+)
+69057,Tumor (CD20+)
+69058,Macrophage
+69059,CD4 T cell
+69060,Stromal / Fibroblast
+69061,Tumor (CD20+)
+69062,Granulocyte
+69063,Tumor (Podo+)
+69064,Granulocyte
+69065,Tumor (Podo+)
+69066,Tumor
+69067,Macrophage
+69068,CD4 T cell
+69069,Granulocyte
+69070,Tumor (CD21+)
+69071,CD4 T cell
+69072,Granulocyte
+69074,Macrophage
+69075,CD4 T cell
+69076,Tumor (CD20+)
+69077,Granulocyte
+69078,Tumor (Ki67+)
+69079,Tumor (Ki67+)
+69080,Tumor (CD20+)
+69081,CD4 T cell
+69082,Tumor
+69083,Tumor
+69084,Macrophage
+69085,Macrophage
+69086,Granulocyte
+69087,Tumor (Podo+)
+69088,Tumor
+69089,Tumor (Ki67+)
+69090,APC
+69091,Tumor
+69092,Granulocyte
+69093,Tumor (CD15+)
+69094,Tumor
+69095,Vessel
+69096,Tumor (Podo+)
+69097,Granulocyte
+69098,Tumor (CD21+)
+69099,Stromal / Fibroblast
+69100,Macrophage
+69101,Stromal / Fibroblast
+69102,Vessel
+69103,Tumor (CD15+)
+69104,Tumor (Ki67+)
+69105,Lymph vessel
+69106,Vessel
+69107,Macrophage
+69108,Naive immune cell
+69109,Macrophage
+69110,CD4 T cell
+69111,Granulocyte
+69112,Vessel
+69113,CD4 T cell
+69114,Stromal / Fibroblast
+69115,Tumor (Ki67+)
+69116,Granulocyte
+69117,CD4 T cell
+69118,Tumor (CD21+)
+69119,CD8 T cell
+69120,Tumor
+69121,Stromal / Fibroblast
+69122,Tumor
+69123,Stromal / Fibroblast
+69124,Vessel
+69125,Granulocyte
+69126,Granulocyte
+69127,Granulocyte
+69128,Tumor (Ki67+)
+69129,Vessel
+69130,Macrophage
+69131,Tumor
+69132,Tumor
+69133,Tumor
+69134,Vessel
+69135,CD4 T cell
+69136,Stromal / Fibroblast
+69137,Granulocyte
+69138,CD4 T cell
+69139,Tumor (Podo+)
+69140,CD8 T cell
+69141,Tumor (Ki67+)
+69142,Tumor (CD20+)
+69143,Granulocyte
+69144,APC
+69145,Tumor (CD15+)
+69146,Tumor
+69147,Tumor (CD20+)
+69148,Tumor
+69149,CD4 T cell
+69150,Macrophage
+69151,Granulocyte
+69152,Tumor (CD15+)
+69153,Tumor
+69154,Macrophage
+69155,Tumor (Ki67+)
+69156,Macrophage
+69157,Stromal / Fibroblast
+69158,Granulocyte
+69159,CD4 T cell
+69160,Naive immune cell
+69161,Granulocyte
+69162,Tumor (CD20+)
+69163,Tumor
+69164,Granulocyte
+69165,Granulocyte
+69166,CD8 T cell
+69167,Stromal / Fibroblast
+69168,Granulocyte
+69169,Macrophage
+69170,Stromal / Fibroblast
+69171,Tumor (Podo+)
+69172,Tumor
+69173,CD4 T cell
+69174,Stromal / Fibroblast
+69175,Granulocyte
+69176,Tumor (CD20+)
+69177,CD4 T cell
+69178,Macrophage
+69179,CD4 T cell
+69180,Stromal / Fibroblast
+69181,CD4 T cell
+69182,CD4 T cell
+69183,APC
+69184,Granulocyte
+69185,Tumor (Podo+)
+69186,CD4 T cell
+69187,CD4 T cell
+69188,Tumor (CD21+)
+69189,Tumor (Podo+)
+69190,Macrophage
+69191,Naive immune cell
+69192,Tumor (Ki67+)
+69193,Tumor (CD20+)
+69194,Tumor (CD20+)
+69195,Tumor (Ki67+)
+69196,CD4 T cell
+69197,Stromal / Fibroblast
+69198,Tumor
+69199,Granulocyte
+69200,Granulocyte
+69201,CD4 T cell
+69202,Tumor (Podo+)
+69203,CD4 T cell
+69204,Macrophage
+69205,CD8 T cell
+69206,Tumor
+69207,APC
+69208,Tumor (Podo+)
+69209,Granulocyte
+69210,CD4 T cell
+69211,Macrophage
+69212,Granulocyte
+69213,Vessel
+69214,CD4 T cell
+69215,Tumor (Podo+)
+69216,Tumor (CD20+)
+69217,Stromal / Fibroblast
+69218,Granulocyte
+69219,Stromal / Fibroblast
+69220,CD4 T cell
+69221,Naive immune cell
+69222,Granulocyte
+69223,Macrophage
+69224,Stromal / Fibroblast
+69225,Tumor (CD20+)
+69226,Granulocyte
+69227,CD8 T cell
+69228,Macrophage
+69229,CD4 T cell
+69230,CD8 T cell
+69231,Tumor (Podo+)
+69232,Stromal / Fibroblast
+69233,Tumor (CD20+)
+69234,Granulocyte
+69235,Granulocyte
+69236,CD4 T cell
+69237,CD4 T cell
+69238,Tumor (CD20+)
+69239,Tumor (Ki67+)
+69240,Granulocyte
+69241,Stromal / Fibroblast
+69242,Macrophage
+69243,Tumor
+69244,CD4 T cell
+69245,Granulocyte
+69246,Tumor (Podo+)
+69247,Granulocyte
+69248,Tumor
+69249,CD4 T cell
+69250,Tumor (CD15+)
+69251,Stromal / Fibroblast
+69252,Tumor (CD21+)
+69253,Tumor (CD15+)
+69254,Tumor
+69255,Tumor
+69256,Tumor (Ki67+)
+69257,Tumor
+69258,CD4 T cell
+69259,Tumor
+69260,Tumor (CD21+)
+69261,APC
+69262,APC
+69263,Stromal / Fibroblast
+69264,Stromal / Fibroblast
+69265,Tumor (CD15+)
+69266,CD4 T cell
+69267,Vessel
+69268,CD4 T cell
+69269,Tumor (Ki67+)
+69270,Granulocyte
+69271,Tumor (CD20+)
+69272,Tumor (Ki67+)
+69273,Tumor (Podo+)
+69274,Stromal / Fibroblast
+69275,Tumor (Ki67+)
+69276,CD4 T cell
+69277,CD8 T cell
+69279,Granulocyte
+69280,Tumor
+69281,Tumor (CD15+)
+69282,Stromal / Fibroblast
+69283,Stromal / Fibroblast
+69284,Stromal / Fibroblast
+69285,Stromal / Fibroblast
+69286,Tumor (CD21+)
+69287,Tumor
+69288,Macrophage
+69289,Naive immune cell
+69290,Tumor (Podo+)
+69291,CD4 T cell
+69292,CD8 T cell
+69293,Granulocyte
+69294,Granulocyte
+69295,Granulocyte
+69296,Vessel
+69297,Tumor (CD20+)
+69298,Tumor (CD20+)
+69299,Macrophage
+69300,Macrophage
+69301,Stromal / Fibroblast
+69302,Vessel
+69303,CD4 T cell
+69304,Tumor (CD20+)
+69305,CD4 T cell
+69306,CD4 T cell
+69307,Tumor (CD20+)
+69308,Naive immune cell
+69309,Tumor
+69310,CD4 T cell
+69311,Tumor (CD20+)
+69312,APC
+69313,Granulocyte
+69314,Tumor (CD20+)
+69315,Granulocyte
+69316,Granulocyte
+69317,Granulocyte
+69318,Macrophage
+69319,Granulocyte
+69320,Lymph vessel
+69321,Macrophage
+69322,Tumor
+69323,Tumor
+69324,Macrophage
+69325,Naive immune cell
+69326,Tumor (Ki67+)
+69327,Granulocyte
+69328,Tumor (Podo+)
+69329,Tumor (Podo+)
+69330,Tumor (CD20+)
+69331,Macrophage
+69332,Tumor
+69333,Stromal / Fibroblast
+69334,Tumor (Podo+)
+69335,Tumor (CD20+)
+69336,APC
+69337,Tumor (Podo+)
+69338,CD4 T cell
+69339,Tumor (Podo+)
+69340,CD8 T cell
+69341,Tumor (CD20+)
+69342,Granulocyte
+69343,Naive immune cell
+69344,Tumor (CD20+)
+69345,Tumor (CD15+)
+69346,Stromal / Fibroblast
+69347,Stromal / Fibroblast
+69348,Granulocyte
+69349,Macrophage
+69350,CD4 T cell
+69351,Granulocyte
+69352,CD4 T cell
+69353,Granulocyte
+69354,Granulocyte
+69355,Tumor (CD20+)
+69356,CD4 T cell
+69357,APC
+69358,Stromal / Fibroblast
+69359,Stromal / Fibroblast
+69360,Macrophage
+69361,Tumor (CD21+)
+69362,Stromal / Fibroblast
+69363,Tumor (Ki67+)
+69364,Macrophage
+69365,Tumor (Ki67+)
+69366,Tumor (Podo+)
+69367,Tumor (Podo+)
+69368,Macrophage
+69369,Granulocyte
+69370,Tumor (CD20+)
+69371,Tumor (Ki67+)
+69372,CD4 T cell
+69373,Tumor (Ki67+)
+69374,Granulocyte
+69375,Macrophage
+69376,CD8 T cell
+69377,Tumor (CD20+)
+69378,Macrophage
+69379,Tumor (CD21+)
+69380,Granulocyte
+69381,Macrophage
+69382,Tumor (CD20+)
+69383,APC
+69384,CD4 T cell
+69385,Tumor (Ki67+)
+69386,Tumor (CD20+)
+69387,Tumor
+69388,Tumor (CD21+)
+69389,Granulocyte
+69390,Macrophage
+69391,Stromal / Fibroblast
+69392,Tumor (Ki67+)
+69393,Stromal / Fibroblast
+69394,Stromal / Fibroblast
+69395,Tumor (Podo+)
+69396,Granulocyte
+69397,Granulocyte
+69398,Tumor (CD15+)
+69399,Tumor (CD20+)
+69400,Macrophage
+69401,Macrophage
+69402,Tumor (CD20+)
+69403,APC
+69404,CD4 T cell
+69405,Stromal / Fibroblast
+69406,Granulocyte
+69407,Granulocyte
+69408,Macrophage
+69409,Tumor (Podo+)
+69410,Tumor (CD20+)
+69411,CD8 T cell
+69412,CD4 T cell
+69413,CD4 T cell
+69414,Granulocyte
+69415,Tumor
+69416,CD4 T cell
+69417,Granulocyte
+69418,Granulocyte
+69419,Tumor
+69420,CD4 T cell
+69421,Stromal / Fibroblast
+69422,Stromal / Fibroblast
+69423,Granulocyte
+69424,Tumor
+69425,Tumor (Ki67+)
+69426,Macrophage
+69427,Tumor
+69428,Tumor
+69429,Tumor
+69430,Granulocyte
+69431,CD4 T cell
+69432,Tumor (CD20+)
+69433,Granulocyte
+69434,Granulocyte
+69435,Tumor (CD21+)
+69436,Tumor (CD15+)
+69437,Tumor (CD20+)
+69438,Tumor
+69439,Macrophage
+69440,Macrophage
+69441,Tumor (CD20+)
+69442,Tumor (Ki67+)
+69443,Tumor (Ki67+)
+69444,Granulocyte
+69445,Macrophage
+69446,Granulocyte
+69447,Tumor
+69448,Macrophage
+69449,Granulocyte
+69450,Granulocyte
+69451,Macrophage
+69452,CD4 T cell
+69453,Tumor (Ki67+)
+69454,Granulocyte
+69455,CD4 T cell
+69456,CD4 T cell
+69457,APC
+69458,Tumor (Podo+)
+69459,Granulocyte
+69460,Tumor
+69461,Granulocyte
+69462,CD4 T cell
+69463,Tumor
+69464,Granulocyte
+69465,Tumor (CD15+)
+69466,CD4 T cell
+69467,Tumor (CD20+)
+69468,Tumor
+69469,Tumor (Podo+)
+69470,Granulocyte
+69471,Tumor (CD20+)
+69472,Stromal / Fibroblast
+69473,Granulocyte
+69474,Granulocyte
+69475,APC
+69476,Tumor (CD20+)
+69477,CD4 T cell
+69478,Granulocyte
+69479,Tumor
+69480,Stromal / Fibroblast
+69481,CD4 T cell
+69482,Stromal / Fibroblast
+69483,Vessel
+69484,APC
+69485,Macrophage
+69486,Tumor (Podo+)
+69487,Granulocyte
+69488,CD8 T cell
+69489,B cell
+69490,Macrophage
+69491,Granulocyte
+69492,Granulocyte
+69493,Granulocyte
+69494,Stromal / Fibroblast
+69495,Stromal / Fibroblast
+69496,Tumor (Podo+)
+69497,APC
+69498,Stromal / Fibroblast
+69499,Naive immune cell
+69500,Vessel
+69501,Tumor
+69502,Tumor (Podo+)
+69503,Tumor (Podo+)
+69504,Stromal / Fibroblast
+69505,Macrophage
+69506,Stromal / Fibroblast
+69507,Granulocyte
+69508,Vessel
+69509,Macrophage
+69510,Macrophage
+69511,Tumor (Ki67+)
+69512,Tumor (CD20+)
+69513,Macrophage
+69514,Tumor (CD20+)
+69515,Vessel
+69516,Granulocyte
+69517,Macrophage
+69518,Tumor (CD15+)
+69519,Tumor (CD21+)
+69520,Tumor (Podo+)
+69521,CD4 T cell
+69522,Tumor (CD20+)
+69523,Macrophage
+69524,Tumor (Ki67+)
+69525,CD4 T cell
+69526,B cell
+69527,Tumor (Podo+)
+69528,Tumor (CD20+)
+69529,Tumor (CD20+)
+69530,Tumor (CD21+)
+69531,CD8 T cell
+69532,Granulocyte
+69534,Tumor (Podo+)
+69535,Granulocyte
+69536,Granulocyte
+69537,Stromal / Fibroblast
+69538,Vessel
+69539,APC
+69540,Tumor
+69541,B cell
+69542,Macrophage
+69543,Tumor (Podo+)
+69544,Granulocyte
+69545,Stromal / Fibroblast
+69546,APC
+69547,Granulocyte
+69548,Macrophage
+69549,Tumor (CD21+)
+69550,Stromal / Fibroblast
+69551,Tumor (CD20+)
+69552,Vessel
+69553,Tumor (Podo+)
+69554,CD8 T cell
+69555,Tumor (CD15+)
+69556,Granulocyte
+69557,Tumor (Podo+)
+69558,Vessel
+69559,Stromal / Fibroblast
+69560,APC
+69561,Vessel
+69562,APC
+69563,Lymph vessel
+69564,Tumor
+69565,B cell
+69566,Granulocyte
+69567,Tumor (Podo+)
+69568,Tumor (Ki67+)
+69569,Stromal / Fibroblast
+69570,CD4 T cell
+69571,Tumor (Ki67+)
+69572,Granulocyte
+69573,APC
+69574,Tumor (CD21+)
+69575,CD4 T cell
+69576,Stromal / Fibroblast
+69577,Granulocyte
+69578,Tumor (CD20+)
+69579,Macrophage
+69580,Lymph vessel
+69581,Tumor (CD15+)
+69582,Stromal / Fibroblast
+69583,Granulocyte
+69584,Granulocyte
+69585,Vessel
+69586,Macrophage
+69587,Tumor (CD20+)
+69588,Granulocyte
+69589,Tumor (CD21+)
+69590,Vessel
+69591,APC
+69592,CD4 T cell
+69593,Tumor (Ki67+)
+69594,Tumor
+69595,Macrophage
+69596,CD4 T cell
+69597,Tumor (CD15+)
+69598,Granulocyte
+69599,Tumor
+69600,CD4 T cell
+69601,Tumor (Ki67+)
+69602,Granulocyte
+69603,Tumor (Ki67+)
+69604,Stromal / Fibroblast
+69605,Tumor (CD21+)
+69606,Stromal / Fibroblast
+69607,Macrophage
+69608,Macrophage
+69609,Tumor (CD20+)
+69610,Tumor (CD20+)
+69611,Stromal / Fibroblast
+69613,CD8 T cell
+69614,CD4 T cell
+69615,Tumor (Ki67+)
+69616,Granulocyte
+69617,Macrophage
+69618,Tumor (Podo+)
+69619,Tumor (CD20+)
+69620,Granulocyte
+69621,Stromal / Fibroblast
+69622,Tumor (CD20+)
+69623,Vessel
+69624,Stromal / Fibroblast
+69625,Vessel
+69626,Tumor
+69627,Tumor (CD20+)
+69628,Macrophage
+69629,APC
+69630,Tumor (CD20+)
+69631,Granulocyte
+69632,Vessel
+69633,Macrophage
+69634,Stromal / Fibroblast
+69635,Stromal / Fibroblast
+69636,Granulocyte
+69637,Granulocyte
+69638,Tumor (Ki67+)
+69639,Tumor
+69640,Tumor
+69641,Tumor
+69642,Tumor (CD21+)
+69643,CD4 T cell
+69644,APC
+69645,Stromal / Fibroblast
+69646,Macrophage
+69647,Tumor (Ki67+)
+69648,Tumor (CD20+)
+69649,APC
+69650,Tumor (Podo+)
+69651,Vessel
+69652,Tumor (CD21+)
+69653,CD8 T cell
+69654,CD4 T cell
+69655,Vessel
+69656,Macrophage
+69657,Tumor (Ki67+)
+69658,Tumor (Podo+)
+69659,Tumor (Podo+)
+69660,CD4 T cell
+69661,Tumor (CD20+)
+69662,Granulocyte
+69663,Macrophage
+69664,Stromal / Fibroblast
+69665,Granulocyte
+69666,Macrophage
+69667,Vessel
+69668,CD4 T cell
+69669,APC
+69670,Granulocyte
+69671,Tumor (CD15+)
+69672,Tumor (CD15+)
+69673,APC
+69674,Tumor
+69675,Stromal / Fibroblast
+69676,CD4 T cell
+69677,Tumor (CD20+)
+69678,Stromal / Fibroblast
+69679,Tumor
+69680,Vessel
+69681,Stromal / Fibroblast
+69682,CD8 T cell
+69683,Tumor
+69684,Macrophage
+69685,CD8 T cell
+69686,Tumor (CD20+)
+69687,Tumor (CD20+)
+69688,Granulocyte
+69689,Tumor (Podo+)
+69690,Macrophage
+69691,CD4 T cell
+69692,Tumor (CD15+)
+69693,Macrophage
+69694,Granulocyte
+69695,Macrophage
+69696,Macrophage
+69697,Tumor (Podo+)
+69698,Macrophage
+69699,CD4 T cell
+69700,Granulocyte
+69701,CD4 T cell
+69702,CD4 T cell
+69703,Macrophage
+69704,Macrophage
+69705,Tumor (CD20+)
+69706,Macrophage
+69707,Tumor (Ki67+)
+69708,Stromal / Fibroblast
+69709,Tumor (Podo+)
+69710,Tumor
+69711,CD8 T cell
+69712,Tumor (Ki67+)
+69713,Tumor (CD20+)
+69714,Vessel
+69715,Macrophage
+69716,Tumor (Ki67+)
+69717,Tumor (Ki67+)
+69718,Stromal / Fibroblast
+69719,Granulocyte
+69720,Tumor (Podo+)
+69721,APC
+69722,Tumor (Ki67+)
+69723,Granulocyte
+69724,Tumor (CD15+)
+69725,Macrophage
+69726,Macrophage
+69727,CD4 T cell
+69728,CD4 T cell
+69729,Macrophage
+69730,CD4 T cell
+69731,Granulocyte
+69732,Stromal / Fibroblast
+69733,Granulocyte
+69734,Tumor (CD20+)
+69735,Tumor
+69736,Macrophage
+69737,Tumor (Ki67+)
+69738,Tumor (CD20+)
+69739,Tumor (Ki67+)
+69740,Tumor (CD20+)
+69741,Tumor (Podo+)
+69742,Stromal / Fibroblast
+69743,Tumor (Ki67+)
+69744,Granulocyte
+69745,Granulocyte
+69746,Vessel
+69747,Stromal / Fibroblast
+69748,Granulocyte
+69749,Stromal / Fibroblast
+69750,Tumor (CD20+)
+69751,Tumor
+69752,Granulocyte
+69753,Tumor (CD21+)
+69754,Granulocyte
+69755,Vessel
+69756,CD4 T cell
+69757,Tumor (Ki67+)
+69758,CD4 T cell
+69759,CD8 T cell
+69760,Tumor (Ki67+)
+69761,Macrophage
+69762,Tumor (CD20+)
+69763,Tumor
+69764,Macrophage
+69765,Stromal / Fibroblast
+69766,Tumor (Podo+)
+69767,Tumor (CD20+)
+69768,Tumor (Podo+)
+69769,Tumor (Ki67+)
+69770,CD4 T cell
+69771,Stromal / Fibroblast
+69772,Macrophage
+69773,Vessel
+69774,Stromal / Fibroblast
+69775,Tumor (Ki67+)
+69776,Granulocyte
+69777,Tumor (CD20+)
+69778,Tumor
+69779,Tumor (Ki67+)
+69780,Granulocyte
+69781,Stromal / Fibroblast
+69782,Macrophage
+69783,Stromal / Fibroblast
+69784,Tumor (Podo+)
+69785,Granulocyte
+69786,CD8 T cell
+69787,Granulocyte
+69788,Stromal / Fibroblast
+69789,Macrophage
+69790,Tumor (CD15+)
+69791,CD4 T cell
+69792,Macrophage
+69794,Tumor (Ki67+)
+69795,Tumor (CD20+)
+69796,CD4 T cell
+69797,Tumor (CD20+)
+69798,Granulocyte
+69799,Macrophage
+69800,APC
+69801,Tumor (Ki67+)
+69802,Granulocyte
+69803,Tumor
+69804,CD4 T cell
+69805,Vessel
+69806,CD4 T cell
+69807,CD4 T cell
+69808,Tumor (CD20+)
+69809,Macrophage
+69810,Macrophage
+69811,CD8 T cell
+69812,Tumor (CD20+)
+69813,Tumor (CD20+)
+69814,Granulocyte
+69815,Stromal / Fibroblast
+69816,Macrophage
+69817,APC
+69818,Tumor (CD20+)
+69819,Tumor (CD20+)
+69820,Vessel
+69821,Tumor (CD21+)
+69822,Stromal / Fibroblast
+69823,CD8 T cell
+69824,CD4 T cell
+69825,Stromal / Fibroblast
+69826,Macrophage
+69828,Granulocyte
+69829,Tumor (Podo+)
+69830,Tumor (Ki67+)
+69831,Vessel
+69832,Granulocyte
+69833,Tumor (CD20+)
+69834,Tumor (CD20+)
+69835,Tumor (CD20+)
+69836,Tumor (CD21+)
+69837,CD4 T cell
+69838,Tumor (CD15+)
+69839,Vessel
+69840,Stromal / Fibroblast
+69841,Granulocyte
+69842,APC
+69843,Macrophage
+69844,Stromal / Fibroblast
+69845,Tumor (CD20+)
+69846,Stromal / Fibroblast
+69847,Tumor (CD21+)
+69848,Tumor (CD21+)
+69849,Tumor
+69850,Granulocyte
+69851,Granulocyte
+69852,CD4 T cell
+69853,Tumor (Ki67+)
+69854,Vessel
+69855,CD4 T cell
+69856,Macrophage
+69857,Granulocyte
+69858,Tumor (Podo+)
+69859,Tumor (CD15+)
+69860,CD4 T cell
+69861,Macrophage
+69862,Granulocyte
+69863,Granulocyte
+69864,CD8 T cell
+69865,Granulocyte
+69866,Macrophage
+69867,Granulocyte
+69868,Vessel
+69869,Tumor (CD20+)
+69870,Tumor (Ki67+)
+69871,CD8 T cell
+69872,Macrophage
+69873,Macrophage
+69874,Naive immune cell
+69875,Macrophage
+69876,Tumor (CD20+)
+69877,Macrophage
+69878,Naive immune cell
+69879,Tumor (CD21+)
+69880,Tumor (CD20+)
+69881,Tumor (Ki67+)
+69882,CD8 T cell
+69883,Tumor (CD20+)
+69884,Tumor (Podo+)
+69885,Vessel
+69886,CD8 T cell
+69887,Granulocyte
+69888,Tumor (Ki67+)
+69889,Tumor (Podo+)
+69890,Tumor (CD20+)
+69891,Macrophage
+69892,Vessel
+69893,APC
+69894,Tumor
+69895,Tumor (Ki67+)
+69896,Tumor (CD20+)
+69897,Granulocyte
+69898,CD8 T cell
+69899,B cell
+69900,Granulocyte
+69901,Tumor (CD20+)
+69902,Tumor
+69903,CD8 T cell
+69904,CD4 T cell
+69905,CD8 T cell
+69906,Macrophage
+69908,Tumor
+69909,Macrophage
+69910,CD8 T cell
+69911,Tumor (Ki67+)
+69912,Tumor
+69913,Tumor
+69914,Granulocyte
+69915,Tumor (CD20+)
+69916,Tumor (CD21+)
+69917,B cell
+69918,Macrophage
+69919,Granulocyte
+69920,Granulocyte
+69921,Tumor
+69922,Macrophage
+69923,Tumor (CD20+)
+69924,Stromal / Fibroblast
+69925,Stromal / Fibroblast
+69926,B cell
+69927,CD8 T cell
+69928,Tumor (CD20+)
+69929,Granulocyte
+69930,Vessel
+69931,Granulocyte
+69932,CD8 T cell
+69933,Vessel
+69934,Tumor (CD20+)
+69935,Granulocyte
+69936,Tumor (Ki67+)
+69937,Granulocyte
+69938,CD4 T cell
+69939,Tumor
+69940,Tumor
+69941,Tumor (CD20+)
+69942,Stromal / Fibroblast
+69943,CD4 T cell
+69944,Macrophage
+69945,Tumor (CD20+)
+69946,Tumor (CD20+)
+69947,Vessel
+69948,APC
+69949,Vessel
+69950,Stromal / Fibroblast
+69951,Stromal / Fibroblast
+69952,CD8 T cell
+69953,Granulocyte
+69954,Tumor (Ki67+)
+69955,Tumor (Ki67+)
+69956,Stromal / Fibroblast
+69957,Tumor (Podo+)
+69958,CD8 T cell
+69959,Granulocyte
+69960,CD4 T cell
+69961,Tumor (Ki67+)
+69962,CD8 T cell
+69963,Lymph vessel
+69964,APC
+69965,Tumor
+69966,CD8 T cell
+69967,Tumor (Podo+)
+69968,CD4 T cell
+69969,B cell
+69970,Tumor (CD20+)
+69971,Lymph vessel
+69972,Tumor (CD20+)
+69973,Granulocyte
+69974,Tumor (Podo+)
+69975,CD4 T cell
+69976,Tumor (Ki67+)
+69977,Tumor (CD21+)
+69978,Granulocyte
+69979,Stromal / Fibroblast
+69980,Stromal / Fibroblast
+69981,Tumor (CD20+)
+69982,APC
+69983,Tumor
+69984,Tumor (CD21+)
+69985,Tumor
+69986,Macrophage
+69987,CD8 T cell
+69988,CD4 T cell
+69989,Macrophage
+69990,Tumor (Podo+)
+69991,Vessel
+69992,Macrophage
+69993,CD4 T cell
+69994,CD4 T cell
+69995,Tumor (Podo+)
+69996,Tumor (Ki67+)
+69997,Macrophage
+69998,Tumor (Podo+)
+69999,Granulocyte
+70000,CD8 T cell
+70001,Macrophage
+70002,CD8 T cell
+70003,Tumor (Podo+)
+70004,Lymph vessel
+70005,CD4 T cell
+70006,Stromal / Fibroblast
+70008,Tumor (CD15+)
+70009,Tumor
+70010,Granulocyte
+70011,CD8 T cell
+70012,Tumor
+70013,Tumor
+70014,Tumor (Podo+)
+70015,CD8 T cell
+70016,CD8 T cell
+70017,Macrophage
+70018,Tumor (Ki67+)
+70019,APC
+70020,CD8 T cell
+70021,Tumor (CD20+)
+70022,Tumor (CD21+)
+70023,Stromal / Fibroblast
+70024,CD4 T cell
+70025,CD4 T cell
+70026,Tumor
+70027,Vessel
+70028,Tumor (CD20+)
+70029,Tumor (Podo+)
+70030,CD4 T cell
+70031,Tumor (CD20+)
+70032,Tumor (CD20+)
+70033,Tumor (CD15+)
+70034,Tumor
+70035,Tumor (CD20+)
+70036,Naive immune cell
+70037,CD4 T cell
+70038,Tumor (Ki67+)
+70039,Stromal / Fibroblast
+70040,Granulocyte
+70041,CD8 T cell
+70042,Macrophage
+70043,CD4 T cell
+70044,CD8 T cell
+70045,Stromal / Fibroblast
+70046,Macrophage
+70047,Tumor (Podo+)
+70048,Stromal / Fibroblast
+70049,CD4 T cell
+70050,CD4 T cell
+70051,Macrophage
+70052,Macrophage
+70053,Tumor (Podo+)
+70054,Granulocyte
+70055,Stromal / Fibroblast
+70056,Tumor (CD20+)
+70057,Tumor (CD20+)
+70058,Tumor (Podo+)
+70059,CD8 T cell
+70060,CD4 T cell
+70061,Tumor (CD21+)
+70062,Tumor (CD21+)
+70063,Macrophage
+70064,Macrophage
+70065,Tumor
+70066,APC
+70067,Tumor (Podo+)
+70068,CD4 T cell
+70069,Tumor (Ki67+)
+70070,Macrophage
+70071,Tumor (Ki67+)
+70072,Vessel
+70073,CD4 T cell
+70074,Stromal / Fibroblast
+70075,Macrophage
+70076,CD4 T cell
+70077,Tumor (CD20+)
+70078,Tumor (CD21+)
+70079,Macrophage
+70080,CD8 T cell
+70081,Tumor (Podo+)
+70082,Tumor (Ki67+)
+70083,Stromal / Fibroblast
+70084,B cell
+70085,B cell
+70086,Tumor (CD20+)
+70087,Stromal / Fibroblast
+70088,Tumor (CD21+)
+70089,CD8 T cell
+70090,APC
+70091,Tumor (Ki67+)
+70092,CD4 T cell
+70093,Vessel
+70094,APC
+70096,Macrophage
+70097,Tumor
+70098,Macrophage
+70099,APC
+70100,Macrophage
+70101,CD8 T cell
+70102,B cell
+70103,Tumor
+70104,Tumor (CD20+)
+70105,Tumor (CD15+)
+70106,Tumor (CD15+)
+70107,CD8 T cell
+70108,CD4 T cell
+70109,Tumor (CD20+)
+70110,Tumor (Podo+)
+70111,Vessel
+70112,Tumor (Ki67+)
+70113,Stromal / Fibroblast
+70114,CD8 T cell
+70115,CD8 T cell
+70116,Tumor (CD20+)
+70117,Tumor (Podo+)
+70118,B cell
+70119,Tumor (CD20+)
+70120,CD8 T cell
+70121,Tumor (Ki67+)
+70122,Tumor
+70123,Tumor (CD21+)
+70124,Tumor (Podo+)
+70125,Macrophage
+70126,Macrophage
+70127,Macrophage
+70128,Tumor (CD20+)
+70129,Tumor (Ki67+)
+70130,Tumor (CD21+)
+70131,Tumor (Ki67+)
+70132,CD4 T cell
+70133,Tumor
+70134,Granulocyte
+70135,Macrophage
+70136,APC
+70137,CD4 T cell
+70138,Stromal / Fibroblast
+70139,Tumor (Podo+)
+70140,Tumor (Podo+)
+70141,Tumor
+70142,Macrophage
+70143,Macrophage
+70144,Tumor
+70145,CD4 T cell
+70146,Tumor (CD20+)
+70147,Tumor (CD21+)
+70148,APC
+70149,Vessel
+70150,CD8 T cell
+70151,Tumor (Ki67+)
+70152,Macrophage
+70153,Granulocyte
+70154,Tumor
+70155,Granulocyte
+70156,Tumor (Podo+)
+70157,Tumor (CD21+)
+70158,Tumor (Ki67+)
+70159,Tumor (Ki67+)
+70160,Tumor (Podo+)
+70161,CD4 T cell
+70162,CD8 T cell
+70163,Tumor (Podo+)
+70164,CD8 T cell
+70165,Macrophage
+70166,Tumor (Ki67+)
+70167,CD4 T cell
+70168,Tumor (CD20+)
+70170,Granulocyte
+70171,Vessel
+70172,Vessel
+70173,Tumor (CD15+)
+70174,Vessel
+70175,CD4 T cell
+70176,CD4 T cell
+70177,CD4 T cell
+70178,Tumor (Podo+)
+70179,Granulocyte
+70180,APC
+70181,Tumor (Ki67+)
+70182,Tumor (Podo+)
+70183,Granulocyte
+70184,Tumor
+70185,Tumor (CD15+)
+70186,CD4 T cell
+70187,B cell
+70188,CD8 T cell
+70189,Vessel
+70190,Granulocyte
+70191,Granulocyte
+70192,Tumor
+70193,CD8 T cell
+70194,Vessel
+70195,CD8 T cell
+70196,CD8 T cell
+70197,CD4 T cell
+70198,CD8 T cell
+70199,CD8 T cell
+70200,Tumor (CD20+)
+70201,Tumor (CD15+)
+70202,Tumor (CD21+)
+70203,CD4 T cell
+70204,Tumor (CD21+)
+70205,CD4 T cell
+70206,CD8 T cell
+70207,Stromal / Fibroblast
+70208,Naive immune cell
+70209,Tumor (CD20+)
+70210,Tumor (CD21+)
+70211,Tumor (Podo+)
+70212,B cell
+70213,CD8 T cell
+70214,CD4 T cell
+70215,Tumor (Podo+)
+70216,Granulocyte
+70217,Tumor (CD20+)
+70218,Tumor
+70219,Tumor (Ki67+)
+70220,Macrophage
+70221,Tumor
+70222,Tumor (CD21+)
+70223,Tumor (Ki67+)
+70224,Tumor
+70225,Tumor (CD20+)
+70226,Tumor (Ki67+)
+70227,Tumor (Podo+)
+70228,Tumor (CD20+)
+70229,Tumor
+70230,Vessel
+70231,B cell
+70232,Tumor (Ki67+)
+70233,Granulocyte
+70234,Macrophage
+70235,Macrophage
+70236,CD8 T cell
+70237,Granulocyte
+70238,CD4 T cell
+70239,Tumor (CD15+)
+70240,Macrophage
+70241,Tumor (CD20+)
+70242,Macrophage
+70243,Tumor (CD20+)
+70244,Tumor (CD20+)
+70245,APC
+70246,Macrophage
+70247,Macrophage
+70248,Vessel
+70249,Tumor
+70250,CD8 T cell
+70251,Stromal / Fibroblast
+70252,Tumor (Podo+)
+70253,Tumor (Podo+)
+70254,Granulocyte
+70255,Vessel
+70256,Macrophage
+70257,Tumor (CD20+)
+70258,Macrophage
+70259,Tumor (Ki67+)
+70260,CD4 T cell
+70261,Macrophage
+70262,Vessel
+70263,Tumor (Ki67+)
+70264,Stromal / Fibroblast
+70265,Macrophage
+70266,Tumor (CD21+)
+70267,CD4 T cell
+70268,APC
+70269,Tumor (CD20+)
+70270,CD4 T cell
+70271,Vessel
+70272,Naive immune cell
+70273,CD4 T cell
+70274,Tumor (CD21+)
+70275,Granulocyte
+70276,Granulocyte
+70277,Tumor (Podo+)
+70278,Tumor (Ki67+)
+70279,Tumor (CD20+)
+70280,Tumor (Podo+)
+70281,Tumor
+70282,CD8 T cell
+70283,Naive immune cell
+70284,Tumor (Ki67+)
+70285,Macrophage
+70286,Tumor (Ki67+)
+70287,Naive immune cell
+70288,Stromal / Fibroblast
+70289,Tumor (Podo+)
+70290,Macrophage
+70291,Macrophage
+70292,Granulocyte
+70293,Macrophage
+70294,Macrophage
+70295,Tumor (Podo+)
+70296,Macrophage
+70297,Tumor (Podo+)
+70298,Tumor (Ki67+)
+70299,Tumor (CD21+)
+70300,Tumor (CD21+)
+70301,Tumor (Podo+)
+70302,Macrophage
+70303,Macrophage
+70304,Naive immune cell
+70305,B cell
+70306,Tumor
+70307,Tumor (CD20+)
+70308,Tumor (CD21+)
+70309,Tumor (Podo+)
+70310,CD4 T cell
+70311,APC
+70312,Tumor (CD20+)
+70313,CD8 T cell
+70314,Macrophage
+70315,CD8 T cell
+70316,Tumor
+70317,Tumor (Ki67+)
+70318,Tumor (Ki67+)
+70319,CD8 T cell
+70320,Naive immune cell
+70321,Macrophage
+70322,CD4 T cell
+70324,CD8 T cell
+70325,Tumor (Ki67+)
+70326,Macrophage
+70327,Macrophage
+70328,Tumor (CD20+)
+70329,Macrophage
+70330,Macrophage
+70331,CD4 T cell
+70332,Tumor (CD15+)
+70333,Macrophage
+70334,Tumor (Podo+)
+70335,CD4 T cell
+70336,Vessel
+70337,Tumor (CD21+)
+70338,Macrophage
+70339,Macrophage
+70340,Tumor (Ki67+)
+70341,Granulocyte
+70342,Granulocyte
+70343,CD8 T cell
+70344,Granulocyte
+70345,Granulocyte
+70346,Granulocyte
+70347,Tumor (Podo+)
+70348,APC
+70349,Tumor (Ki67+)
+70350,Tumor (CD20+)
+70351,Tumor (CD20+)
+70352,Granulocyte
+70353,Macrophage
+70354,Tumor (CD21+)
+70355,Macrophage
+70356,Macrophage
+70357,Tumor (Podo+)
+70358,Macrophage
+70359,CD4 T cell
+70360,Tumor (Ki67+)
+70361,Tumor (CD20+)
+70362,Tumor (Ki67+)
+70363,Tumor (CD21+)
+70364,Granulocyte
+70365,CD4 T cell
+70366,APC
+70367,CD4 T cell
+70368,Macrophage
+70369,Tumor
+70370,Naive immune cell
+70371,Tumor (Ki67+)
+70372,Tumor (Podo+)
+70373,Tumor (Podo+)
+70374,Tumor (CD21+)
+70375,Granulocyte
+70376,CD4 T cell
+70377,CD4 T cell
+70378,Tumor
+70379,Tumor (Ki67+)
+70380,Tumor
+70381,CD8 T cell
+70382,Tumor (Ki67+)
+70383,Macrophage
+70384,Granulocyte
+70385,Tumor (Podo+)
+70386,B cell
+70387,CD8 T cell
+70389,CD8 T cell
+70390,Naive immune cell
+70391,Tumor (CD20+)
+70392,Tumor
+70393,Tumor (CD20+)
+70394,Tumor
+70395,CD4 T cell
+70396,Macrophage
+70397,Macrophage
+70398,Tumor (CD20+)
+70399,Tumor (CD20+)
+70400,Macrophage
+70401,Tumor
+70402,Tumor
+70403,CD4 T cell
+70404,Tumor (CD15+)
+70405,Granulocyte
+70406,Macrophage
+70407,Granulocyte
+70408,Tumor (Ki67+)
+70409,Tumor (CD20+)
+70410,Macrophage
+70411,Macrophage
+70412,CD4 T cell
+70413,CD4 T cell
+70414,Granulocyte
+70415,Tumor (CD21+)
+70416,B cell
+70417,CD8 T cell
+70418,Tumor (CD20+)
+70419,Macrophage
+70420,CD4 T cell
+70421,CD4 T cell
+70422,Macrophage
+70423,CD4 T cell
+70424,Tumor
+70425,Macrophage
+70426,Tumor (Podo+)
+70427,Stromal / Fibroblast
+70428,Stromal / Fibroblast
+70429,CD8 T cell
+70430,Tumor
+70431,CD8 T cell
+70432,Macrophage
+70433,Tumor (CD15+)
+70434,B cell
+70435,CD4 T cell
+70436,CD4 T cell
+70437,Macrophage
+70438,Tumor (CD20+)
+70439,Tumor (CD15+)
+70440,Macrophage
+70441,Tumor (Podo+)
+70442,Granulocyte
+70443,Tumor (Podo+)
+70444,Granulocyte
+70445,Tumor
+70446,Macrophage
+70447,Tumor
+70448,Macrophage
+70449,CD8 T cell
+70450,CD4 T cell
+70451,Tumor (Ki67+)
+70452,Tumor (Podo+)
+70453,Macrophage
+70454,Tumor (CD20+)
+70455,Naive immune cell
+70456,Vessel
+70457,Tumor
+70458,Tumor (CD20+)
+70459,Granulocyte
+70460,Vessel
+70461,CD4 T cell
+70462,Stromal / Fibroblast
+70463,Macrophage
+70464,Macrophage
+70465,CD8 T cell
+70466,Stromal / Fibroblast
+70467,CD8 T cell
+70468,Tumor (Ki67+)
+70469,CD4 T cell
+70470,Macrophage
+70471,Tumor (CD21+)
+70472,Granulocyte
+70473,Tumor
+70474,Tumor
+70475,CD4 T cell
+70476,Macrophage
+70477,Tumor (Podo+)
+70478,Naive immune cell
+70479,Stromal / Fibroblast
+70480,Tumor (CD15+)
+70481,Tumor (CD21+)
+70482,Macrophage
+70483,Macrophage
+70484,CD4 T cell
+70485,Macrophage
+70486,Macrophage
+70487,Tumor
+70488,Tumor (Podo+)
+70489,Granulocyte
+70490,Tumor (Ki67+)
+70491,Macrophage
+70492,Stromal / Fibroblast
+70493,APC
+70494,Macrophage
+70495,CD4 T cell
+70496,B cell
+70497,Tumor (Podo+)
+70498,Tumor (CD15+)
+70499,CD4 T cell
+70500,Macrophage
+70501,Macrophage
+70502,Tumor (Ki67+)
+70503,Granulocyte
+70504,Tumor
+70505,CD8 T cell
+70506,CD4 T cell
+70507,Tumor
+70508,Granulocyte
+70509,Macrophage
+70510,Macrophage
+70511,Macrophage
+70512,CD8 T cell
+70514,Granulocyte
+70515,Macrophage
+70516,CD8 T cell
+70518,Stromal / Fibroblast
+70519,Vessel
+70520,Macrophage
+70521,CD4 T cell
+70522,Tumor (Podo+)
+70523,Macrophage
+70524,Tumor
+70525,Tumor (Ki67+)
+70526,CD4 T cell
+70527,Stromal / Fibroblast
+70528,Tumor (Ki67+)
+70529,Tumor (CD21+)
+70531,Tumor (CD21+)
+70532,Naive immune cell
+70533,Vessel
+70534,CD4 T cell
+70535,CD4 T cell
+70536,Tumor (CD21+)
+70537,Vessel
+70538,Tumor (CD15+)
+70539,Granulocyte
+70540,CD8 T cell
+70541,Macrophage
+70542,Tumor (CD20+)
+70544,CD4 T cell
+70545,Tumor (Ki67+)
+70546,Macrophage
+70547,Macrophage
+70548,Vessel
+70549,Macrophage
+70550,Granulocyte
+70551,Vessel
+70552,CD4 T cell
+70553,Macrophage
+70554,CD4 T cell
+70555,Macrophage
+70556,Macrophage
+70557,Naive immune cell
+70558,CD8 T cell
+70559,CD8 T cell
+70560,CD4 T cell
+70561,CD8 T cell
+70562,CD4 T cell
+70563,CD4 T cell
+70564,Macrophage
+70565,Vessel
+70566,Tumor
+70569,Tumor (Podo+)
+70570,Tumor (CD15+)
+70571,Macrophage
+70572,CD8 T cell
+70573,CD8 T cell
+70574,Tumor (CD15+)
+70576,Tumor
+70577,CD8 T cell
+70578,CD8 T cell
+70579,Stromal / Fibroblast
+70580,Tumor (CD21+)
+70581,Granulocyte
+70582,Tumor (Podo+)
+70583,CD8 T cell
+70584,Tumor (CD15+)
+70585,Tumor (CD21+)
+70586,Tumor (CD20+)
+70587,Granulocyte
+70588,Macrophage
+70589,Stromal / Fibroblast
+70590,CD8 T cell
+70591,CD8 T cell
+70592,B cell
+70593,CD4 T cell
+70594,Tumor (CD21+)
+70595,Stromal / Fibroblast
+70596,Stromal / Fibroblast
+70597,Tumor (Podo+)
+70598,Tumor (CD21+)
+70599,Macrophage
+70600,Naive immune cell
+70601,Granulocyte
+70602,Tumor (CD15+)
+70603,Granulocyte
+70604,Vessel
+70605,Vessel
+70606,CD8 T cell
+70607,Macrophage
+70608,Macrophage
+70609,Tumor
+70611,Granulocyte
+70612,CD8 T cell
+70613,CD4 T cell
+70614,CD8 T cell
+70615,Granulocyte
+70616,Tumor (CD15+)
+70617,Stromal / Fibroblast
+70618,Vessel
+70619,Granulocyte
+70620,APC
+70621,Macrophage
+70622,Vessel
+70623,Tumor (Podo+)
+70624,APC
+70625,CD8 T cell
+70626,CD4 T cell
+70627,Stromal / Fibroblast
+70628,CD8 T cell
+70629,Macrophage
+70630,Tumor (Podo+)
+70631,CD4 T cell
+70632,CD8 T cell
+70633,Stromal / Fibroblast
+70634,Tumor (Podo+)
+70635,CD4 T cell
+70636,Vessel
+70637,CD4 T cell
+70638,CD4 T cell
+70639,B cell
+70640,Tumor (CD15+)
+70641,Stromal / Fibroblast
+70642,Tumor (CD15+)
+70643,Tumor (Podo+)
+70644,CD4 T cell
+70645,Stromal / Fibroblast
+70646,Tumor (CD21+)
+70647,CD4 T cell
+70648,Stromal / Fibroblast
+70650,Stromal / Fibroblast
+70651,CD8 T cell
+70652,Vessel
+70653,Tumor (Ki67+)
+70654,Granulocyte
+70655,Stromal / Fibroblast
+70656,Macrophage
+70657,CD4 T cell
+70658,Stromal / Fibroblast
+70659,Granulocyte
+70660,Lymph vessel
+70661,Tumor
+70662,Macrophage
+70663,CD8 T cell
+70664,Vessel
+70665,Stromal / Fibroblast
+70666,CD4 T cell
+70667,CD4 T cell
+70668,Tumor (Podo+)
+70669,Macrophage
+70670,CD4 T cell
+70671,Tumor
+70672,Naive immune cell
+70673,CD8 T cell
+70674,Macrophage
+70675,CD4 T cell
+70676,CD4 T cell
+70677,Tumor
+70678,CD4 T cell
+70679,CD8 T cell
+70680,Stromal / Fibroblast
+70681,Stromal / Fibroblast
+70682,Tumor (Ki67+)
+70683,Vessel
+70684,Macrophage
+70685,Vessel
+70686,Macrophage
+70687,CD8 T cell
+70688,Tumor (CD15+)
+70689,Macrophage
+70690,Tumor (Ki67+)
+70691,Tumor (Podo+)
+70692,Granulocyte
+70693,CD4 T cell
+70694,CD8 T cell
+70695,CD4 T cell
+70696,Naive immune cell
+70697,CD4 T cell
+70698,Vessel
+70699,Tumor (Ki67+)
+70700,Tumor (Ki67+)
+70701,Macrophage
+70702,CD4 T cell
+70703,Tumor (Ki67+)
+70704,Tumor (CD20+)
+70705,CD8 T cell
+70706,Tumor
+70707,CD8 T cell
+70708,CD4 T cell
+70709,Naive immune cell
+70710,Tumor (CD20+)
+70711,CD4 T cell
+70712,Tumor (Podo+)
+70713,CD4 T cell
+70714,Macrophage
+70715,CD4 T cell
+70716,Stromal / Fibroblast
+70717,Tumor (CD21+)
+70718,Macrophage
+70719,Macrophage
+70720,Granulocyte
+70721,Granulocyte
+70722,CD8 T cell
+70723,Macrophage
+70724,CD8 T cell
+70725,Stromal / Fibroblast
+70726,Granulocyte
+70727,Tumor (Podo+)
+70728,Tumor (Podo+)
+70729,CD4 T cell
+70730,Tumor (CD21+)
+70731,Stromal / Fibroblast
+70732,Macrophage
+70733,Tumor (Ki67+)
+70734,Granulocyte
+70735,Macrophage
+70736,Macrophage
+70737,Stromal / Fibroblast
+70738,Stromal / Fibroblast
+70739,Macrophage
+70740,CD4 T cell
+70741,Tumor (CD21+)
+70742,Macrophage
+70743,CD8 T cell
+70744,Naive immune cell
+70745,Tumor (Podo+)
+70746,Granulocyte
+70747,Tumor (Podo+)
+70748,Tumor
+70749,APC
+70750,B cell
+70751,Vessel
+70752,Naive immune cell
+70753,CD8 T cell
+70754,Macrophage
+70755,Granulocyte
+70756,Macrophage
+70757,Stromal / Fibroblast
+70758,CD4 T cell
+70759,Macrophage
+70760,Stromal / Fibroblast
+70761,Tumor (Ki67+)
+70762,Macrophage
+70763,Macrophage
+70764,Granulocyte
+70765,CD4 T cell
+70766,Granulocyte
+70767,B cell
+70768,Macrophage
+70769,CD4 T cell
+70770,Macrophage
+70771,Macrophage
+70772,Stromal / Fibroblast
+70773,Stromal / Fibroblast
+70774,Stromal / Fibroblast
+70775,CD8 T cell
+70776,APC
+70777,Macrophage
+70778,Granulocyte
+70779,Tumor (CD21+)
+70780,Tumor (CD15+)
+70781,Granulocyte
+70782,Vessel
+70783,B cell
+70784,CD4 T cell
+70785,Stromal / Fibroblast
+70786,CD4 T cell
+70787,Tumor (Ki67+)
+70788,Macrophage
+70789,Granulocyte
+70790,Tumor
+70791,CD4 T cell
+70792,Granulocyte
+70793,CD4 T cell
+70794,Tumor
+70795,Tumor
+70796,Tumor (Podo+)
+70797,Granulocyte
+70798,CD4 T cell
+70799,Tumor (Ki67+)
+70800,CD4 T cell
+70801,CD8 T cell
+70802,Granulocyte
+70803,CD8 T cell
+70804,Macrophage
+70805,Granulocyte
+70806,CD8 T cell
+70807,Stromal / Fibroblast
+70808,Stromal / Fibroblast
+70809,CD8 T cell
+70810,Tumor
+70811,Tumor (Ki67+)
+70812,Tumor (Ki67+)
+70813,Vessel
+70814,Stromal / Fibroblast
+70815,CD8 T cell
+70816,Granulocyte
+70817,Granulocyte
+70818,CD4 T cell
+70819,Stromal / Fibroblast
+70820,Tumor (Podo+)
+70821,Tumor
+70822,Tumor (CD20+)
+70823,Tumor (Podo+)
+70824,Macrophage
+70825,CD8 T cell
+70826,CD4 T cell
+70827,B cell
+70828,CD8 T cell
+70829,Macrophage
+70830,Granulocyte
+70831,Macrophage
+70832,CD8 T cell
+70833,Macrophage
+70834,Stromal / Fibroblast
+70835,Tumor (Ki67+)
+70836,CD4 T cell
+70837,Macrophage
+70838,Tumor
+70839,Tumor
+70840,Tumor (Podo+)
+70841,CD8 T cell
+70842,Stromal / Fibroblast
+70843,Tumor
+70844,Macrophage
+70845,Macrophage
+70846,Tumor
+70847,Tumor (Ki67+)
+70848,CD8 T cell
+70849,CD4 T cell
+70850,CD4 T cell
+70851,Vessel
+70852,Stromal / Fibroblast
+70853,Tumor (Podo+)
+70854,Macrophage
+70855,Stromal / Fibroblast
+70856,Tumor (Ki67+)
+70857,Macrophage
+70858,Macrophage
+70859,Macrophage
+70860,Tumor (Ki67+)
+70861,CD4 T cell
+70862,Stromal / Fibroblast
+70863,Tumor
+70864,Macrophage
+70865,Tumor (Podo+)
+70866,Macrophage
+70867,Tumor
+70868,Tumor (Ki67+)
+70869,Granulocyte
+70870,CD4 T cell
+70871,B cell
+70872,Tumor (CD15+)
+70873,Tumor (CD21+)
+70874,Tumor (CD21+)
+70875,Tumor (CD21+)
+70876,Naive immune cell
+70877,CD4 T cell
+70878,CD4 T cell
+70879,CD4 T cell
+70880,CD4 T cell
+70881,Tumor (Podo+)
+70882,Stromal / Fibroblast
+70883,Macrophage
+70884,CD4 T cell
+70885,Granulocyte
+70886,Tumor
+70887,Granulocyte
+70888,CD4 T cell
+70889,CD8 T cell
+70890,CD4 T cell
+70891,Granulocyte
+70892,Tumor (CD20+)
+70893,Tumor (Podo+)
+70894,Macrophage
+70895,Granulocyte
+70896,Naive immune cell
+70897,Granulocyte
+70898,CD8 T cell
+70899,Tumor (Podo+)
+70900,Tumor (CD21+)
+70901,Granulocyte
+70902,CD8 T cell
+70903,B cell
+70904,CD4 T cell
+70905,Tumor
+70906,Tumor (Podo+)
+70907,CD4 T cell
+70908,Macrophage
+70909,CD4 T cell
+70910,Stromal / Fibroblast
+70911,Macrophage
+70912,CD8 T cell
+70913,Tumor (Podo+)
+70914,Tumor (Podo+)
+70915,Granulocyte
+70916,Tumor
+70917,Macrophage
+70918,Granulocyte
+70919,Tumor (Podo+)
+70920,CD4 T cell
+70921,Macrophage
+70922,Stromal / Fibroblast
+70923,CD8 T cell
+70924,Stromal / Fibroblast
+70925,CD4 T cell
+70926,Tumor (Podo+)
+70927,Granulocyte
+70928,Granulocyte
+70929,Macrophage
+70930,Tumor (CD21+)
+70931,Macrophage
+70932,Stromal / Fibroblast
+70933,Macrophage
+70934,Macrophage
+70935,Vessel
+70936,Naive immune cell
+70937,Tumor
+70938,Macrophage
+70939,Macrophage
+70940,Tumor
+70941,Tumor (Ki67+)
+70942,CD4 T cell
+70943,CD8 T cell
+70944,Macrophage
+70945,Macrophage
+70946,Tumor (Ki67+)
+70947,Granulocyte
+70948,Macrophage
+70949,Macrophage
+70950,Tumor
+70951,APC
+70952,Tumor (Podo+)
+70953,Tumor (Ki67+)
+70954,Macrophage
+70955,CD8 T cell
+70956,Macrophage
+70957,CD4 T cell
+70958,Tumor (Ki67+)
+70959,Granulocyte
+70960,Tumor
+70961,CD4 T cell
+70962,Macrophage
+70963,Macrophage
+70965,Macrophage
+70966,APC
+70967,CD8 T cell
+70968,Macrophage
+70969,CD4 T cell
+70970,Granulocyte
+70971,Macrophage
+70972,Macrophage
+70973,CD4 T cell
+70974,Stromal / Fibroblast
+70975,Macrophage
+70976,Tumor (Podo+)
+70977,Macrophage
+70978,Stromal / Fibroblast
+70979,Tumor
+70980,B cell
+70981,Tumor (Podo+)
+70982,Macrophage
+70983,CD4 T cell
+70984,Tumor (Podo+)
+70985,APC
+70986,CD8 T cell
+70987,APC
+70988,Tumor
+70989,Macrophage
+70990,CD8 T cell
+70991,Granulocyte
+70992,Macrophage
+70993,CD4 T cell
+70994,B cell
+70995,CD8 T cell
+70996,CD4 T cell
+70997,Granulocyte
+70998,Tumor (Podo+)
+70999,Tumor (CD21+)
+71000,Granulocyte
+71001,Stromal / Fibroblast
+71002,Macrophage
+71003,Macrophage
+71004,Tumor (Ki67+)
+71005,Tumor (CD21+)
+71006,Tumor (CD15+)
+71007,Granulocyte
+71008,Macrophage
+71009,CD4 T cell
+71010,Granulocyte
+71011,Tumor
+71012,Tumor (Podo+)
+71013,Tumor (CD21+)
+71014,CD8 T cell
+71015,Macrophage
+71016,Granulocyte
+71017,CD4 T cell
+71018,Tumor
+71019,Macrophage
+71020,Vessel
+71021,CD8 T cell
+71022,APC
+71023,Macrophage
+71024,Vessel
+71025,Stromal / Fibroblast
+71026,Tumor (Podo+)
+71027,Macrophage
+71028,Macrophage
+71029,CD8 T cell
+71030,Tumor (CD15+)
+71031,CD8 T cell
+71032,Granulocyte
+71033,Tumor (Podo+)
+71034,Vessel
+71035,Naive immune cell
+71036,Tumor (Podo+)
+71037,Tumor (CD15+)
+71038,CD8 T cell
+71039,Macrophage
+71040,CD4 T cell
+71041,Macrophage
+71042,CD4 T cell
+71043,CD4 T cell
+71044,Tumor (Ki67+)
+71045,Macrophage
+71046,Tumor (Podo+)
+71047,Tumor (Podo+)
+71048,Tumor (Podo+)
+71049,Naive immune cell
+71050,Stromal / Fibroblast
+71051,CD4 T cell
+71052,CD8 T cell
+71053,Naive immune cell
+71054,Tumor
+71055,Macrophage
+71056,APC
+71057,Macrophage
+71058,Granulocyte
+71059,CD8 T cell
+71060,Tumor (Ki67+)
+71061,Tumor (Podo+)
+71062,Lymph vessel
+71063,Tumor (Podo+)
+71064,CD8 T cell
+71065,CD4 T cell
+71066,CD8 T cell
+71067,Stromal / Fibroblast
+71068,Tumor (Podo+)
+71069,Tumor (CD21+)
+71070,Tumor (Podo+)
+71071,Vessel
+71072,Tumor
+71073,Tumor (Podo+)
+71074,Tumor (Podo+)
+71075,CD4 T cell
+71076,Tumor
+71077,Granulocyte
+71078,Stromal / Fibroblast
+71079,Macrophage
+71080,Tumor
+71081,Macrophage
+71082,Naive immune cell
+71083,CD8 T cell
+71084,Tumor (Podo+)
+71085,Stromal / Fibroblast
+71086,Tumor (CD21+)
+71087,Granulocyte
+71088,CD4 T cell
+71089,CD8 T cell
+71090,Tumor (Ki67+)
+71091,Tumor (Podo+)
+71092,Tumor (Podo+)
+71093,CD8 T cell
+71094,Macrophage
+71095,Naive immune cell
+71096,CD8 T cell
+71097,Stromal / Fibroblast
+71098,Macrophage
+71099,Granulocyte
+71100,Tumor
+71101,Macrophage
+71102,APC
+71103,Macrophage
+71104,Tumor
+71105,CD8 T cell
+71106,Macrophage
+71107,CD8 T cell
+71108,CD8 T cell
+71109,CD4 T cell
+71110,Tumor
+71111,CD8 T cell
+71112,Macrophage
+71113,CD8 T cell
+71114,Tumor (Podo+)
+71115,CD4 T cell
+71116,APC
+71117,Macrophage
+71118,CD8 T cell
+71119,Granulocyte
+71120,CD8 T cell
+71121,CD8 T cell
+71122,Tumor (Podo+)
+71123,Granulocyte
+71124,Vessel
+71125,CD8 T cell
+71126,CD4 T cell
+71127,Stromal / Fibroblast
+71128,Tumor (Podo+)
+71129,Macrophage
+71130,Stromal / Fibroblast
+71131,Tumor
+71132,Tumor (Podo+)
+71133,Granulocyte
+71134,Vessel
+71135,Stromal / Fibroblast
+71136,Tumor (Podo+)
+71137,Tumor (CD15+)
+71138,Tumor (CD21+)
+71139,Macrophage
+71140,Macrophage
+71141,Lymph vessel
+71142,Tumor (CD21+)
+71143,Macrophage
+71144,CD8 T cell
+71145,Macrophage
+71146,Naive immune cell
+71147,Naive immune cell
+71148,Tumor (Ki67+)
+71149,CD4 T cell
+71150,Tumor
+71151,Granulocyte
+71152,Naive immune cell
+71153,Tumor (Podo+)
+71155,CD8 T cell
+71156,Naive immune cell
+71157,Macrophage
+71158,CD8 T cell
+71159,Tumor
+71160,CD8 T cell
+71161,Granulocyte
+71162,CD4 T cell
+71163,Tumor (Podo+)
+71164,Granulocyte
+71165,Tumor
+71166,CD8 T cell
+71167,Macrophage
+71168,CD4 T cell
+71169,Stromal / Fibroblast
+71170,Macrophage
+71171,CD4 T cell
+71172,Tumor (Ki67+)
+71173,Stromal / Fibroblast
+71174,Macrophage
+71175,Tumor
+71176,Macrophage
+71177,Vessel
+71178,CD4 T cell
+71179,Naive immune cell
+71180,Tumor (Podo+)
+71181,Tumor (Podo+)
+71182,Macrophage
+71183,Vessel
+71184,Tumor (Ki67+)
+71185,Naive immune cell
+71186,Macrophage
+71187,Vessel
+71188,Tumor
+71189,Stromal / Fibroblast
+71190,B cell
+71191,Tumor (Podo+)
+71192,Lymph vessel
+71193,Macrophage
+71194,CD8 T cell
+71195,Tumor (CD21+)
+71196,CD8 T cell
+71197,Vessel
+71198,CD8 T cell
+71199,Stromal / Fibroblast
+71200,Tumor (CD20+)
+71201,Tumor (CD15+)
+71202,CD8 T cell
+71203,Naive immune cell
+71204,Macrophage
+71205,B cell
+71206,Tumor
+71207,CD8 T cell
+71208,Tumor (Ki67+)
+71209,Tumor (Podo+)
+71210,Tumor (Podo+)
+71211,CD4 T cell
+71212,Vessel
+71213,Stromal / Fibroblast
+71214,CD4 T cell
+71215,CD4 T cell
+71216,Naive immune cell
+71217,Tumor (CD21+)
+71218,Granulocyte
+71219,APC
+71220,Tumor
+71221,B cell
+71222,Vessel
+71223,Tumor (Podo+)
+71224,Naive immune cell
+71225,Stromal / Fibroblast
+71226,CD4 T cell
+71227,Macrophage
+71228,CD4 T cell
+71229,B cell
+71230,CD4 T cell
+71231,Macrophage
+71232,CD8 T cell
+71233,Stromal / Fibroblast
+71234,Macrophage
+71235,CD4 T cell
+71236,CD4 T cell
+71237,Naive immune cell
+71238,Macrophage
+71239,APC
+71240,Vessel
+71241,CD4 T cell
+71242,Tumor
+71243,Tumor
+71244,Vessel
+71245,Tumor (Ki67+)
+71246,Tumor (Podo+)
+71247,CD4 T cell
+71248,Granulocyte
+71249,Macrophage
+71250,Granulocyte
+71251,CD4 T cell
+71252,Tumor (Podo+)
+71253,Tumor (Podo+)
+71254,CD4 T cell
+71255,Tumor (Podo+)
+71256,Tumor (CD21+)
+71257,Tumor (Ki67+)
+71258,Macrophage
+71259,Granulocyte
+71260,CD8 T cell
+71261,Tumor (Podo+)
+71262,CD4 T cell
+71263,Tumor (CD21+)
+71264,CD8 T cell
+71265,Tumor (Podo+)
+71266,Granulocyte
+71267,Macrophage
+71268,CD8 T cell
+71269,CD4 T cell
+71270,CD8 T cell
+71272,Macrophage
+71273,APC
+71274,Lymph vessel
+71275,APC
+71276,CD8 T cell
+71277,Tumor (CD20+)
+71278,Tumor (Podo+)
+71279,Granulocyte
+71280,CD8 T cell
+71281,CD4 T cell
+71282,Tumor (Podo+)
+71283,Macrophage
+71284,Macrophage
+71285,CD8 T cell
+71286,CD4 T cell
+71287,Tumor
+71288,Granulocyte
+71289,CD8 T cell
+71290,Tumor (CD15+)
+71291,Granulocyte
+71292,Macrophage
+71293,Tumor (CD21+)
+71294,Tumor (CD15+)
+71295,Vessel
+71296,Granulocyte
+71297,Macrophage
+71298,CD8 T cell
+71299,Macrophage
+71300,Macrophage
+71301,Naive immune cell
+71302,CD4 T cell
+71303,Tumor (Podo+)
+71304,Vessel
+71305,APC
+71306,CD4 T cell
+71307,Tumor
+71308,Tumor (CD15+)
+71309,Tumor
+71310,CD4 T cell
+71311,Tumor (CD15+)
+71312,CD8 T cell
+71313,CD8 T cell
+71314,Tumor (Podo+)
+71315,CD8 T cell
+71316,Tumor
+71317,CD4 T cell
+71318,Tumor (CD21+)
+71319,CD4 T cell
+71320,Macrophage
+71321,Macrophage
+71322,CD8 T cell
+71323,Tumor (Podo+)
+71324,CD8 T cell
+71325,CD8 T cell
+71326,CD4 T cell
+71327,CD4 T cell
+71328,Stromal / Fibroblast
+71329,Vessel
+71330,Granulocyte
+71331,Tumor (Podo+)
+71332,Granulocyte
+71333,Vessel
+71334,Granulocyte
+71335,Stromal / Fibroblast
+71336,Vessel
+71337,Macrophage
+71338,CD8 T cell
+71339,CD4 T cell
+71340,Macrophage
+71341,Vessel
+71342,Macrophage
+71343,Macrophage
+71344,Lymph vessel
+71345,APC
+71346,Tumor (Podo+)
+71347,Stromal / Fibroblast
+71348,Tumor (CD21+)
+71349,Granulocyte
+71350,Macrophage
+71351,CD4 T cell
+71352,CD4 T cell
+71353,Tumor (Podo+)
+71354,Vessel
+71355,Tumor (CD21+)
+71356,Granulocyte
+71357,Macrophage
+71358,Tumor
+71359,Vessel
+71360,Tumor (Podo+)
+71361,Macrophage
+71362,Granulocyte
+71363,CD8 T cell
+71364,CD4 T cell
+71365,Tumor (Ki67+)
+71366,Tumor (Podo+)
+71367,CD4 T cell
+71368,Tumor (Podo+)
+71369,Macrophage
+71370,Macrophage
+71371,Macrophage
+71372,Tumor
+71373,Granulocyte
+71374,Vessel
+71375,CD4 T cell
+71376,Tumor (Podo+)
+71377,CD4 T cell
+71378,Vessel
+71379,Granulocyte
+71380,CD4 T cell
+71381,CD8 T cell
+71382,Tumor (CD15+)
+71383,Vessel
+71384,Granulocyte
+71385,Granulocyte
+71386,CD8 T cell
+71387,Tumor
+71388,CD8 T cell
+71389,Tumor (Podo+)
+71390,Tumor (CD20+)
+71391,Granulocyte
+71392,CD4 T cell
+71393,Stromal / Fibroblast
+71394,Macrophage
+71395,Granulocyte
+71396,CD4 T cell
+71397,Tumor (CD21+)
+71398,Granulocyte
+71399,CD8 T cell
+71400,Granulocyte
+71401,CD8 T cell
+71402,Macrophage
+71403,Vessel
+71404,Macrophage
+71405,Tumor
+71406,Tumor (Podo+)
+71407,CD4 T cell
+71408,CD8 T cell
+71409,Naive immune cell
+71410,Tumor (Ki67+)
+71411,Macrophage
+71412,Vessel
+71413,Granulocyte
+71414,Vessel
+71415,Granulocyte
+71416,Tumor
+71417,Granulocyte
+71418,Macrophage
+71419,Granulocyte
+71420,CD4 T cell
+71421,Stromal / Fibroblast
+71422,Tumor
+71423,Tumor (Ki67+)
+71424,Macrophage
+71425,Macrophage
+71426,CD8 T cell
+71427,Granulocyte
+71428,Granulocyte
+71429,Macrophage
+71430,CD8 T cell
+71431,Vessel
+71432,CD4 T cell
+71433,CD4 T cell
+71434,Tumor (Ki67+)
+71435,CD4 T cell
+71436,CD4 T cell
+71437,Granulocyte
+71438,Stromal / Fibroblast
+71439,Tumor (Ki67+)
+71440,Tumor (Podo+)
+71441,Macrophage
+71442,Vessel
+71443,CD4 T cell
+71444,Tumor (Podo+)
+71445,CD4 T cell
+71446,Tumor (Ki67+)
+71447,Granulocyte
+71448,CD4 T cell
+71449,Stromal / Fibroblast
+71450,Tumor
+71451,APC
+71452,Vessel
+71453,CD4 T cell
+71454,Vessel
+71455,Tumor (Podo+)
+71456,Macrophage
+71457,CD4 T cell
+71458,CD8 T cell
+71459,Vessel
+71460,Granulocyte
+71461,Granulocyte
+71462,Granulocyte
+71463,Tumor (Podo+)
+71464,CD4 T cell
+71465,Stromal / Fibroblast
+71466,Stromal / Fibroblast
+71467,Granulocyte
+71468,Macrophage
+71469,Tumor (Podo+)
+71470,Naive immune cell
+71471,CD4 T cell
+71472,CD8 T cell
+71473,Macrophage
+71474,CD8 T cell
+71475,Granulocyte
+71476,Macrophage
+71477,CD8 T cell
+71478,CD8 T cell
+71479,CD4 T cell
+71480,CD8 T cell
+71481,Tumor (Podo+)
+71482,Tumor (CD21+)
+71483,Stromal / Fibroblast
+71484,Macrophage
+71485,Granulocyte
+71486,CD4 T cell
+71487,CD8 T cell
+71488,APC
+71489,Naive immune cell
+71490,Vessel
+71491,Tumor (Podo+)
+71492,Macrophage
+71493,Vessel
+71494,CD8 T cell
+71495,CD4 T cell
+71496,Macrophage
+71497,Macrophage
+71498,Stromal / Fibroblast
+71499,CD4 T cell
+71500,Vessel
+71501,Granulocyte
+71502,Granulocyte
+71503,CD4 T cell
+71504,Tumor (CD21+)
+71505,Granulocyte
+71506,Tumor (Podo+)
+71507,CD4 T cell
+71508,Granulocyte
+71509,CD4 T cell
+71510,B cell
+71511,Macrophage
+71512,CD4 T cell
+71513,CD4 T cell
+71514,CD4 T cell
+71515,CD4 T cell
+71516,Vessel
+71517,CD8 T cell
+71518,Stromal / Fibroblast
+71519,Macrophage
+71520,Stromal / Fibroblast
+71521,Tumor (Podo+)
+71522,APC
+71523,Vessel
+71524,Macrophage
+71525,Tumor (Podo+)
+71526,Macrophage
+71527,Tumor
+71528,Macrophage
+71529,APC
+71530,Granulocyte
+71531,CD8 T cell
+71532,CD8 T cell
+71533,Tumor (Ki67+)
+71534,Macrophage
+71535,Macrophage
+71536,CD4 T cell
+71537,Stromal / Fibroblast
+71538,CD4 T cell
+71539,Naive immune cell
+71540,CD4 T cell
+71541,Vessel
+71542,Vessel
+71543,Tumor (Ki67+)
+71544,Macrophage
+71545,CD8 T cell
+71546,CD8 T cell
+71547,Stromal / Fibroblast
+71548,CD4 T cell
+71549,Tumor
+71550,Stromal / Fibroblast
+71551,Vessel
+71552,Lymph vessel
+71553,Tumor (Ki67+)
+71554,Tumor (Ki67+)
+71555,Macrophage
+71556,Macrophage
+71557,Macrophage
+71558,CD4 T cell
+71559,Vessel
+71560,Granulocyte
+71561,Macrophage
+71562,Tumor
+71563,CD4 T cell
+71564,Tumor
+71565,Vessel
+71566,Tumor
+71567,Tumor (CD15+)
+71568,Macrophage
+71569,Macrophage
+71570,CD4 T cell
+71572,Tumor (Podo+)
+71573,Vessel
+71574,Macrophage
+71575,Naive immune cell
+71576,Tumor (CD15+)
+71577,Tumor (CD21+)
+71578,Granulocyte
+71579,Macrophage
+71580,CD8 T cell
+71581,CD4 T cell
+71582,Tumor (Podo+)
+71583,Tumor (CD21+)
+71584,Granulocyte
+71585,Granulocyte
+71586,Naive immune cell
+71587,Vessel
+71588,Macrophage
+71589,CD8 T cell
+71590,Granulocyte
+71591,Macrophage
+71592,CD8 T cell
+71593,Naive immune cell
+71594,CD4 T cell
+71595,Tumor (CD21+)
+71596,Granulocyte
+71597,Granulocyte
+71598,Macrophage
+71599,Vessel
+71600,Granulocyte
+71601,CD8 T cell
+71602,CD4 T cell
+71603,CD4 T cell
+71604,Tumor
+71605,Tumor (CD15+)
+71606,Macrophage
+71607,Tumor (CD21+)
+71608,Stromal / Fibroblast
+71609,CD4 T cell
+71610,Macrophage
+71611,CD4 T cell
+71612,Macrophage
+71613,CD4 T cell
+71614,Stromal / Fibroblast
+71615,Tumor
+71616,CD4 T cell
+71617,CD4 T cell
+71618,Naive immune cell
+71619,Macrophage
+71620,APC
+71621,Tumor
+71622,Tumor (Podo+)
+71623,Granulocyte
+71624,CD8 T cell
+71625,Stromal / Fibroblast
+71626,Vessel
+71627,CD4 T cell
+71628,CD4 T cell
+71629,CD8 T cell
+71630,Tumor
+71631,APC
+71632,CD4 T cell
+71633,CD4 T cell
+71634,B cell
+71635,Tumor (CD21+)
+71636,Macrophage
+71637,Macrophage
+71638,CD4 T cell
+71639,Tumor
+71640,Tumor
+71641,CD4 T cell
+71642,CD8 T cell
+71643,Vessel
+71644,Stromal / Fibroblast
+71645,Tumor (Ki67+)
+71646,CD8 T cell
+71647,Macrophage
+71648,Stromal / Fibroblast
+71649,Lymph vessel
+71650,Granulocyte
+71651,CD8 T cell
+71652,Macrophage
+71653,Lymph vessel
+71654,CD8 T cell
+71655,CD8 T cell
+71656,CD8 T cell
+71657,Tumor (Podo+)
+71658,Macrophage
+71659,CD8 T cell
+71660,CD4 T cell
+71661,CD4 T cell
+71662,Stromal / Fibroblast
+71663,Vessel
+71664,CD8 T cell
+71665,CD8 T cell
+71666,Granulocyte
+71667,CD4 T cell
+71668,Granulocyte
+71669,CD4 T cell
+71670,Stromal / Fibroblast
+71671,Macrophage
+71672,CD8 T cell
+71673,Tumor (Ki67+)
+71674,Tumor (CD21+)
+71675,Tumor (Podo+)
+71676,Tumor (CD21+)
+71677,Granulocyte
+71678,Macrophage
+71679,CD8 T cell
+71680,Tumor (Podo+)
+71681,Macrophage
+71682,Vessel
+71683,CD8 T cell
+71684,Tumor (Podo+)
+71685,Vessel
+71686,CD4 T cell
+71687,Stromal / Fibroblast
+71688,CD8 T cell
+71689,Macrophage
+71690,Tumor
+71691,CD4 T cell
+71692,Tumor
+71693,Granulocyte
+71694,B cell
+71695,Macrophage
+71696,Granulocyte
+71697,CD4 T cell
+71698,Stromal / Fibroblast
+71699,Lymph vessel
+71700,CD8 T cell
+71701,Tumor (Podo+)
+71702,Tumor (CD15+)
+71703,Vessel
+71704,CD4 T cell
+71705,Tumor (CD15+)
+71706,Macrophage
+71707,Macrophage
+71708,CD4 T cell
+71709,Stromal / Fibroblast
+71710,Vessel
+71711,Vessel
+71712,Macrophage
+71713,Granulocyte
+71714,Macrophage
+71715,CD8 T cell
+71716,CD8 T cell
+71717,Tumor (Podo+)
+71718,Granulocyte
+71719,Macrophage
+71720,CD4 T cell
+71721,Macrophage
+71722,Vessel
+71723,CD8 T cell
+71724,Stromal / Fibroblast
+71725,Granulocyte
+71726,Granulocyte
+71727,CD4 T cell
+71728,Stromal / Fibroblast
+71729,Macrophage
+71730,Tumor (Ki67+)
+71731,Granulocyte
+71732,CD4 T cell
+71733,CD8 T cell
+71734,Vessel
+71735,Tumor (Ki67+)
+71736,Tumor (Podo+)
+71737,Granulocyte
+71738,CD4 T cell
+71739,Stromal / Fibroblast
+71740,CD4 T cell
+71741,Tumor (Ki67+)
+71743,Vessel
+71744,Macrophage
+71745,Granulocyte
+71746,Granulocyte
+71747,B cell
+71748,Stromal / Fibroblast
+71749,Stromal / Fibroblast
+71750,Vessel
+71751,CD4 T cell
+71752,Tumor (Podo+)
+71753,Tumor (CD21+)
+71754,Tumor (Podo+)
+71755,Macrophage
+71756,Macrophage
+71757,CD4 T cell
+71758,Stromal / Fibroblast
+71759,Macrophage
+71760,Vessel
+71761,Tumor
+71762,Macrophage
+71763,Tumor (Podo+)
+71764,Vessel
+71765,Tumor
+71766,CD8 T cell
+71767,Tumor (CD15+)
+71768,Macrophage
+71769,Macrophage
+71770,CD4 T cell
+71771,Tumor (CD20+)
+71772,Granulocyte
+71773,Tumor
+71774,CD8 T cell
+71775,Granulocyte
+71776,Granulocyte
+71777,Macrophage
+71778,CD4 T cell
+71779,Granulocyte
+71780,Macrophage
+71781,Tumor
+71782,Tumor (Ki67+)
+71783,Vessel
+71784,B cell
+71785,CD4 T cell
+71786,Vessel
+71787,CD8 T cell
+71788,CD8 T cell
+71789,Tumor (Podo+)
+71790,Granulocyte
+71791,CD8 T cell
+71792,Lymph vessel
+71793,Stromal / Fibroblast
+71794,Vessel
+71795,Tumor (Podo+)
+71796,Tumor (Podo+)
+71797,Tumor (Podo+)
+71798,Granulocyte
+71799,CD8 T cell
+71801,Stromal / Fibroblast
+71802,Tumor (Ki67+)
+71803,Tumor (CD20+)
+71804,Tumor
+71805,CD4 T cell
+71806,Macrophage
+71807,Granulocyte
+71808,Stromal / Fibroblast
+71809,Tumor (Podo+)
+71810,Tumor (CD20+)
+71811,Tumor (CD21+)
+71812,Macrophage
+71813,CD4 T cell
+71814,CD4 T cell
+71815,Vessel
+71816,CD4 T cell
+71817,Tumor (CD21+)
+71818,Vessel
+71819,Granulocyte
+71820,CD4 T cell
+71821,Tumor (Podo+)
+71823,Granulocyte
+71824,Vessel
+71825,CD4 T cell
+71826,Stromal / Fibroblast
+71827,Granulocyte
+71828,Granulocyte
+71829,Tumor
+71830,Granulocyte
+71831,Granulocyte
+71832,Macrophage
+71833,Macrophage
+71834,CD8 T cell
+71835,CD8 T cell
+71836,Vessel
+71837,Tumor (Podo+)
+71838,Tumor
+71839,Granulocyte
+71840,Granulocyte
+71841,CD4 T cell
+71842,CD4 T cell
+71843,Tumor (Podo+)
+71844,Stromal / Fibroblast
+71845,Granulocyte
+71846,Granulocyte
+71847,Macrophage
+71848,Tumor
+71849,Macrophage
+71850,Macrophage
+71851,CD8 T cell
+71852,B cell
+71853,Macrophage
+71854,Vessel
+71855,Tumor (CD21+)
+71856,Tumor (CD15+)
+71857,CD4 T cell
+71858,Stromal / Fibroblast
+71859,Macrophage
+71860,Tumor (CD21+)
+71861,Tumor
+71862,Vessel
+71863,Tumor (Ki67+)
+71864,Vessel
+71865,Tumor (CD21+)
+71866,Stromal / Fibroblast
+71867,Macrophage
+71868,Macrophage
+71869,Macrophage
+71870,CD4 T cell
+71871,CD4 T cell
+71872,Tumor
+71873,CD8 T cell
+71874,Granulocyte
+71875,Macrophage
+71876,Macrophage
+71877,CD4 T cell
+71878,Stromal / Fibroblast
+71879,CD4 T cell
+71880,Macrophage
+71881,CD4 T cell
+71882,Tumor (Ki67+)
+71883,Tumor (CD20+)
+71884,Macrophage
+71885,Tumor (Podo+)
+71886,Macrophage
+71887,CD8 T cell
+71888,Macrophage
+71889,Naive immune cell
+71890,Stromal / Fibroblast
+71891,Tumor
+71892,Tumor (Podo+)
+71893,Tumor (Podo+)
+71894,CD8 T cell
+71895,Vessel
+71896,Tumor (CD20+)
+71897,Granulocyte
+71898,Macrophage
+71899,Macrophage
+71900,Tumor (Ki67+)
+71901,Macrophage
+71902,Macrophage
+71903,CD8 T cell
+71904,Tumor (Podo+)
+71905,Macrophage
+71906,Macrophage
+71907,Macrophage
+71908,Naive immune cell
+71909,CD8 T cell
+71910,Tumor (Podo+)
+71911,CD4 T cell
+71912,CD8 T cell
+71913,Granulocyte
+71914,Macrophage
+71915,Tumor (Ki67+)
+71916,Tumor (Ki67+)
+71917,Tumor (Podo+)
+71918,Tumor (CD20+)
+71919,Granulocyte
+71920,Tumor (Podo+)
+71921,Tumor
+71922,Vessel
+71923,Macrophage
+71924,Granulocyte
+71925,Tumor (CD15+)
+71926,CD4 T cell
+71927,Macrophage
+71928,Macrophage
+71929,Stromal / Fibroblast
+71930,Tumor (Podo+)
+71931,Tumor (Ki67+)
+71932,Macrophage
+71933,Macrophage
+71934,Tumor (CD21+)
+71935,Tumor
+71936,Granulocyte
+71937,Tumor (Podo+)
+71938,Tumor
+71939,CD4 T cell
+71940,Macrophage
+71941,CD4 T cell
+71942,Granulocyte
+71943,CD4 T cell
+71944,CD4 T cell
+71945,Tumor (Podo+)
+71946,Tumor (CD21+)
+71947,CD4 T cell
+71948,CD8 T cell
+71949,Macrophage
+71950,Tumor (CD21+)
+71951,CD8 T cell
+71952,Tumor (Podo+)
+71953,Granulocyte
+71954,Vessel
+71955,Tumor (CD21+)
+71956,CD8 T cell
+71957,CD4 T cell
+71958,CD8 T cell
+71959,CD8 T cell
+71960,Tumor
+71961,Tumor (Podo+)
+71962,Granulocyte
+71963,Tumor (CD15+)
+71964,Vessel
+71965,CD8 T cell
+71966,Tumor
+71967,Macrophage
+71968,CD8 T cell
+71969,Tumor (CD20+)
+71970,Granulocyte
+71971,Tumor (Ki67+)
+71972,Stromal / Fibroblast
+71973,Granulocyte
+71974,Vessel
+71975,Granulocyte
+71976,CD8 T cell
+71977,Vessel
+71978,CD4 T cell
+71979,Stromal / Fibroblast
+71980,Macrophage
+71981,Tumor (Podo+)
+71982,CD4 T cell
+71983,Macrophage
+71984,Macrophage
+71985,Naive immune cell
+71986,Tumor (Podo+)
+71987,Tumor (CD20+)
+71988,APC
+71989,Vessel
+71990,Macrophage
+71991,CD8 T cell
+71992,Stromal / Fibroblast
+71993,CD8 T cell
+71994,Stromal / Fibroblast
+71995,Tumor (CD20+)
+71996,Tumor (CD21+)
+71997,CD8 T cell
+71998,Granulocyte
+71999,Macrophage
+72000,Granulocyte
+72001,APC
+72002,Tumor (Ki67+)
+72003,CD8 T cell
+72004,Macrophage
+72005,CD4 T cell
+72006,Macrophage
+72007,Stromal / Fibroblast
+72008,Tumor (Ki67+)
+72009,Macrophage
+72010,CD8 T cell
+72011,Stromal / Fibroblast
+72012,Tumor (Ki67+)
+72013,Tumor (Ki67+)
+72014,CD8 T cell
+72015,Tumor (CD20+)
+72016,Tumor (Ki67+)
+72017,Vessel
+72018,CD4 T cell
+72019,Stromal / Fibroblast
+72020,CD4 T cell
+72021,Macrophage
+72022,Macrophage
+72023,Lymph vessel
+72024,Macrophage
+72025,Granulocyte
+72026,Tumor (Podo+)
+72027,Tumor (CD20+)
+72028,Tumor
+72029,Tumor (Ki67+)
+72030,Granulocyte
+72031,Macrophage
+72032,CD4 T cell
+72033,Tumor (Podo+)
+72034,CD8 T cell
+72035,Tumor (Ki67+)
+72036,Tumor (Ki67+)
+72037,Granulocyte
+72038,Stromal / Fibroblast
+72039,Tumor (Podo+)
+72040,Tumor (Podo+)
+72041,Tumor (Ki67+)
+72042,CD8 T cell
+72043,Tumor (Podo+)
+72044,Tumor (Podo+)
+72045,Macrophage
+72046,Macrophage
+72047,Granulocyte
+72048,CD4 T cell
+72049,Tumor
+72050,Tumor
+72051,Tumor (CD15+)
+72052,Tumor
+72053,Tumor (Ki67+)
+72054,Naive immune cell
+72055,CD8 T cell
+72056,Granulocyte
+72057,Tumor (Podo+)
+72058,Lymph vessel
+72059,Granulocyte
+72060,Macrophage
+72061,Vessel
+72062,CD8 T cell
+72063,B cell
+72064,Tumor (CD20+)
+72065,Tumor (CD21+)
+72066,Macrophage
+72067,Granulocyte
+72068,Granulocyte
+72069,Stromal / Fibroblast
+72070,Stromal / Fibroblast
+72071,Tumor (Ki67+)
+72072,APC
+72073,Granulocyte
+72074,Stromal / Fibroblast
+72075,CD4 T cell
+72076,Macrophage
+72077,Macrophage
+72078,Macrophage
+72079,Macrophage
+72080,CD4 T cell
+72081,CD8 T cell
+72082,Tumor
+72083,CD8 T cell
+72084,Stromal / Fibroblast
+72085,Granulocyte
+72086,CD8 T cell
+72087,CD4 T cell
+72088,Granulocyte
+72089,CD8 T cell
+72090,Stromal / Fibroblast
+72091,Tumor (Ki67+)
+72092,Tumor (Ki67+)
+72093,Tumor (CD15+)
+72094,Macrophage
+72095,CD8 T cell
+72096,Granulocyte
+72097,Granulocyte
+72098,Macrophage
+72099,Vessel
+72100,Stromal / Fibroblast
+72101,Tumor (Podo+)
+72102,CD8 T cell
+72103,Stromal / Fibroblast
+72104,Tumor (CD20+)
+72105,Tumor (Ki67+)
+72106,Naive immune cell
+72107,Tumor (Ki67+)
+72108,Macrophage
+72109,Tumor
+72110,Stromal / Fibroblast
+72111,APC
+72112,Macrophage
+72113,Tumor (Ki67+)
+72114,Stromal / Fibroblast
+72115,Tumor
+72116,Tumor
+72117,Macrophage
+72118,Naive immune cell
+72119,CD4 T cell
+72120,Vessel
+72121,Tumor (Podo+)
+72122,Macrophage
+72123,Vessel
+72124,CD8 T cell
+72125,Tumor (Ki67+)
+72126,Tumor (Ki67+)
+72127,Tumor (CD21+)
+72128,CD4 T cell
+72129,Naive immune cell
+72130,APC
+72131,Macrophage
+72132,CD8 T cell
+72133,CD8 T cell
+72134,Tumor (Podo+)
+72135,CD8 T cell
+72136,Tumor (Podo+)
+72137,Tumor (Podo+)
+72138,Tumor (Ki67+)
+72139,Tumor (Podo+)
+72140,Tumor (CD20+)
+72141,Stromal / Fibroblast
+72142,Tumor
+72143,Macrophage
+72144,Macrophage
+72145,Macrophage
+72146,Macrophage
+72147,Macrophage
+72148,Tumor
+72149,CD8 T cell
+72150,Macrophage
+72151,Tumor (Ki67+)
+72152,Tumor (Ki67+)
+72153,Macrophage
+72154,Macrophage
+72155,B cell
+72156,Macrophage
+72157,CD4 T cell
+72158,Tumor (Ki67+)
+72159,Tumor (CD20+)
+72160,Stromal / Fibroblast
+72161,Granulocyte
+72162,Macrophage
+72163,Tumor (Podo+)
+72164,CD4 T cell
+72165,CD8 T cell
+72166,Tumor
+72167,Granulocyte
+72168,Stromal / Fibroblast
+72169,CD4 T cell
+72170,CD8 T cell
+72171,APC
+72172,CD8 T cell
+72173,Tumor (CD20+)
+72174,Tumor (Ki67+)
+72175,APC
+72176,Stromal / Fibroblast
+72177,Tumor (Podo+)
+72178,Granulocyte
+72179,CD4 T cell
+72180,CD8 T cell
+72181,Macrophage
+72182,Vessel
+72183,Stromal / Fibroblast
+72184,Tumor (CD20+)
+72185,Tumor (Podo+)
+72186,CD8 T cell
+72187,CD8 T cell
+72188,Granulocyte
+72189,Granulocyte
+72190,CD4 T cell
+72191,Stromal / Fibroblast
+72192,Tumor (Ki67+)
+72193,Tumor (CD15+)
+72194,CD8 T cell
+72195,Vessel
+72196,Macrophage
+72197,Stromal / Fibroblast
+72198,Tumor (Ki67+)
+72199,CD4 T cell
+72200,Tumor (Ki67+)
+72201,Tumor
+72202,Macrophage
+72203,Tumor (Ki67+)
+72204,Tumor (Podo+)
+72205,B cell
+72206,CD4 T cell
+72207,CD8 T cell
+72208,Tumor (Podo+)
+72209,CD4 T cell
+72210,Tumor
+72211,CD8 T cell
+72212,Tumor (Podo+)
+72213,Macrophage
+72214,Tumor
+72215,Macrophage
+72216,Granulocyte
+72217,Stromal / Fibroblast
+72218,Macrophage
+72219,CD4 T cell
+72220,CD8 T cell
+72221,Stromal / Fibroblast
+72222,Stromal / Fibroblast
+72223,Macrophage
+72224,Lymph vessel
+72225,Granulocyte
+72226,B cell
+72227,APC
+72228,Macrophage
+72229,Macrophage
+72230,CD8 T cell
+72231,CD4 T cell
+72232,Tumor (CD21+)
+72233,CD4 T cell
+72234,Vessel
+72235,Macrophage
+72236,Vessel
+72237,CD4 T cell
+72238,Tumor (Ki67+)
+72239,Tumor
+72240,Tumor (Podo+)
+72241,Granulocyte
+72242,Stromal / Fibroblast
+72243,Tumor
+72244,Tumor (CD20+)
+72245,Macrophage
+72246,CD8 T cell
+72247,Macrophage
+72248,CD4 T cell
+72249,Macrophage
+72250,Tumor (Podo+)
+72251,Stromal / Fibroblast
+72252,Tumor (Ki67+)
+72253,Tumor (CD20+)
+72254,Tumor (Podo+)
+72255,Tumor (CD20+)
+72256,Macrophage
+72257,Granulocyte
+72258,Macrophage
+72259,Vessel
+72260,Stromal / Fibroblast
+72261,CD4 T cell
+72262,Tumor (Ki67+)
+72263,Macrophage
+72264,Vessel
+72265,Tumor (Ki67+)
+72266,CD4 T cell
+72267,CD4 T cell
+72268,Naive immune cell
+72269,Macrophage
+72270,Tumor (Ki67+)
+72271,CD4 T cell
+72272,Vessel
+72273,Macrophage
+72274,APC
+72275,CD4 T cell
+72276,CD8 T cell
+72277,Tumor
+72278,Macrophage
+72279,Macrophage
+72280,CD4 T cell
+72281,Tumor (CD20+)
+72282,Macrophage
+72283,Macrophage
+72284,Macrophage
+72285,Macrophage
+72286,Macrophage
+72287,Macrophage
+72288,Granulocyte
+72289,CD4 T cell
+72290,Granulocyte
+72291,Tumor (Podo+)
+72292,Tumor (CD21+)
+72293,Tumor (Ki67+)
+72294,Granulocyte
+72295,Granulocyte
+72296,Macrophage
+72297,CD4 T cell
+72298,Stromal / Fibroblast
+72299,Tumor (CD21+)
+72300,Macrophage
+72301,CD4 T cell
+72302,Tumor (CD21+)
+72303,Tumor
+72304,Vessel
+72305,CD4 T cell
+72306,Stromal / Fibroblast
+72307,Tumor
+72308,Macrophage
+72309,CD4 T cell
+72310,Macrophage
+72311,Stromal / Fibroblast
+72312,Granulocyte
+72313,Stromal / Fibroblast
+72314,Macrophage
+72315,Macrophage
+72316,Stromal / Fibroblast
+72317,Tumor (CD20+)
+72318,Tumor (CD21+)
+72319,Tumor (CD21+)
+72320,Granulocyte
+72321,Macrophage
+72322,Macrophage
+72323,Macrophage
+72324,Tumor (CD21+)
+72325,Macrophage
+72326,Macrophage
+72327,Macrophage
+72328,Macrophage
+72330,Macrophage
+72331,Granulocyte
+72332,Macrophage
+72333,Macrophage
+72334,Granulocyte
+72335,CD8 T cell
+72336,CD4 T cell
+72337,Tumor (Ki67+)
+72338,Tumor (Ki67+)
+72339,Tumor (CD20+)
+72340,Tumor (Podo+)
+72341,Vessel
+72342,Stromal / Fibroblast
+72343,Granulocyte
+72344,Macrophage
+72345,Stromal / Fibroblast
+72346,Tumor (Ki67+)
+72347,Vessel
+72348,Vessel
+72349,CD8 T cell
+72350,Macrophage
+72351,CD4 T cell
+72352,CD8 T cell
+72353,Tumor (Podo+)
+72354,Macrophage
+72355,Macrophage
+72356,Tumor (Podo+)
+72357,Tumor (CD21+)
+72358,Tumor (Podo+)
+72359,Granulocyte
+72360,Tumor
+72361,Macrophage
+72362,Tumor (Ki67+)
+72363,CD4 T cell
+72364,Granulocyte
+72365,Granulocyte
+72366,Granulocyte
+72367,Naive immune cell
+72368,CD4 T cell
+72369,Tumor (Ki67+)
+72370,Macrophage
+72371,Granulocyte
+72372,Macrophage
+72373,Vessel
+72374,CD4 T cell
+72375,Tumor (Ki67+)
+72376,Stromal / Fibroblast
+72377,Macrophage
+72378,Tumor (CD20+)
+72379,Tumor (CD20+)
+72380,Granulocyte
+72381,Tumor (Ki67+)
+72382,CD4 T cell
+72383,CD4 T cell
+72384,Macrophage
+72385,Vessel
+72386,Macrophage
+72387,Macrophage
+72388,Naive immune cell
+72389,Granulocyte
+72390,Tumor (CD20+)
+72392,Macrophage
+72393,APC
+72394,Macrophage
+72395,Macrophage
+72396,Vessel
+72397,Tumor (CD21+)
+72398,Macrophage
+72399,Macrophage
+72400,CD4 T cell
+72401,Macrophage
+72402,Stromal / Fibroblast
+72403,Macrophage
+72404,Granulocyte
+72405,Lymph vessel
+72406,Macrophage
+72407,Macrophage
+72408,Granulocyte
+72409,Tumor
+72410,Naive immune cell
+72411,Stromal / Fibroblast
+72412,Macrophage
+72413,Macrophage
+72414,Granulocyte
+72415,CD4 T cell
+72416,Stromal / Fibroblast
+72417,Macrophage
+72418,Tumor (Podo+)
+72419,CD8 T cell
+72420,Macrophage
+72421,CD8 T cell
+72422,Tumor (Podo+)
+72423,Tumor (CD21+)
+72424,Tumor
+72425,Tumor (Podo+)
+72426,Macrophage
+72427,Macrophage
+72428,Tumor (CD21+)
+72429,Tumor (CD20+)
+72430,Tumor (Ki67+)
+72431,CD4 T cell
+72432,Macrophage
+72433,Macrophage
+72434,Macrophage
+72435,Tumor (CD20+)
+72436,Granulocyte
+72437,Macrophage
+72438,Macrophage
+72439,Tumor (Podo+)
+72440,Tumor (CD21+)
+72441,Vessel
+72442,CD4 T cell
+72443,Tumor
+72444,Stromal / Fibroblast
+72445,Naive immune cell
+72446,Macrophage
+72447,Granulocyte
+72448,Stromal / Fibroblast
+72449,Tumor (Podo+)
+72450,CD8 T cell
+72451,Tumor (CD20+)
+72452,Macrophage
+72453,CD4 T cell
+72454,Macrophage
+72455,Tumor (CD21+)
+72456,Macrophage
+72457,Macrophage
+72458,Macrophage
+72459,Tumor (Ki67+)
+72460,Tumor (CD20+)
+72461,Tumor (CD21+)
+72462,APC
+72463,Granulocyte
+72464,Stromal / Fibroblast
+72465,CD8 T cell
+72466,Stromal / Fibroblast
+72467,APC
+72468,Granulocyte
+72469,Granulocyte
+72470,Stromal / Fibroblast
+72471,CD8 T cell
+72472,Macrophage
+72473,Vessel
+72474,Vessel
+72475,Tumor (Podo+)
+72476,CD8 T cell
+72477,Tumor (Podo+)
+72478,CD4 T cell
+72479,Tumor (CD21+)
+72480,Tumor (Ki67+)
+72481,Stromal / Fibroblast
+72482,Macrophage
+72483,Macrophage
+72484,Stromal / Fibroblast
+72485,Macrophage
+72486,Tumor (CD21+)
+72487,Macrophage
+72488,Macrophage
+72489,Macrophage
+72490,Stromal / Fibroblast
+72491,Tumor (CD20+)
+72492,Tumor (Podo+)
+72493,Granulocyte
+72494,CD4 T cell
+72495,Granulocyte
+72496,Granulocyte
+72497,Granulocyte
+72498,CD8 T cell
+72499,Macrophage
+72500,Macrophage
+72501,CD8 T cell
+72502,Vessel
+72503,Tumor (CD20+)
+72504,CD8 T cell
+72505,Tumor (CD21+)
+72506,Tumor (CD21+)
+72507,Macrophage
+72508,Macrophage
+72509,Macrophage
+72510,Macrophage
+72511,Vessel
+72512,APC
+72513,Stromal / Fibroblast
+72514,Stromal / Fibroblast
+72515,Tumor (Podo+)
+72516,Tumor (Ki67+)
+72517,Tumor (CD21+)
+72518,Tumor (CD21+)
+72519,Macrophage
+72520,Macrophage
+72521,Stromal / Fibroblast
+72522,Tumor (Ki67+)
+72523,CD4 T cell
+72524,Macrophage
+72525,Macrophage
+72526,Stromal / Fibroblast
+72527,Tumor (Ki67+)
+72528,Tumor (CD21+)
+72529,Tumor (CD21+)
+72530,Macrophage
+72531,Macrophage
+72532,Naive immune cell
+72533,Macrophage
+72534,Stromal / Fibroblast
+72535,Macrophage
+72536,Macrophage
+72537,Macrophage
+72538,Macrophage
+72539,Stromal / Fibroblast
+72540,Tumor (CD20+)
+72541,CD8 T cell
+72542,Macrophage
+72543,Macrophage
+72544,CD4 T cell
+72545,Stromal / Fibroblast
+72546,Tumor (CD20+)
+72547,Granulocyte
+72548,CD4 T cell
+72549,Macrophage
+72550,Macrophage
+72551,CD8 T cell
+72552,Stromal / Fibroblast
+72553,Tumor
+72554,Tumor (Ki67+)
+72555,Granulocyte
+72556,Macrophage
+72557,Macrophage
+72558,Macrophage
+72559,CD4 T cell
+72560,CD4 T cell
+72561,Stromal / Fibroblast
+72562,Macrophage
+72563,Macrophage
+72564,Macrophage
+72565,Macrophage
+72566,CD8 T cell
+72567,Macrophage
+72568,Macrophage
+72569,Vessel
+72570,Tumor (CD21+)
+72571,CD4 T cell
+72572,APC
+72573,Macrophage
+72574,Macrophage
+72575,Tumor (CD21+)
+72576,Tumor (Ki67+)
+72577,Tumor (Podo+)
+72578,Vessel
+72579,CD4 T cell
+72580,Stromal / Fibroblast
+72581,Macrophage
+72582,Vessel
+72583,Naive immune cell
+72584,Tumor
+72585,CD4 T cell
+72586,Granulocyte
+72587,Macrophage
+72588,CD8 T cell
+72589,CD8 T cell
+72590,Macrophage
+72591,Tumor (Podo+)
+72592,Tumor (CD21+)
+72593,Tumor (CD21+)
+72594,Tumor (CD20+)
+72596,Macrophage
+72597,CD8 T cell
+72598,Lymph vessel
+72599,Macrophage
+72600,Vessel
+72601,Tumor (Podo+)
+72602,Macrophage
+72603,Vessel
+72604,CD4 T cell
+72605,Tumor (CD20+)
+72606,Tumor (CD21+)
+72607,CD4 T cell
+72608,Granulocyte
+72609,Macrophage
+72610,Macrophage
+72611,Macrophage
+72612,Macrophage
+72613,Granulocyte
+72614,Macrophage
+72615,CD4 T cell
+72616,CD4 T cell
+72617,Stromal / Fibroblast
+72618,Tumor (Ki67+)
+72619,Tumor (CD21+)
+72620,Tumor (Ki67+)
+72621,Vessel
+72622,Naive immune cell
+72623,Macrophage
+72624,Macrophage
+72625,Tumor (CD21+)
+72626,Macrophage
+72627,Tumor (Podo+)
+72628,Naive immune cell
+72629,Vessel
+72630,Granulocyte
+72631,Macrophage
+72632,Lymph vessel
+72633,Tumor
+72634,Macrophage
+72635,Tumor (CD21+)
+72636,Granulocyte
+72637,Macrophage
+72638,Macrophage
+72639,Tumor (Podo+)
+72640,Granulocyte
+72641,Macrophage
+72642,Tumor (CD20+)
+72643,Stromal / Fibroblast
+72644,Macrophage
+72645,CD4 T cell
+72646,Granulocyte
+72647,Macrophage
+72648,Macrophage
+72649,Macrophage
+72650,Macrophage
+72651,Macrophage
+72652,Macrophage
+72653,Tumor (Ki67+)
+72654,Tumor (CD20+)
+72655,Macrophage
+72656,Tumor
+72657,Tumor (Ki67+)
+72658,Vessel
+72659,APC
+72660,CD4 T cell
+72661,CD4 T cell
+72662,APC
+72663,Macrophage
+72664,Lymph vessel
+72665,Stromal / Fibroblast
+72666,Stromal / Fibroblast
+72667,Stromal / Fibroblast
+72668,Tumor (Ki67+)
+72669,Tumor (CD21+)
+72670,APC
+72671,Tumor (CD21+)
+72672,Vessel
+72673,Macrophage
+72674,Macrophage
+72675,Tumor
+72676,Tumor (Podo+)
+72677,Macrophage
+72678,Macrophage
+72679,Tumor
+72680,Stromal / Fibroblast
+72681,Tumor
+72682,Tumor (Ki67+)
+72683,Tumor (CD15+)
+72684,Tumor (Podo+)
+72685,Tumor
+72686,APC
+72687,Macrophage
+72688,Macrophage
+72689,Stromal / Fibroblast
+72690,Macrophage
+72691,Tumor (CD20+)
+72692,Tumor (CD21+)
+72693,Tumor (CD15+)
+72694,B cell
+72695,Vessel
+72696,Macrophage
+72697,Macrophage
+72698,Naive immune cell
+72699,Vessel
+72700,Tumor (Podo+)
+72701,Tumor (Podo+)
+72702,Macrophage
+72703,Vessel
+72704,Tumor (Ki67+)
+72705,CD4 T cell
+72706,Tumor (CD20+)
+72707,CD4 T cell
+72708,Vessel
+72709,Tumor (Podo+)
+72710,Naive immune cell
+72711,B cell
+72713,CD4 T cell
+72714,Stromal / Fibroblast
+72715,Macrophage
+72716,Vessel
+72717,Tumor (CD21+)
+72718,Macrophage
+72719,Macrophage
+72720,CD8 T cell
+72721,Stromal / Fibroblast
+72722,Tumor (CD21+)
+72723,CD4 T cell
+72724,Vessel
+72725,Vessel
+72726,Tumor (CD21+)
+72727,Macrophage
+72728,Macrophage
+72729,CD8 T cell
+72730,Macrophage
+72731,CD8 T cell
+72732,Stromal / Fibroblast
+72733,Tumor (CD21+)
+72734,Tumor (CD21+)
+72735,Tumor (CD21+)
+72736,Macrophage
+72737,Macrophage
+72738,Tumor (CD21+)
+72739,CD4 T cell
+72740,APC
+72741,Granulocyte
+72742,Macrophage
+72743,Macrophage
+72744,CD8 T cell
+72745,Macrophage
+72746,Vessel
+72747,Macrophage
+72748,CD4 T cell
+72749,Macrophage
+72750,Tumor (CD21+)
+72751,Tumor (CD20+)
+72752,Vessel
+72753,Macrophage
+72754,Stromal / Fibroblast
+72755,Stromal / Fibroblast
+72756,Macrophage
+72757,Tumor (CD20+)
+72758,Stromal / Fibroblast
+72759,Tumor
+72760,CD4 T cell
+72761,Macrophage
+72762,Macrophage
+72763,Stromal / Fibroblast
+72764,Macrophage
+72765,Tumor (CD20+)
+72766,Macrophage
+72767,Tumor (CD21+)
+72768,Tumor (CD20+)
+72769,Tumor (Podo+)
+72770,CD4 T cell
+72771,CD8 T cell
+72772,Vessel
+72773,Granulocyte
+72774,Tumor (Ki67+)
+72775,Tumor (Ki67+)
+72776,Vessel
+72777,Stromal / Fibroblast
+72778,Stromal / Fibroblast
+72779,Macrophage
+72780,Tumor (CD15+)
+72781,Tumor (CD20+)
+72782,Tumor (CD20+)
+72783,Tumor
+72784,CD4 T cell
+72785,B cell
+72786,Tumor (CD20+)
+72787,APC
+72788,Naive immune cell
+72789,CD4 T cell
+72790,Naive immune cell
+72791,Tumor (CD21+)
+72792,Macrophage
+72793,Macrophage
+72794,Tumor (Podo+)
+72795,Macrophage
+72796,Macrophage
+72797,Tumor
+72798,Tumor (CD21+)
+72799,Stromal / Fibroblast
+72800,Tumor (CD21+)
+72801,CD4 T cell
+72802,Macrophage
+72803,Macrophage
+72804,Macrophage
+72805,Macrophage
+72806,Tumor
+72807,Tumor (Ki67+)
+72808,Granulocyte
+72809,Tumor (CD15+)
+72810,CD4 T cell
+72811,Macrophage
+72812,Vessel
+72813,Tumor
+72814,Tumor (CD21+)
+72815,Stromal / Fibroblast
+72816,Vessel
+72817,Vessel
+72818,CD4 T cell
+72819,Vessel
+72820,Naive immune cell
+72821,Lymph vessel
+72822,Vessel
+72823,Vessel
+72824,Tumor (Ki67+)
+72825,Vessel
+72826,Vessel
+72827,Tumor (CD20+)
+72828,Macrophage
+72829,CD8 T cell
+72830,Naive immune cell
+72831,Macrophage
+72832,Tumor (Podo+)
+72833,Stromal / Fibroblast
+72834,Tumor (Podo+)
+72835,Macrophage
+72836,Tumor (Ki67+)
+72837,Tumor (Ki67+)
+72838,CD8 T cell
+72839,Macrophage
+72840,Macrophage
+72841,Vessel
+72842,Macrophage
+72843,CD4 T cell
+72844,CD8 T cell
+72845,Tumor (Podo+)
+72846,Macrophage
+72847,Macrophage
+72848,Vessel
+72849,Granulocyte
+72850,Tumor (Podo+)
+72851,Tumor
+72852,Tumor (CD21+)
+72853,Macrophage
+72854,Macrophage
+72855,Tumor (Podo+)
+72856,Macrophage
+72857,Macrophage
+72858,Tumor
+72859,Macrophage
+72860,CD8 T cell
+72861,Tumor (CD21+)
+72862,Tumor (CD21+)
+72863,Granulocyte
+72864,CD4 T cell
+72865,CD4 T cell
+72866,APC
+72867,Stromal / Fibroblast
+72868,Tumor (Podo+)
+72869,Stromal / Fibroblast
+72870,Naive immune cell
+72871,Tumor (Podo+)
+72872,Macrophage
+72873,Macrophage
+72874,Granulocyte
+72875,Lymph vessel
+72876,Tumor
+72877,Vessel
+72878,Vessel
+72879,Tumor
+72880,Tumor
+72881,Tumor (Podo+)
+72882,CD4 T cell
+72883,Naive immune cell
+72884,Tumor (Ki67+)
+72885,Tumor (Ki67+)
+72886,Vessel
+72887,Tumor (Ki67+)
+72888,Macrophage
+72889,Granulocyte
+72890,Granulocyte
+72891,Macrophage
+72892,Tumor (Ki67+)
+72893,Granulocyte
+72894,Vessel
+72895,Macrophage
+72896,Macrophage
+72897,Granulocyte
+72898,Macrophage
+72899,Granulocyte
+72900,Tumor (CD20+)
+72901,CD8 T cell
+72902,Macrophage
+72903,Tumor (CD21+)
+72904,Tumor (Podo+)
+72905,Tumor (CD20+)
+72906,Stromal / Fibroblast
+72907,Granulocyte
+72908,Granulocyte
+72909,APC
+72910,Tumor (Ki67+)
+72911,Tumor (Podo+)
+72912,Tumor (CD21+)
+72913,CD4 T cell
+72914,Granulocyte
+72915,Tumor (Podo+)
+72916,Macrophage
+72917,Macrophage
+72918,Tumor (Ki67+)
+72919,Tumor (CD20+)
+72920,Tumor (Podo+)
+72921,Tumor (Podo+)
+72922,Granulocyte
+72923,Vessel
+72924,Tumor (Podo+)
+72925,Tumor (CD20+)
+72926,Tumor (CD20+)
+72927,Tumor (CD20+)
+72928,Tumor (CD21+)
+72929,Macrophage
+72930,Naive immune cell
+72931,Vessel
+72932,Tumor (Podo+)
+72933,Tumor (Podo+)
+72934,Tumor (Podo+)
+72935,Granulocyte
+72936,CD4 T cell
+72937,Tumor
+72938,Tumor (CD20+)
+72939,Tumor (Podo+)
+72940,Stromal / Fibroblast
+72941,Granulocyte
+72942,CD4 T cell
+72943,Naive immune cell
+72944,Tumor (Podo+)
+72945,Macrophage
+72946,Vessel
+72947,Tumor (CD15+)
+72948,Tumor (CD21+)
+72949,CD8 T cell
+72950,Macrophage
+72951,Macrophage
+72952,Tumor (Ki67+)
+72953,Tumor (Ki67+)
+72954,Tumor (Podo+)
+72955,Tumor (CD21+)
+72956,Tumor (CD20+)
+72957,Tumor (CD20+)
+72958,Tumor (CD21+)
+72959,Tumor (Podo+)
+72960,Macrophage
+72961,Macrophage
+72962,Macrophage
+72963,Tumor (CD15+)
+72964,Tumor (Ki67+)
+72965,Vessel
+72966,Macrophage
+72967,Tumor (Podo+)
+72968,APC
+72969,CD4 T cell
+72970,Macrophage
+72971,Macrophage
+72972,Tumor (Podo+)
+72973,Tumor
+72974,Stromal / Fibroblast
+72975,Vessel
+72976,Macrophage
+72978,Tumor (CD20+)
+72979,CD8 T cell
+72980,Tumor (CD21+)
+72981,Tumor (CD21+)
+72982,CD8 T cell
+72983,Naive immune cell
+72984,Macrophage
+72985,Tumor (CD20+)
+72986,CD4 T cell
+72987,Macrophage
+72988,Macrophage
+72989,Tumor (CD21+)
+72990,Vessel
+72991,Macrophage
+72992,Tumor (CD15+)
+72993,Granulocyte
+72994,CD4 T cell
+72995,Vessel
+72996,Macrophage
+72997,CD8 T cell
+72998,APC
+72999,Tumor (CD21+)
+73000,Macrophage
+73001,Macrophage
+73002,Tumor (Ki67+)
+73003,Tumor (Ki67+)
+73004,Tumor (CD20+)
+73006,Macrophage
+73007,CD8 T cell
+73008,APC
+73009,Tumor (Ki67+)
+73010,Tumor (CD20+)
+73011,Granulocyte
+73012,Granulocyte
+73013,Granulocyte
+73014,Tumor (CD21+)
+73015,Tumor
+73016,Tumor (Podo+)
+73017,CD4 T cell
+73018,Granulocyte
+73019,Macrophage
+73020,Macrophage
+73021,Tumor (Podo+)
+73022,CD4 T cell
+73023,Macrophage
+73024,Tumor (CD20+)
+73025,Granulocyte
+73026,Tumor (Podo+)
+73027,Tumor (Podo+)
+73028,Granulocyte
+73029,Tumor (Ki67+)
+73030,Vessel
+73031,Tumor (Ki67+)
+73032,Macrophage
+73033,Macrophage
+73034,Tumor (CD21+)
+73035,CD4 T cell
+73036,Tumor (CD21+)
+73037,Macrophage
+73038,Stromal / Fibroblast
+73039,Macrophage
+73040,Stromal / Fibroblast
+73041,CD8 T cell
+73042,Vessel
+73043,Granulocyte
+73044,Macrophage
+73045,Tumor
+73046,Tumor
+73047,CD8 T cell
+73048,Macrophage
+73049,Tumor (CD20+)
+73050,Tumor (Podo+)
+73052,Tumor (Podo+)
+73053,Vessel
+73054,Tumor (CD20+)
+73055,Tumor (CD15+)
+73056,Tumor (CD15+)
+73057,Tumor (CD21+)
+73058,Granulocyte
+73059,Granulocyte
+73060,CD8 T cell
+73061,Tumor (Podo+)
+73062,Tumor (CD15+)
+73063,Tumor (CD21+)
+73064,Vessel
+73065,Tumor (CD20+)
+73066,Lymph vessel
+73067,CD4 T cell
+73068,Macrophage
+73069,Tumor (CD15+)
+73071,Tumor (Podo+)
+73072,Tumor (Podo+)
+73073,Macrophage
+73074,Stromal / Fibroblast
+73075,Macrophage
+73076,Tumor (CD15+)
+73077,Tumor (CD21+)
+73078,Tumor (CD21+)
+73079,CD4 T cell
+73080,Granulocyte
+73081,CD4 T cell
+73082,Vessel
+73083,Macrophage
+73084,Tumor
+73085,Macrophage
+73086,Tumor (CD21+)
+73087,Macrophage
+73088,Tumor (Podo+)
+73089,Granulocyte
+73090,Macrophage
+73091,Macrophage
+73092,Macrophage
+73093,Tumor (CD20+)
+73094,Tumor (Podo+)
+73095,Tumor (CD20+)
+73096,Tumor (Podo+)
+73097,Naive immune cell
+73098,Tumor (CD15+)
+73099,APC
+73100,Granulocyte
+73101,Tumor (Ki67+)
+73102,Tumor (Podo+)
+73103,Tumor (CD20+)
+73104,Macrophage
+73105,Granulocyte
+73106,Vessel
+73107,Macrophage
+73108,Tumor
+73109,Tumor (Podo+)
+73110,CD4 T cell
+73111,B cell
+73112,Vessel
+73113,Tumor (CD15+)
+73114,Tumor (Ki67+)
+73115,Tumor (CD21+)
+73116,Granulocyte
+73117,Granulocyte
+73118,Tumor (CD15+)
+73119,CD4 T cell
+73120,CD8 T cell
+73121,Macrophage
+73122,Tumor (CD21+)
+73123,Tumor
+73125,Granulocyte
+73126,Granulocyte
+73127,Granulocyte
+73128,CD4 T cell
+73129,Tumor (CD21+)
+73130,Granulocyte
+73131,Tumor (CD21+)
+73132,Tumor (CD20+)
+73133,Tumor
+73134,Macrophage
+73135,Granulocyte
+73136,Naive immune cell
+73137,Macrophage
+73138,Granulocyte
+73139,Tumor (Podo+)
+73140,Tumor (Podo+)
+73141,Granulocyte
+73142,Macrophage
+73143,CD4 T cell
+73144,Macrophage
+73145,Stromal / Fibroblast
+73146,CD8 T cell
+73147,Tumor (Podo+)
+73148,Granulocyte
+73149,Granulocyte
+73150,Granulocyte
+73151,Tumor (Podo+)
+73152,Tumor (CD21+)
+73153,Tumor (Podo+)
+73154,Granulocyte
+73155,Tumor (Podo+)
+73156,Granulocyte
+73157,Macrophage
+73158,Macrophage
+73159,Macrophage
+73160,Granulocyte
+73161,Macrophage
+73162,Tumor (Podo+)
+73163,Tumor (CD21+)
+73164,Tumor (CD21+)
+73165,Vessel
+73166,Vessel
+73167,CD4 T cell
+73168,Vessel
+73169,Tumor (CD20+)
+73170,Tumor (Podo+)
+73171,Tumor (CD20+)
+73172,Macrophage
+73173,Granulocyte
+73174,Tumor (Ki67+)
+73175,Granulocyte
+73176,Tumor (CD21+)
+73177,B cell
+73178,Granulocyte
+73179,Granulocyte
+73180,CD8 T cell
+73181,Tumor (CD21+)
+73182,Tumor (Podo+)
+73183,Tumor (CD21+)
+73184,Tumor (CD21+)
+73185,Naive immune cell
+73186,Granulocyte
+73187,Tumor (Ki67+)
+73188,Stromal / Fibroblast
+73189,Tumor (CD20+)
+73190,Granulocyte
+73191,CD8 T cell
+73193,Tumor (CD15+)
+73194,Granulocyte
+73195,CD4 T cell
+73196,Stromal / Fibroblast
+73197,Stromal / Fibroblast
+73198,Tumor (CD15+)
+73199,Tumor (Ki67+)
+73200,Tumor
+73201,CD8 T cell
+73202,Tumor (CD15+)
+73203,Granulocyte
+73204,Tumor (Ki67+)
+73205,Tumor (CD21+)
+73206,Granulocyte
+73207,Macrophage
+73208,Stromal / Fibroblast
+73209,CD4 T cell
+73210,Granulocyte
+73211,CD8 T cell
+73212,Stromal / Fibroblast
+73213,Granulocyte
+73214,Vessel
+73215,Macrophage
+73217,Granulocyte
+73218,Tumor (CD21+)
+73219,Macrophage
+73220,Granulocyte
+73221,CD8 T cell
+73222,Tumor (Ki67+)
+73223,Macrophage
+73224,CD8 T cell
+73225,Tumor (CD15+)
+73226,Granulocyte
+73227,Granulocyte
+73228,Tumor (Ki67+)
+73229,Tumor (Podo+)
+73230,Macrophage
+73231,Macrophage
+73232,Vessel
+73233,Macrophage
+73234,Macrophage
+73235,CD8 T cell
+73236,CD8 T cell
+73237,Tumor (CD21+)
+73238,Tumor (Podo+)
+73239,Tumor (Ki67+)
+73240,Granulocyte
+73241,Granulocyte
+73242,Tumor (Podo+)
+73243,Tumor (CD21+)
+73244,B cell
+73245,Naive immune cell
+73246,Tumor (Podo+)
+73247,Granulocyte
+73248,Granulocyte
+73250,Granulocyte
+73251,Tumor (Podo+)
+73252,Granulocyte
+73253,CD8 T cell
+73254,CD8 T cell
+73255,CD4 T cell
+73256,Granulocyte
+73257,Granulocyte
+73258,Granulocyte
+73259,Tumor (CD15+)
+73260,Macrophage
+73261,CD4 T cell
+73262,Vessel
+73263,Stromal / Fibroblast
+73264,Tumor (CD21+)
+73265,Tumor (CD15+)
+73266,CD8 T cell
+73267,Tumor (Ki67+)
+73268,Tumor (CD21+)
+73269,CD4 T cell
+73270,Macrophage
+73271,Macrophage
+73272,Macrophage
+73273,Granulocyte
+73274,Granulocyte
+73275,Tumor (Ki67+)
+73276,CD4 T cell
+73277,Tumor (CD21+)
+73278,Naive immune cell
+73279,Tumor (Ki67+)
+73280,Tumor (CD20+)
+73281,Tumor (Ki67+)
+73282,Tumor (CD21+)
+73283,Tumor (CD21+)
+73284,Granulocyte
+73285,Macrophage
+73286,CD4 T cell
+73287,Naive immune cell
+73288,Granulocyte
+73289,Granulocyte
+73290,Tumor (CD21+)
+73291,Granulocyte
+73292,Tumor (Ki67+)
+73293,Stromal / Fibroblast
+73294,Lymph vessel
+73295,Granulocyte
+73296,Granulocyte
+73297,Granulocyte
+73298,Tumor (CD21+)
+73299,Tumor (Podo+)
+73300,Granulocyte
+73301,Macrophage
+73302,Macrophage
+73303,Tumor
+73304,Vessel
+73305,B cell
+73306,Granulocyte
+73307,Tumor (Podo+)
+73308,Tumor (CD20+)
+73309,CD4 T cell
+73310,Macrophage
+73311,Granulocyte
+73312,Naive immune cell
+73313,Macrophage
+73315,Stromal / Fibroblast
+73316,Macrophage
+73317,Naive immune cell
+73318,Tumor
+73319,Granulocyte
+73320,Tumor (Podo+)
+73321,Macrophage
+73322,Tumor (CD21+)
+73323,Tumor
+73324,Macrophage
+73325,Tumor (Podo+)
+73326,CD8 T cell
+73327,Tumor (CD15+)
+73328,Macrophage
+73329,Granulocyte
+73330,Granulocyte
+73331,Macrophage
+73332,Vessel
+73333,Vessel
+73334,Naive immune cell
+73335,Macrophage
+73336,Naive immune cell
+73337,Stromal / Fibroblast
+73338,APC
+73339,Macrophage
+73340,Tumor (Podo+)
+73341,Granulocyte
+73342,Tumor (Ki67+)
+73343,B cell
+73344,Tumor
+73345,Macrophage
+73346,Vessel
+73347,CD4 T cell
+73348,CD8 T cell
+73349,Macrophage
+73350,Granulocyte
+73351,Tumor (CD20+)
+73352,Stromal / Fibroblast
+73353,Tumor (Podo+)
+73354,CD8 T cell
+73355,Tumor (Podo+)
+73356,Granulocyte
+73357,Granulocyte
+73358,Stromal / Fibroblast
+73359,Granulocyte
+73360,CD4 T cell
+73361,Granulocyte
+73362,Granulocyte
+73363,Tumor (CD20+)
+73364,Tumor (CD20+)
+73365,Tumor (CD20+)
+73366,Macrophage
+73367,Tumor
+73368,Tumor (CD21+)
+73369,Macrophage
+73370,Tumor (CD20+)
+73371,Tumor (CD15+)
+73372,Lymph vessel
+73373,CD4 T cell
+73374,Granulocyte
+73375,Macrophage
+73376,Macrophage
+73377,Stromal / Fibroblast
+73378,Macrophage
+73379,Tumor (CD20+)
+73380,Tumor (CD20+)
+73381,Macrophage
+73382,Stromal / Fibroblast
+73383,Naive immune cell
+73384,Granulocyte
+73385,Granulocyte
+73386,Granulocyte
+73387,Granulocyte
+73388,Granulocyte
+73389,Granulocyte
+73390,Tumor
+73391,Tumor
+73392,CD8 T cell
+73393,Stromal / Fibroblast
+73394,Vessel
+73395,Granulocyte
+73397,Granulocyte
+73398,Tumor (CD21+)
+73399,Tumor (CD21+)
+73400,Macrophage
+73401,Macrophage
+73402,Naive immune cell
+73403,Stromal / Fibroblast
+73404,Macrophage
+73405,CD8 T cell
+73406,Macrophage
+73407,Tumor (CD21+)
+73408,Tumor (Ki67+)
+73409,Granulocyte
+73410,Granulocyte
+73411,Granulocyte
+73412,Granulocyte
+73413,Stromal / Fibroblast
+73414,Tumor
+73415,Vessel
+73416,Lymph vessel
+73417,Stromal / Fibroblast
+73418,Tumor (CD21+)
+73419,Granulocyte
+73420,Granulocyte
+73422,Stromal / Fibroblast
+73423,Tumor (CD21+)
+73424,Tumor (CD21+)
