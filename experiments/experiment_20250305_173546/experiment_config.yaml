@@ -1,0 +1,15 @@
+biomarkers:
+- PanCK
+- aSMA
+center_cells_file: center_cells.pt
+cluster_method: kmeans
+dataset_root: /Users/zhangjiahao/Dataset/CODEX/upmc/dataset/
+dr_method: PCA
+exp_dir: experiments/experiment_20250305_173546
+n_clusters: 5
+n_components: 2
+neighbor_types: null
+num_cells: 1000
+representation_key: raw_expression
+start_node: 1
+x_bins: 100
