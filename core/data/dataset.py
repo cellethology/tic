@@ -49,7 +49,7 @@ class MicroEDataset(InMemoryDataset):
         super().__init__(root, transform, pre_transform)
         
         # After processing, load the collated dataset from disk:
-        self.data, self.slices = torch.load(self.processed_paths[0])
+        self.data, self.slices, self.index_map = torch.load(self.processed_paths[0])
 
     @property
     def raw_dir(self):
@@ -102,6 +102,7 @@ class MicroEDataset(InMemoryDataset):
           6) Collect all final Data objects into an InMemoryDataset
         """
         data_list = []
+        self.index_map = []
 
         for rid in self.region_ids:
             print(f"[MicroEDataset] Processing Tissue {rid} ...")
@@ -131,9 +132,9 @@ class MicroEDataset(InMemoryDataset):
                 )
                 micro_graph = micro_env.graph  # A PyG Data object
 
-                # 2) Save the raw micro_graph before any pre_transform
-                raw_micro_graph_path = os.path.join(self.processed_dir, f"MicroE_{rid}_{center_id}.pt")
-                torch.save(micro_graph, raw_micro_graph_path)
+                # 2) Save the microE object before any pre_transform
+                raw_microe_path = os.path.join(self.processed_dir, f"MicroE_{rid}_{center_id}.pt")
+                torch.save(micro_env, raw_microe_path)
 
                 # 3) If pre_transform is provided, apply it now
                 if self.pre_transform is not None:
@@ -144,23 +145,62 @@ class MicroEDataset(InMemoryDataset):
                 micro_graph.cell_id = center_id
 
                 data_list.append(micro_graph)
+                self.index_map.append((rid, center_id))
 
         # Collate all micro_graph data into a single file for the InMemoryDataset
         data, slices = self.collate(data_list)
-        torch.save((data, slices), self.processed_paths[0])
+        torch.save((data, slices, self.index_map), self.processed_paths[0])
 
     def len(self):
         # Number of microenvironment subgraphs in the final dataset
         return self.slices['x'].size(0) - 1
+
+    def get_microe_item(self, idx) -> MicroE:
+        rid, cid = self.index_map[idx]
+        return self.get_microE(rid, cid)  # loads from disk
     
     def get_microE(self, region_id, cell_id) -> MicroE:
-        raw_micro_graph_path = os.path.join(self.processed_dir, f"MicroE_{region_id}_{cell_id}.pt")
-        return torch.load(raw_micro_graph_path)
+        raw_microe_path = os.path.join(self.processed_dir, f"MicroE_{region_id}_{cell_id}.pt")
+        return torch.load(raw_microe_path)
     
     def get_Tissue(self, region_id):
         tissue_cache_path = os.path.join(self.processed_dir, f"Tissue_{region_id}.pt")
         return torch.load(tissue_cache_path)
+    
+class MicroEWrapperDataset(torch.utils.data.Dataset):
+    """
+    A wrapper around MicroEDataset that yields MicroE objects instead of PyG Data.
+    """
+    def __init__(self, microe_dataset: MicroEDataset):
+        self.mdataset = microe_dataset
+    
+    def __len__(self):
+        return len(self.mdataset)
+    
+    def __getitem__(self, idx):
+        # Return the MicroE object
+        return self.mdataset.get_microe_item(idx)
 
+def create_microe_dataloader(mdataset: MicroEDataset, batch_size=1, shuffle=False, num_workers=0):
+    """
+    Create a DataLoader that yields MicroE objects (batches of MicroE).
+    """
+    wrapper_ds = MicroEWrapperDataset(mdataset)
+    loader = torch.utils.data.DataLoader(wrapper_ds, 
+                                         batch_size=batch_size,
+                                         shuffle=shuffle,
+                                         num_workers=num_workers,
+                                         collate_fn=collate_microe)
+    return loader
+
+def collate_microe(batch):
+    """
+    Custom collate function for MicroE objects.
+    By default, PyTorch tries to batch them as Tensors, 
+    but we might just return a list of MicroE objects for each batch.
+    """
+    return batch
+    
 if __name__ == "__main__":
     dataset = MicroEDataset(
         root="/Users/zhangjiahao/Project/tic/data/example",
@@ -174,3 +214,15 @@ if __name__ == "__main__":
     print(len(dataset))  # number of MicroE subgraphs
     subgraph_0 = dataset[0]  # a PyG Data object
     print(subgraph_0)
+
+    dataloader = create_microe_dataloader(dataset)
+
+    print(len(dataloader))
+
+    for i, batch in enumerate(dataloader):
+        print(i, batch)
+        if i > 2:
+            break
+
+    # microE = torch.load("/Users/zhangjiahao/Project/tic/data/example/Cache/MicroE_UPMC_c001_v001_r001_reg001_43.pt")
+    # print(microE)

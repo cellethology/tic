@@ -476,8 +476,9 @@ class Biomarkers:
         :param biomarker_name: The name of the biomarker to retrieve.
         :return: The expression level of the biomarker if it exists, else raises AttributeError.
         """
-        if biomarker_name in self.biomarkers:
-            return self.biomarkers[biomarker_name]
+        biomarker_dict = self.__dict__.get("biomarkers", {})
+        if biomarker_name in biomarker_dict:
+            return biomarker_dict[biomarker_name]
         else:
             raise AttributeError(f"Biomarker '{biomarker_name}' not found in this cell.")
 

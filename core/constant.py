@@ -49,3 +49,20 @@ COLUMN_MAPPING = {
         'CELL_ID': 'ID'
     }
 }
+
+CELL_REPRESENTATION_METHODS = {
+    'biomarker_expression': 'get_center_cell_expression',
+    'neighbor_cell_type_distribution': 'get_neighborhood_cell_type_distribution',
+    'nn_embedding': 'get_nn_embedding'
+}
+
+REPRESENTATION_METHODS = {
+    "raw_expression": "raw_expression",
+    "neighbor_composition": "neighbor_composition",
+    "nn_embedding": "nn_embedding"
+}
+
+DEFAULT_REPRESENTATION_PIPELINE = [
+    REPRESENTATION_METHODS["raw_expression"],
+    REPRESENTATION_METHODS["neighbor_composition"]
+]

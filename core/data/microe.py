@@ -1,8 +1,10 @@
 import numpy as np
 import torch
+import torch.nn as nn
 from torch_geometric.data import Data
 
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
+from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, DEFAULT_REPRESENTATION_PIPELINE, REPRESENTATION_METHODS
+from core.data.cell import Cell
 
 class MicroE:
     """
@@ -112,6 +114,94 @@ class MicroE:
                         biomarker_matrix[i, j] = np.mean(values)
         
         return biomarker_matrix
+    
+    # ---------------------------------------------------------------------
+    # Internal functions for each representation method
+    # ---------------------------------------------------------------------
+    def _get_raw_expression(self, biomarkers=ALL_BIOMARKERS):
+        """Directly use the center cell's biomarker expression as a vector."""
+        return np.array([
+            self.center_cell.get_biomarker(bm) for bm in biomarkers
+        ], dtype=float)
+
+    def _get_neighbor_composition(self, cell_types=ALL_CELL_TYPES):
+        """Use neighbor composition (fraction of each cell type) as a vector."""
+        total_neighbors = len(self.neighbors)
+        counts = []
+        for ctype in cell_types:
+            n = sum(1 for c in self.neighbors if c.cell_type == ctype)
+            counts.append(n / total_neighbors if total_neighbors > 0 else 0.0)
+        return np.array(counts, dtype=float)
+
+    def _get_nn_embedding(self, model: nn.Module, device: torch.device):
+        """Use a neural network to get an embedding from the PyG graph."""
+        if self.graph is None:
+            raise ValueError("No PyG graph found. Build or assign self.graph first.")
+
+        model.eval()
+        graph_on_device = self.graph.to(device)
+        with torch.no_grad():
+            embedding = model(graph_on_device)
+        return embedding.cpu().numpy()
+
+    # A dictionary mapping method name -> the internal function
+    _REPRESENTATION_FUNCS = {
+        REPRESENTATION_METHODS["raw_expression"]: _get_raw_expression,
+        REPRESENTATION_METHODS["neighbor_composition"]: _get_neighbor_composition,
+        REPRESENTATION_METHODS["nn_embedding"]: _get_nn_embedding
+    }
+
+    # ---------------------------------------------------------------------
+    # Public method to export the center cell with chosen representations
+    # ---------------------------------------------------------------------
+    def export_center_cell_with_representations(
+        self,
+        representations=DEFAULT_REPRESENTATION_PIPELINE,
+        model: nn.Module = None,
+        device: torch.device = None,
+        biomarkers: list = ALL_BIOMARKERS,
+        cell_types: list = ALL_CELL_TYPES
+    ) -> Cell:
+        """
+        Attach the selected representation vectors to the center cell
+        and return the center cell object. By default, uses the
+        DEFAULT_REPRESENTATION_PIPELINE from constant.py.
+        
+        :param representations: A list of method names (e.g. ['raw_expression', 'neighbor_composition']).
+                               If None, uses DEFAULT_REPRESENTATION_PIPELINE.
+        :param model: Optional PyTorch NN model for 'nn_embedding'.
+        :param device: The device to run the model on (if using 'nn_embedding').
+        :param biomarkers: The biomarkers to consider for 'raw_expression'.
+        :param cell_types: The cell types to consider for 'neighbor_composition'.
+        :return: The center cell object with new features in additional_features.
+        """
+        if representations is None:
+            representations = DEFAULT_REPRESENTATION_PIPELINE
+        
+        for method_name in representations:
+            func = self._REPRESENTATION_FUNCS.get(method_name, None)
+            if func is None:
+                print(f"Warning: Unknown representation method '{method_name}' - skipping.")
+                continue
+            
+            # Depending on the method, we pass different arguments
+            if method_name == REPRESENTATION_METHODS["raw_expression"]:
+                rep_vec = func(self, biomarkers=biomarkers)
+            elif method_name == REPRESENTATION_METHODS["neighbor_composition"]:
+                rep_vec = func(self, cell_types=cell_types)
+            elif method_name == REPRESENTATION_METHODS["nn_embedding"]:
+                if model is None or device is None:
+                    print("Warning: 'nn_embedding' requires model and device. Skipping.")
+                    continue
+                rep_vec = func(self, model=model, device=device)
+            else:
+                print(f"Warning: method '{method_name}' not implemented.")
+                continue
+            
+            # Attach the representation to the center cell
+            self.center_cell.add_feature(method_name, rep_vec)
+        
+        return self.center_cell
 
     def __str__(self):
         return f"Microenvironment around Cell {self.center_cell.cell_id} with {len(self.neighbors)} neighbors"

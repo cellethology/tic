@@ -3,6 +3,7 @@ import pandas as pd
 
 from core.constant import FILE_MAPPING
 from core.data.cell import Biomarkers, Cell
+from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
 from core.data.tissue import Tissue
 
 def process_region_to_tissue_generic(
@@ -123,4 +124,17 @@ def process_region_to_tissue_generic(
     # 5) Create Tissue
     tissue = Tissue(tissue_id=region_id, cells=cells)
     return tissue
+
+if __name__ == "__main__":
+    # Example usage
+    raw_dir = "/Users/zhangjiahao/Project/tic/data/example/Raw"
+    region_id = "UPMC_c001_v001_r001_reg001"
+    tissue = process_region_to_tissue_generic(raw_dir, region_id)
+    tissue.to_graph(node_feature_fn=node_feature_fn, edge_index_fn=edge_index_fn, edge_attr_fn=edge_attr_fn)
+    print(tissue)
+
+    example_microe = tissue.get_microenvironment(tissue.cells[0].cell_id, k=3, microe_neighbor_cutoff=200.0)
+    center_cell = example_microe.export_center_cell_with_representations()
+    print(center_cell)
+    
 
