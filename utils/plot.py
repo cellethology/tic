@@ -160,7 +160,7 @@ def my_y_transform(y: np.ndarray) -> np.ndarray:
 
 if __name__ == "__main__":
     # Example: load cells and generate plots (adjust the file paths as needed)
-    CELLS_INPUT_PATH = "/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_10000/cells_with_pseudotime.pt"
+    CELLS_INPUT_PATH = "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset/cells_with_pseudotime_50000.pt"
     cells = torch.load(CELLS_INPUT_PATH)
     
     plot_pseudotime_vs_feature(
@@ -168,7 +168,7 @@ if __name__ == "__main__":
         x_bins=100,
         biomarkers=["PanCK", "aSMA"],
         y_transform=my_y_transform,
-        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_10000/pseudo_vs_biomarkers.svg"
+        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_50000/pseudo_vs_biomarkers.svg"
     )
     
     plot_pseudotime_vs_feature(
@@ -176,6 +176,6 @@ if __name__ == "__main__":
         x_bins=100,
         neighbor_types=["Immune", "Tumor", "Stromal", "Vascular"],
         y_transform=my_y_transform,
-        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_10000/pseudo_vs_neighbor.svg"
+        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_50000/pseudo_vs_neighbor.svg"
     )
     print("Done!")
