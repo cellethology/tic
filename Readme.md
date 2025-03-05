@@ -1,6 +1,8 @@
 # TIC: Temporal Inference of Cells
-Temporal Inference of Cells (TIC) is a computational framework for analyzing cellular micro-environments using graph-based pseudo-time analysis. TIC integrates tools for graph construction, embedding preparation, pseudo-time trajectory computation, and biomarker trend visualization.
-
+Temporal Inference of Cells (TIC) is a computational framework for analyzing cellular micro-environments using graph-based pseudo-time analysis. It integrates tools for graph construction, embedding preparation, pseudo-time trajectory computation, and biomarker trend visualization. The framework aims to facilitate both Pseudotime Ordering (left side of the figure below) and Causal Inference (right side), enabling comprehensive analyses of how cellular states evolve over time and how various factors may influence these trajectories.
+![TIC workflow](media/Tic_workflow.png)
+(Left) An overview of the pseudo-time analysis process: cells are embedded, clustered, and ordered along a trajectory to infer temporal progression.
+(Right) A conceptual outline for causal inference on the resulting pseudo-time data, allowing exploration of how various factors or biomarkers may causally relate to outcome variables.
 ## Installation
 
 To use TIC, you need to install its dependencies:
@@ -32,17 +34,23 @@ pip install -e .
 cd ../..
 pip install -e .
 ```
+### Dependencies
+All required Python dependencies are listed in requirements.txt. If you need a dedicated environment, you can create one (for example, with conda or virtualenv) and then install dependencies:
+``` 
+conda create -n tic_env python=3.8
+conda activate tic_env
+pip install -r requirements.txt
+```
 ## Project Framework
 The directory structure for the TIC project is as follows:
 ```
 TIC/
-├── adapters/           # Adapter scripts for data and model integration
 ├── config/             # Configuration files (Hydra-based)
-│   ├── pseudotime/     # Configuration files for pseudo-time analysis
 ├── core/               # Core modules for data processing and analysis
-├── data/               # Directory for input datasets and intermediate files
-├── notebook/           # Jupyter notebooks for example workflows
-├── outputs/            # Output directory for pseudo-time analysis results
+├── data/{dataset_root} # Directory for input datasets and intermediate files
+    |—— Raw             # Your raw single cell csv files
+    |—— Cache           # This will cache processed Cell, MicroE, Tissue Object
+├── media/              # Pictures
 ├── scripts/            # Scripts for running experiments and pipelines
 ├── tools/              # External tools and dependencies
 ├── utils/              # Utility scripts and helper functions
@@ -51,51 +59,105 @@ TIC/
 └── setup.py            # Installation script
 
 ```
+Key subdirectories and files include:
+* core/: Contains essential modules for data loading, feature extraction, and model definitions 
+* scripts/: Houses pipeline scripts (like pseudotime_inference.py) that can be invoked from the command line to run end-to-end analyses.
+* utils/: Provides helper functions, plotting utilities, and code to assemble user-friendly workflows or UIs.
 
-## Working Pipeline:
-### Step 1: Prepare Space-gm Dataset
-To begin using TIC, you first need to prepare the Space-gm dataset. Space-gm constructs graphs based on cellular micro-environments that will later be used for pseudo-time analysis.
-You can download raw data from: https://zenodo.org/records/13179600
+## Pseudo-Time Inference
+TIC supports a graph-based pseudo-time analysis workflow where you can:
+1.	Extract or Load Cellular Representations: Each cell in the dataset is associated with features such as biomarker intensities or neighborhood composition.
+2.	Dimensionality Reduction: Perform PCA or UMAP to embed high-dimensional data into 2D or 3D space.
+3.	Clustering: Use KMeans or Agglomerative clustering to group cells.
+4.	Trajectory Inference: Apply Slingshot to infer a pseudo-time ordering along one or multiple trajectories.
+5.	Plotting: Visualize biomarkers or neighbor compositions along the inferred pseudo-time.
 
-Run the following command to preprocess the data:
-```bash
-python scripts/process_spacegm_data.py --data_root <path_to_data_root> --num_workers <number_of_workers>
+### 1）run from scripts
+An example command-line workflow is provided in scripts/pseudotime_inference.py. You can invoke it as follows:
 ```
---data_root: Path to the root directory containing your raw data.
---num_workers: Number of parallel workers to use for data processing (adjust depending on your system's resources).
-This script will prepare the necessary files, including the graph representations of the cellular micro-environments, to be used in the next steps.
-### Step 2: Perform Pseudo-time Analysis
-After processing the Space-gm data, you'll need to set up the configuration for the pseudo-time analysis. This will involve specifying parameters such as the graph structure, the starting points for pseudo-time estimation, and other relevant configurations.
-
-1. Set up configuration:
-
-* Navigate to the configuration directory: {project_root}/config/pseudotime/.
-* Open and adjust the new.yaml file based on your dataset and analysis needs. This configuration file contains parameters that guide the pseudo-time analysis process.
-* For more details, refer to the config/pseudotime/ReadMe.md file for documentation on the parameters you can adjust.
-
-2. Run pseudo-time analysis: 
-After configuring the new.yaml file, execute the following script to run the pseudo-time analysis:
-```bash
-python scripts/pseudotime_analysis.py
+python scripts/pseudotime_inference.py \
+  --cells_input "/path/to/center_cells.pt" \
+  --cells_output "/path/to/cells_with_pseudotime.pt" \
+  --representation_key "raw_expression" \
+  --dr_method "PCA" \
+  --n_components 2 \
+  --cluster_method "kmeans" \
+  --n_clusters 5 \
+  --start_node 0 \
+  --num_cells 10000 \
+  --output_dir "/path/to/results"
 ```
-This script will compute the pseudo-time trajectory using the graph constructed in Step 1. The output will include the computed pseudo-time values for each cell, which can be further analyzed and visualized.
-
-### Step 3: Visualize Pseudo-time
-Once the pseudo-time analysis is completed, you can visualize the trajectory of the cellular micro-environment over pseudo-time.
-
-To visualize the results, open the Jupyter notebook: 
+Common arguments include:
+*	--cells_input: Path to a .pt file containing a list of Cell objects.
+*	--cells_output: Output path for the updated cells (with pseudo-time attached).
+*	--representation_key: Which cell feature to use for dimensionality reduction and clustering (e.g., "raw_expression").
+*	--dr_method and --cluster_method: Choose from "PCA"/"UMAP" and "kmeans"/"agg" respectively.
+*	--n_components and --n_clusters: Dimensionality and number of clusters.
+*	--start_node: Which cluster index to treat as the start of the trajectory (if omitted, Slingshot auto-detects).
+*	--num_cells: Randomly select a subset of cells (useful for large datasets).
+*	--output_dir: Directory to save output plots, updated cell files, and logs.
+### 2）Use Simple UI
+For a more interactive experience, TIC provides a Streamlit-based UI in scripts/ui.py. To launch it:
 ```bash
-notebook/visualize.ipynb
+python -m streamlit run scripts/ui.py 
 ```
-This notebook will guide you through the process of plotting pseudo-time trajectories, showing how different cellular features change over time.
+Within the UI, you can:
+1.	Specify dataset paths, representation options, and clustering parameters.
+2.	Run the pipeline with a progress bar showing each step.
+3.	View and save the resulting plots directly in the web interface, including:
+	*	Cluster visualization with labeled centers
+	*	Pseudo-time vs. Biomarkers
+	*	Pseudo-time vs. Neighbor Composition
+	*	Pseudo-time Distribution
+	*	Slingshot Pseudotime Visualization
+Below are some example screenshots from the UI:
+![Cluster Visualization](media/ui_cluster.png)
+![Pseudo-time vs. Biomarkers](media/ui_pseudotime.png)
 
-### Step 4: Perform Causal Inference
-After obtaining the pseudo-time trajectories, you may be interested in investigating causal relationships within your data. TIC integrates tools for causal inference to explore the drivers of cellular state transitions.
+## Adapting to a Different Single-Cell Dataset
 
-1. Set up configuration: Similar to the pseudo-time setup, navigate to the configuration directory {project_root}/config/pseudotime/, and configure the causal inference parameters in the new.yaml file.
+TIC expects certain CSV files (coordinates, features, types, and expression) for each region or sample. By default, it looks for files named according to the patterns in `FILE_MAPPING` and reads columns based on the keys in `COLUMN_MAPPING`. If your dataset uses different file names or column names, you can edit these mappings to match your dataset.
 
-2. Run causal inference: Once the configuration is set up, execute the following script to perform causal inference:
-```bash
-python scripts/causal_inference.py
+### 1. File Naming Scheme
+
+```python
+FILE_MAPPING = {
+    'coords': "{region_id}.cell_data.csv",
+    'features': "{region_id}.cell_features.csv",
+    'types': "{region_id}.cell_types.csv",
+    'expression': "{region_id}.expression.csv"
+}
 ```
-This step will analyze the dependencies between cellular markers and compute causal relationships, potentially helping identify key regulatory factors in cellular state transitions.
+
+*	Purpose: Tells TIC how to construct the filenames for each file type (e.g., coords, features) by inserting the region_id (or sample ID) into the format string.
+*	How to Adapt: If your dataset uses a different naming convention, update the format strings. For example, if your files are named Sample123_cell_data.csv, change "{region_id}.cell_data.csv" to "{sample_id}_cell_data.csv", and ensure you pass sample_id="Sample123" when loading.
+
+```python
+COLUMN_MAPPING = {
+    'coords': {
+        'CELL_ID': 'CellID',
+        'X': 'PosX',
+        'Y': 'PosY'
+    },
+    'features': {
+        'CELL_ID': 'CellID',
+        'SIZE': 'Area'
+    },
+    'types': {
+        'CELL_ID': 'CellID',
+        'CELL_TYPE': 'Annotation'
+    },
+    'expression': {
+        'CELL_ID': 'CellID'
+    }
+}
+```
+
+This way, TIC will know how to find the necessary columns in your CSV files.
+
+Summary
+1.	Update FILE_MAPPING to match how your dataset’s files are named.
+2.	Update COLUMN_MAPPING so TIC knows which columns to read from your CSV files.
+3.	Ensure you pass the correct region_id (or sample_id) when loading data, so TIC can locate the right files.
+
+By making these changes, you can integrate virtually any single-cell dataset into the TIC framework, allowing you to leverage the existing pseudo-time inference, clustering, and visualization pipelines with minimal effort.

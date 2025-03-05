@@ -12,7 +12,6 @@ from core.causal.causal_input import CausalInput
 
 logger = logging.getLogger(__name__)
 
-
 class DifferenceInDifferencesMethod(BaseCausalMethod):
     """
     Implements a simple 2x2 Difference-in-Differences (DiD) approach:
@@ -120,13 +119,6 @@ class DifferenceInDifferencesMethod(BaseCausalMethod):
 def main():
     np.random.seed(42)
     n = 400
-
-    # Suppose we have two groups (treated=1, control=0) and two time periods (post=1, pre=0).
-    # We'll generate data for a simple 2x2 DiD:
-    #   Y = baseline + effect_of_treated * treated + effect_of_post * post 
-    #       + DiD_effect * (treated * post) + error
-
-    # Let's define the true parameters:
     baseline = 5.0
     effect_of_treated = 0.5
     effect_of_post = -1.0
