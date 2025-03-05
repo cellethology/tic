@@ -39,7 +39,6 @@ All required Python dependencies are listed in setup.py. If you need a dedicated
 ``` 
 conda create -n tic_env python=3.10
 conda activate tic_env
-pip install -r requirements.txt
 ```
 ## Project Framework
 The directory structure for the TIC project is as follows:
