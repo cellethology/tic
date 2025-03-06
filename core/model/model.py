@@ -1,10 +1,11 @@
-from spacegm.models import GATConv, GCNConv, GINConv, GraphSAGEConv
 import torch
 import torch_geometric
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_pool, GlobalAttention, Set2Set
-from spacegm.models import GNN
+
+from core.model.module import GATConv, GCNConv, GINConv, GraphSAGEConv
+
 class GNN(torch.nn.Module):
     """
     Args:

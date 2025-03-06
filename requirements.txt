@@ -1,0 +1,11 @@
+umap-learn
+torch==2.5.1
+torch_geometric
+tensorboard
+hydra-core
+statsmodels
+linearmodels
+streamlit
+watchdog
+matplotlib
+pyslingshot

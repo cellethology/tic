@@ -5,42 +5,40 @@ Temporal Inference of Cells (TIC) is a computational framework for analyzing cel
 (Right) A conceptual outline for causal inference on the resulting pseudo-time data, allowing exploration of how various factors or biomarkers may causally relate to outcome variables.
 ## Installation
 
-To use TIC, you need to install its dependencies:
+To use TIC, follow these steps:
 
 ### Step 1: Clone the Repository
 ```
 git clone https://github.com/JiahaoZhang-Public/tic.git
 cd tic
-git submodule update --init
 ```
-### Step 2: Install Submodules
-TIC relies on the following submodules:
-
-* space-gm: For constructing graphs of cellular micro-environments.
-* slingshot: Provides the core algorithm for pseudo-time trajectory computation.
-
-Install these submodules:
-```
-# Install space-gm
-git submodule update --init tools/space-gm
-cd tools/space-gm
-pip install -e .
-
-# Install slingshot
-cd ../slingshot
-pip install -e .
-
-# Return to the main directory
-cd ../..
+### Step 2: Install Dependencies
+All dependencies can be installed in **one command**:
+```bash
 pip install -e .
 ```
-### Dependencies
-All required Python dependencies are listed in setup.py. If you need a dedicated environment, you can create one (for example, with conda or virtualenv) and then install dependencies:
-``` 
+
+### **Optional: Creating a Virtual Environment**
+If you prefer to install TIC in an isolated environment, you can use `conda` or `venv`:
+
+#### **Using Conda**
+```bash
 conda create -n tic_env python=3.10
 conda activate tic_env
-pip install -r requirements.txt
+pip install -e .
 ```
+#### **Using Virtualenv**
+```bash
+python -m venv tic_env
+source tic_env/bin/activate  # On Windows: tic_env\Scripts\activate
+pip install -e .
+```
+#### Verifying Installation
+After installation, you can check if TIC is installed correctly:
+```bash
+python -c "import core; print('TIC installed successfully!')"
+```
+
 ## Project Framework
 The directory structure for the TIC project is as follows:
 ```
@@ -52,7 +50,6 @@ TIC/
     |—— Cache           # This will cache processed Cell, MicroE, Tissue Object
 ├── media/              # Pictures
 ├── scripts/            # Scripts for running experiments and pipelines
-├── tools/              # External tools and dependencies
 ├── utils/              # Utility scripts and helper functions
 ├── Readme.md           # Project documentation
 ├── requirements.txt    # Python dependencies
@@ -96,7 +93,7 @@ Common arguments include:
 *	--start_node: Which cluster index to treat as the start of the trajectory (if omitted, Slingshot auto-detects).
 *	--num_cells: Randomly select a subset of cells (useful for large datasets).
 *	--output_dir: Directory to save output plots, updated cell files, and logs.
-### 2）Use Simple UI
+### 2）Use Simple UI(Recommended, user friendly)
 For a more interactive experience, TIC provides a Streamlit-based UI in scripts/ui.py. To launch it:
 ```bash
 python -m streamlit run scripts/ui.py 
