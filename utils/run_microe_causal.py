@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-time_ordered_microe_external_cells.py
+run_microe_causal.py
 
 Demonstration script for:
 1. Loading an external list of Cell objects, each with pseudo-time, region_id, and cell_id.
