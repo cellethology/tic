@@ -12,12 +12,7 @@ Demonstration script for:
 5. Building a DataFrame for causal inference from those MicroE objects.
 6. Running a causal analysis method on the sorted data.
 
-Assumptions:
-- Each Cell has attributes: `cell_id`, `tissue_id` (or something similar), and a pseudo-time in `cell.get_feature("pseudotime")`.
-- The MicroEDataset has a `get_microE(region_id, cell_id)` method to retrieve the corresponding MicroE.
-- The user wants to keep the standard approach for building / storing MicroE in the dataset, but use external pseudo-time to order them.
 """
-
 import os
 import logging
 import torch
