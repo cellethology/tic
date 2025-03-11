@@ -1,8 +1,10 @@
 # utils/plot.py
 import numpy as np
+import pandas as pd
+import seaborn as sns
 import torch
 import matplotlib.pyplot as plt
-from core.constant import ALL_CELL_TYPES, GENERAL_CELL_TYPES
+from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, GENERAL_CELL_TYPES
 
 def plot_pseudotime_vs_feature(cells: list,
                                x_bins: int = 200,
@@ -158,24 +160,60 @@ def my_y_transform(y: np.ndarray) -> np.ndarray:
     """
     return normalize(moving_average(y, window=5))
 
-if __name__ == "__main__":
-    # Example: load cells and generate plots (adjust the file paths as needed)
-    CELLS_INPUT_PATH = "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset/cells_with_pseudotime_50000.pt"
-    cells = torch.load(CELLS_INPUT_PATH)
+#-------------------------------------------------
+# Causal Infer related plot
+#-------------------------------------------------
+def plot_top_x_effects(results_df: pd.DataFrame, y_biomarkers: list|str, key: str = 'p_value',ascending: bool = True):
+    """
+    Plot the top 10 X variables ranked by their estimated causal effect for each Y biomarker.
+
+    Args:
+        results_df (pd.DataFrame): DataFrame containing the causal analysis results.
+        y_biomarkers (list|str): List of Y biomarkers to plot.
+    """
+    if isinstance(y_biomarkers, str):
+        y_biomarkers = [y_biomarkers]
+    for y in y_biomarkers:
+        sub_df = results_df[results_df['y_biomarker'] == y].sort_values(by=key, ascending=ascending).head(10)
+        plt.figure(figsize=(10, 5))
+        sns.barplot(x='x_variable', y=key, data=sub_df)
+        plt.title(f'Top 10 X Variables Affecting {y}')
+        plt.xticks(rotation=45)
+        plt.ylabel('Estimated Causal Effect')
+        plt.xlabel('X Variable')
+        plt.tight_layout()
+        plt.show()
     
-    plot_pseudotime_vs_feature(
-        cells,
-        x_bins=100,
-        biomarkers=["PanCK", "aSMA"],
-        y_transform=my_y_transform,
-        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_50000/pseudo_vs_biomarkers.svg"
-    )
-    
-    plot_pseudotime_vs_feature(
-        cells,
-        x_bins=100,
-        neighbor_types=["Immune", "Tumor", "Stromal", "Vascular"],
-        y_transform=my_y_transform,
-        save_path="/Users/zhangjiahao/Downloads/TicPlots/Expriments/num_50000/pseudo_vs_neighbor.svg"
-    )
-    print("Done!")
+def plot_x_effect_heatmap(results_df: pd.DataFrame, y_biomarkers: list|str, key: str = 'p_value'):
+    """
+    Generate a heatmap showing the effects of combinations of biomarkers and cell types on a specific Y biomarker.
+
+    Args:
+        results_df (pd.DataFrame): DataFrame containing the causal analysis results with columns for x_variable, y_biomarker, and the specified key.
+        y_biomarker (str): The Y biomarker to analyze.
+        key (str): The column from results_df to use for heatmap values (default 'p_value').
+    """
+    if isinstance(y_biomarkers, str):
+        y_biomarkers = [y_biomarkers]
+    for y_biomarker in y_biomarkers:
+        # Filter results for the specified Y biomarker
+        sub_df = results_df[results_df['y_biomarker'] == y_biomarker]
+
+        # Create an empty dataframe to store the effects
+        effect_matrix = pd.DataFrame(0.0, index=ALL_CELL_TYPES, columns=ALL_BIOMARKERS)
+
+        # Populate the effect matrix
+        for index, row in sub_df.iterrows():
+            biomarker, cell_type = row['x_variable'].split('&')
+            if biomarker in ALL_BIOMARKERS and cell_type in ALL_CELL_TYPES:
+                effect_matrix.at[cell_type, biomarker] = row[key]
+
+        # Plotting the heatmap
+        plt.figure(figsize=(20, 10))
+        sns.heatmap(effect_matrix, annot=True, fmt=".2f", cmap='viridis', linewidths=.5, cbar_kws={'label': f'Effect on {y_biomarker}'})
+        plt.title(f'Effect of Biomarkers and Cell Types on {y_biomarker}, key: {key}')
+        plt.xlabel('Biomarkers')
+        plt.ylabel('Cell Types')
+        plt.xticks(rotation=45, ha="right")
+        plt.tight_layout()
+        plt.show()

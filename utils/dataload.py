@@ -113,6 +113,7 @@ def process_region_to_tissue_generic(
 
         # Create Cell object
         c = Cell(
+            tissue_id=region_id,
             cell_id=cell_id,
             pos=info['pos'],
             size=info['size'],
@@ -127,7 +128,7 @@ def process_region_to_tissue_generic(
 
 if __name__ == "__main__":
     # Example usage
-    raw_dir = "/Users/zhangjiahao/Project/tic/data/example/Raw"
+    raw_dir = "../../data/example/Raw"
     region_id = "UPMC_c001_v001_r001_reg001"
     tissue = process_region_to_tissue_generic(raw_dir, region_id)
     tissue.to_graph(node_feature_fn=node_feature_fn, edge_index_fn=edge_index_fn, edge_attr_fn=edge_attr_fn)
@@ -136,5 +137,7 @@ if __name__ == "__main__":
     example_microe = tissue.get_microenvironment(tissue.cells[0].cell_id, k=3, microe_neighbor_cutoff=200.0)
     center_cell = example_microe.export_center_cell_with_representations()
     print(center_cell)
-    
+
+    X, Y, X_labels, Y_labels = example_microe.prepare_for_causal_inference(y_biomarkers="PanCK")
+    print(X.shape, Y.shape, X_labels, Y_labels)    
 

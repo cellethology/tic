@@ -203,5 +203,67 @@ class MicroE:
         
         return self.center_cell
 
+    # ---------------------------------------------------------------------
+    # Public methods for causal inference
+    # ---------------------------------------------------------------------
+    def get_center_biomarker_vector(self, y_biomarkers):
+        """
+        Retrieve one or multiple biomarkers from the center cell.
+        
+        :param y_biomarkers: A single biomarker name (str) or list of biomarker names.
+        :return: A 1D NumPy array of shape (len(y_biomarkers),).
+        """
+        if isinstance(y_biomarkers, str):
+            y_biomarkers = [y_biomarkers]
+        return np.array(
+            [self.center_cell.get_biomarker(bm) for bm in y_biomarkers],
+            dtype=float
+        )
+
+    def prepare_for_causal_inference(
+        self,
+        y_biomarkers,
+        x_biomarkers=ALL_BIOMARKERS,
+        x_cell_types=ALL_CELL_TYPES
+    ):
+        """
+        Prepare the data needed for causal inference. By default, X uses all biomarkers
+        and all cell types in the microenvironment. Y can be one or more chosen biomarkers
+        from the center cell.
+        
+        :param y_biomarkers: A single biomarker name (str) or list of biomarker names for the outcome.
+        :param x_biomarkers: List of biomarker names to be used for X.
+        :param x_cell_types: List of cell types to be used for X.
+        :return: (X, Y, X_labels, Y_labels)
+                 - X: 1D NumPy array of shape (# cell_types * # biomarkers,)
+                 - Y: 1D NumPy array of shape (len(y_biomarkers),)
+                 - X_labels: A list of strings naming the X columns as f"{bm}&{ct}"
+                 - Y_labels: A list of strings for the selected Y biomarker names
+        """
+        # 1) Get neighbor biomarker matrix
+        neighborhood_matrix = self.get_neighborhood_biomarker_matrix(
+            biomarkers=x_biomarkers, 
+            cell_types=x_cell_types
+        )
+        # Flatten to 1D
+        X = neighborhood_matrix.flatten()
+        
+        # 2) Create labels for X in the format "biomarker&celltype"
+        X_labels = []
+        for ct in x_cell_types:
+            for bm in x_biomarkers:
+                X_labels.append(f"{bm}&{ct}")
+        
+        # 3) Get center cell biomarkers for Y
+        Y = self.get_center_biomarker_vector(y_biomarkers)
+        
+        # If y_biomarkers is a single str, we already converted it into a list in get_center_biomarker_vector
+        if isinstance(y_biomarkers, str):
+            Y_labels = [y_biomarkers]
+        else:
+            Y_labels = y_biomarkers
+        
+        return X, Y, X_labels, Y_labels
+
     def __str__(self):
         return f"Microenvironment around Cell {self.center_cell.cell_id} with {len(self.neighbors)} neighbors"

@@ -45,10 +45,11 @@ class Cell:
     It allows for easy retrieval of biomarker information and additional features.
     """
 
-    def __init__(self, cell_id, pos, size, cell_type=None, biomarkers=None, **additional_features):
+    def __init__(self,tissue_id, cell_id, pos, size, cell_type=None, biomarkers=None, **additional_features):
         """
         Initializes the Cell object with the provided attributes.
         
+        :param tissue_id: Unique identifier for the tissue or region.
         :param cell_id: Unique identifier for the cell.
         :param pos: The cell's spatial position (x, y, z).
         :param size: The cell's size or volume.
@@ -56,6 +57,7 @@ class Cell:
         :param biomarkers: A Biomarkers object containing the cell's biomarker data (default is empty).
         :param additional_features: Additional features of the cell (e.g., gene expression, protein levels).
         """
+        self.tissue_id = tissue_id
         self.cell_id = cell_id
         self.pos = pos
         self.size = size
