@@ -86,7 +86,7 @@ def main():
     Main function to extract and save center cell representations.
     """
     # Example parameters (adjust the root path as needed)
-    root = "../../data/example"
+    root = "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
     save_path = os.path.join(root, "center_cells.pt")
     
     center_cells = extract_center_cells(root=root)

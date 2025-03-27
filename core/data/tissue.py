@@ -1,8 +1,11 @@
 import numpy as np
+import pandas as pd
+import anndata
 import torch
 from torch_geometric.data import Data
 
 from core.constant import MICROE_NEIGHBOR_CUTOFF
+from core.data.cell import Biomarkers, Cell
 from core.data.microe import MicroE
 
 class Tissue:
@@ -74,7 +77,6 @@ class Tissue:
         :raises ValueError: If the Tissue graph is not computed or the center cell is not found.
         """
         from torch_geometric.utils import k_hop_subgraph, subgraph
-        import numpy as np
         import torch
 
         if self.graph is None:
@@ -90,7 +92,6 @@ class Tissue:
             raise ValueError("Center cell not found in Tissue.")
 
         # Extract the k-hop subgraph using the Tissue's edge_index.
-        # mapping indicates the index of the center cell within the subgraph.
         subset, sub_edge_index, mapping, edge_mask = k_hop_subgraph(
             center_index, num_hops=k, edge_index=self.graph.edge_index,
             relabel_nodes=True, num_nodes=len(self.cells)
@@ -110,41 +111,31 @@ class Tissue:
 
         # ----- Reindex: Move the center node to index 0 -----
         n = len(micro_cells)
-        # Create a permutation that moves center_sub_idx to position 0.
         perm = [center_sub_idx] + list(range(0, center_sub_idx)) + list(range(center_sub_idx + 1, n))
         perm_tensor = torch.tensor(perm, dtype=torch.long)
 
-        # Reorder node features according to the new permutation.
         old_x = self.graph.x[subset]  # Original node features of the subgraph.
         new_x = old_x[perm_tensor]
 
-        # To update edge indices, compute the inverse permutation.
         inv_perm = torch.argsort(perm_tensor)
         new_edge_index = inv_perm[sub_edge_index]
 
-        # Edge attributes remain the same.
         new_edge_attr = sub_edge_attr
 
-        # Reorder the micro_cells list accordingly.
         micro_cells = [micro_cells[i] for i in perm]
 
-        # Now, the center cell is at index 0.
         center_cell = micro_cells[0]
 
-        # Build the initial microenvironment graph.
         micro_graph = Data(x=new_x, edge_index=new_edge_index, edge_attr=new_edge_attr)
 
-        # Instantiate a MicroE object.
-        micro_env = MicroE(center_cell, micro_cells, tissue_id=self.tissue_id,graph=None)
+        micro_env = MicroE(center_cell, micro_cells, tissue_id=self.tissue_id, graph=None)
         micro_env.graph = micro_graph
 
-        # ----- Filtering: Retain only cells within the distance threshold -----
         filtered_indices = []
         for i, cell in enumerate(micro_cells):
             dist = np.linalg.norm(np.array(cell.pos) - np.array(center_cell.pos))
             if dist <= microe_neighbor_cutoff:
                 filtered_indices.append(i)
-        # Ensure that the center cell is included.
         if 0 not in filtered_indices:
             filtered_indices.insert(0, 0)
 
@@ -155,13 +146,10 @@ class Tissue:
         )
         filt_x = micro_env.graph.x[filtered_indices_tensor]
 
-        # Update micro_cells to match the filtered nodes.
         micro_cells = [micro_cells[i] for i in filtered_indices]
 
-        # Update the microenvironment graph.
         micro_env.graph = Data(x=filt_x, edge_index=filt_edge_index, edge_attr=filt_edge_attr)
         micro_env.cells = micro_cells
-        # Set neighbors: all filtered cells except the center cell.
         micro_env.neighbors = [cell for i, cell in enumerate(micro_cells) if i != 0]
 
         return micro_env
@@ -202,31 +190,16 @@ class Tissue:
         :param edge_attr_fn: An optional function that takes two Cell objects and returns the edge attribute.
         :return: A PyG Data object representing the tissue as a graph.
         """
-        # Return the precomputed graph if available
         if self.graph is not None:
             return self.graph
 
-        # Generate node features from each cell
         node_features = self._generate_node_features(node_feature_fn)
-
-        # Generate edge index using the provided function
         edge_index = edge_index_fn(self.cells)
-
-        # Generate edge attributes if an edge attribute function is provided
         edge_attr = self._generate_edge_attributes(edge_attr_fn, edge_index)
-
-        # Create a PyG Data object
         self.graph = Data(x=node_features, edge_index=edge_index, edge_attr=edge_attr)
         return self.graph
 
     def _generate_node_features(self, node_feature_fn):
-        """
-        Generate the node features by applying the given node_feature_fn to each cell.
-        Processes all cells in a single step using list comprehension.
-        
-        :param node_feature_fn: A function that generates node features from each cell.
-        :return: A torch tensor of node features.
-        """
         try:
             node_features = torch.tensor([node_feature_fn(cell) for cell in self.cells], dtype=torch.float)
             return node_features
@@ -234,18 +207,10 @@ class Tissue:
             raise ValueError(f"Error generating node features: {e}")
 
     def _generate_edge_attributes(self, edge_attr_fn, edge_index):
-        """
-        Generate edge attributes by applying the edge_attr_fn to each pair of cells specified by edge_index.
-        
-        :param edge_attr_fn: A function that generates an edge attribute for each pair of cells.
-        :param edge_index: The edge index tensor specifying connections between nodes.
-        :return: A torch tensor of edge attributes, or None if edge_attr_fn is None.
-        """
         if edge_attr_fn is None:
-            return None  # No edge attributes are needed
+            return None
         
         edge_attr = []
-        # Iterate over each edge (source, target) pair in the edge_index tensor
         for edge in edge_index.t().tolist():
             cell1_index, cell2_index = edge
             cell1 = self.cells[cell1_index]
@@ -258,42 +223,116 @@ class Tissue:
         return torch.tensor(edge_attr, dtype=torch.float)
 
     def save_graph(self, filepath: str):
-        """
-        Save the precomputed PyG graph to disk.
-        
-        :param filepath: The file path to save the graph (e.g., 'graph.pt').
-        :raises ValueError: If no graph has been computed yet.
-        """
         if self.graph is None:
             raise ValueError("No precomputed graph available to save. Call to_graph() first.")
         torch.save(self.graph, filepath)
 
     @classmethod
     def load_graph(cls, tissue_id: str, cells: list, filepath: str, position=None):
-        """
-        Load a precomputed PyG graph from disk and instantiate a Tissue object with it.
-        
-        :param tissue_id: The unique identifier for the tissue sample.
-        :param cells: A list of Cell objects associated with this tissue.
-        :param filepath: The file path from which to load the graph.
-        :param position: Optional spatial position of the tissue.
-        :return: An instance of Tissue with the graph loaded.
-        """
         graph = torch.load(filepath)
         return cls.from_pyg_graph(tissue_id, cells, graph, position)
 
     @classmethod
     def from_pyg_graph(cls, tissue_id: str, cells: list, pyg_graph: Data, position=None):
-        """
-        Instantiate a Tissue object using a precomputed PyG graph.
-        
-        :param tissue_id: The unique identifier for the tissue sample.
-        :param cells: A list of Cell objects associated with this tissue.
-        :param pyg_graph: A precomputed PyG graph (Data object).
-        :param position: Optional spatial position of the tissue.
-        :return: An instance of Tissue with the precomputed graph.
-        """
         return cls(tissue_id, cells, position, graph=pyg_graph)
+
+    @classmethod
+    def from_anndata(cls, adata: anndata.AnnData, tissue_id: str = None, position=None) -> "Tissue":
+        """
+        Construct a Tissue object from an AnnData object.
+        
+        Assumes:
+          - The AnnData.obs index corresponds to cell_id and includes 'CELL_TYPE' and 'SIZE' columns.
+          - obsm["spatial"] contains the spatial coordinates for each cell.
+          - X is the expression matrix with columns corresponding to biomarkers, and var.index holds biomarker names.
+        
+        :param adata: Tissue-level AnnData object.
+        :param tissue_id: Optional tissue ID. If not provided, attempts to retrieve from adata.uns.
+        :param position: Optional tissue spatial position.
+        :return: A Tissue object.
+        """
+        cells = []
+        if tissue_id is None:
+            tissue_id = adata.uns.get("region_id", None)
+        
+        if "spatial" not in adata.obsm:
+            raise ValueError("AnnData.obsm missing 'spatial' key; cannot obtain spatial coordinates.")
+        
+        spatial_coords = adata.obsm["spatial"]
+        if hasattr(adata.X, "toarray"):
+            X_dense = adata.X.toarray()
+        else:
+            X_dense = np.array(adata.X)
+        
+        for i, (cell_id, row) in enumerate(adata.obs.iterrows()):
+            cell_id = str(cell_id)
+            pos = spatial_coords[i]
+            cell_type = row.get("CELL_TYPE", None)
+            size = row.get("SIZE", None)
+            biomarker_dict = {}
+            for j, biomarker in enumerate(adata.var.index):
+                biomarker_dict[biomarker] = X_dense[i, j]
+            biomarkers_obj = Biomarkers(**biomarker_dict)
+            additional_features = row.drop(labels=["CELL_TYPE", "SIZE"]).to_dict()
+            cell = Cell(
+                tissue_id=tissue_id,
+                cell_id=cell_id,
+                pos=pos,
+                size=size,
+                cell_type=cell_type,
+                biomarkers=biomarkers_obj,
+                **additional_features
+            )
+            cells.append(cell)
+        
+        return cls(tissue_id=tissue_id, cells=cells, position=position)
+
+    def to_anndata(self) -> anndata.AnnData:
+        """
+        Convert this Tissue object to an AnnData object.
+        
+        Extracts:
+          - X: Biomarker expression matrix (rows: cells, columns: biomarkers)
+          - obs: Cell metadata (including cell type, size, and any additional features)
+          - obsm["spatial"]: Spatial coordinates of cells (from self.positions)
+          - var: Biomarker annotation (biomarker names as index)
+        
+        In uns, stores:
+          - "data_level": "microe"
+          - "tissue_id": The tissue ID.
+        
+        :return: An AnnData object representing the tissue.
+        """
+        
+        # Determine the union of all biomarker names across cells.
+        all_biomarkers = set()
+        for cell in self.cells:
+            all_biomarkers.update(cell.biomarkers.biomarkers.keys())
+        biomarker_names = sorted(all_biomarkers)
+        
+        X_list = []
+        obs_data = []
+        index = []
+        for cell in self.cells:
+            # Build expression vector for this cell.
+            expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
+            X_list.append(expr)
+            # Construct metadata dictionary.
+            meta = {"CELL_TYPE": cell.cell_type, "SIZE": cell.size}
+            meta.update(cell.additional_features)
+            obs_data.append(meta)
+            index.append(cell.cell_id)
+        
+        X = np.array(X_list)
+        obs_df = pd.DataFrame(obs_data, index=index)
+        var_df = pd.DataFrame(index=biomarker_names)
+        obsm = {"spatial": self.positions}
+        
+        adata = anndata.AnnData(X=X, obs=obs_df, var=var_df, obsm=obsm)
+        if self.tissue_id is not None:
+            adata.uns["region_id"] = self.tissue_id
+        adata.uns["data_level"] = "tissue"
+        return adata
 
     def __str__(self):
         """

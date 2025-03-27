@@ -1,4 +1,6 @@
+import anndata
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch_geometric.data import Data
@@ -264,6 +266,59 @@ class MicroE:
             Y_labels = y_biomarkers
         
         return X, Y, X_labels, Y_labels
+
+    def to_anndata(self) -> anndata.AnnData:
+        """
+        Convert this MicroE object to an AnnData object.
+        
+        Extracts:
+        - X: Biomarker expression matrix for all cells in the microenvironment (center cell + neighbors).
+        - obs: Metadata for each cell, including cell type, size, and any additional features.
+        - obsm["spatial"]: Spatial coordinates extracted from each cell's position.
+        - var: Biomarker annotation (biomarker names as index).
+        
+        In uns, stores:
+        - "data_level": "microe"
+        - "center_cell_id": The ID of the center cell.
+        - "tissue_id": The tissue ID.
+        
+        :return: An AnnData object representing the microenvironment.
+        """
+        
+        # Determine the union of all biomarker names from all cells.
+        all_biomarkers = set()
+        for cell in self.cells:
+            all_biomarkers.update(cell.biomarkers.biomarkers.keys())
+        biomarker_names = sorted(all_biomarkers)
+        
+        X_list = []
+        obs_data = []
+        index = []
+        # Process each cell in the microenvironment.
+        for cell in self.cells:
+            # Build expression vector using the union of biomarkers; missing values as np.nan.
+            expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
+            X_list.append(expr)
+            # Prepare metadata dictionary.
+            meta = {"CELL_TYPE": cell.cell_type, "SIZE": cell.size}
+            meta.update(cell.additional_features)
+            obs_data.append(meta)
+            index.append(cell.cell_id)
+        
+        X = np.array(X_list)
+        obs_df = pd.DataFrame(obs_data, index=index)
+        var_df = pd.DataFrame(index=biomarker_names)
+        
+        # Build spatial coordinates from each cell's position.
+        spatial_coords = np.array([cell.pos for cell in self.cells])
+        obsm = {"spatial": spatial_coords}
+        
+        # Create the AnnData object.
+        adata = anndata.AnnData(X=X, obs=obs_df, var=var_df, obsm=obsm)
+        adata.uns["data_level"] = "microe"
+        adata.uns["center_cell_id"] = self.center_cell.cell_id
+        adata.uns["tissue_id"] = self.tissue_id
+        return adata
 
     def __str__(self):
         return f"Microenvironment around Cell {self.center_cell.cell_id} with {len(self.neighbors)} neighbors"

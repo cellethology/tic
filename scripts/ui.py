@@ -60,7 +60,7 @@ st.header("Step 2: Clustering Parameters")
 
 representation_key = st.selectbox(
     "Representation Key",
-    options=["raw_expression", "neighbor_composition"],  # Remove "nn_embedding" if not supported
+    options=["raw_expression", "neighbor_composition"],  
     index=0
 )
 dr_method = st.selectbox("Dimensionality Reduction Method", options=["PCA", "UMAP"], index=0)
