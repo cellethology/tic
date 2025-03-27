@@ -11,6 +11,7 @@ from torch_geometric.data import Data
 
 from tic.data.cell import Cell
 from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, DEFAULT_REPRESENTATION_PIPELINE, REPRESENTATION_METHODS
+from tic.data.utils import build_ann_data
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -262,44 +263,37 @@ class MicroE:
         return X, Y, X_labels, Y_labels
 
     def to_anndata(self) -> anndata.AnnData:
-        """
-        Convert the entire microenvironment (center cell + neighbors) into an AnnData object.
-        
-        The AnnData object contains:
-          - X: a biomarker expression matrix,
-          - obs: cell metadata,
-          - obsm["spatial"]: spatial coordinates,
-          - var: biomarker annotations.
-        
-        :return: anndata.AnnData object representing the microenvironment.
-        """
         all_biomarkers = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
-        biomarker_names: List[str] = sorted(all_biomarkers)
+        biomarker_names = sorted(all_biomarkers)
         
-        X_list: List[List[float]] = []
-        obs_data: List[Dict[str, Any]] = []
-        index: List[str] = []
-        for cell in self.cells:
+        X_list = []
+        extra_obs = []
+        for i, cell in enumerate(self.cells):
             expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
             X_list.append(expr)
-            meta: Dict[str, Any] = {"CELL_TYPE": cell.cell_type, "SIZE": cell.size}
+            meta = {
+                "tissue_id": cell.tissue_id,
+                "cell_id": cell.cell_id,
+                "cell_type": cell.cell_type, 
+                "size": cell.size,
+
+                # additional
+                "cell_role": "center" if i == 0 else "neighbor"
+            }
             meta.update(cell.additional_features)
-            obs_data.append(meta)
-            index.append(cell.cell_id)
+            extra_obs.append(meta)
         
-        X_arr = np.array(X_list)
-        obs_df = pd.DataFrame(obs_data, index=index)
-        var_df = pd.DataFrame(index=biomarker_names)
-        spatial_coords = np.array([cell.pos for cell in self.cells])
-        obsm: Dict[str, Any] = {"spatial": spatial_coords}
-        
-        adata = anndata.AnnData(X=X_arr, obs=obs_df, var=var_df, obsm=obsm)
-        adata.uns["data_level"] = "microe"
-        adata.uns["center_cell_id"] = self.center_cell.cell_id
-        adata.uns["tissue_id"] = self.tissue_id
-        return adata
+        X = np.array(X_list)
+        uns = {
+                "data_level": "microe",
+                "tissue_id": self.tissue_id,
+
+                # additional
+                "center_cell_id": self.center_cell.cell_id, 
+            }
+        return build_ann_data(self.cells, X=X, extra_obs=extra_obs, uns=uns)
 
     def __str__(self) -> str:
         """Return a string summary of the microenvironment."""

@@ -12,6 +12,7 @@ from torch_geometric.utils import k_hop_subgraph, subgraph
 from tic.data.cell import Biomarkers, Cell
 from tic.data.microe import MicroE
 from tic.constant import MICROE_NEIGHBOR_CUTOFF
+from tic.data.utils import build_ann_data
 
 
 class Tissue:
@@ -275,88 +276,123 @@ class Tissue:
         return cls(tissue_id, cells, position, graph=pyg_graph)
 
     @classmethod
-    def from_anndata(cls: Type["Tissue"], adata: anndata.AnnData, tissue_id: Optional[str] = None, position: Optional[Tuple[float, float]] = None) -> "Tissue":
+    def from_anndata(cls: Type["Tissue"], adata: anndata.AnnData, tissue_id: Optional[str] = None) -> "Tissue":
         """
-        Instantiate a Tissue from an AnnData object.
+        Instantiate a Tissue from an AnnData object produced by to_anndata.
         
-        The AnnData is expected to have:
-          - obs: with 'CELL_TYPE' and 'SIZE' columns (CELL_ID as index).
-          - obsm["spatial"]: spatial coordinates.
-          - X: expression matrix (biomarker values).
-          - var: biomarker names.
+        Expects:
+        - obs with 'cell_type' and 'size' columns. (Cell IDs should be in obs.index or in a 'cell_id' column.)
+        - var.index containing at least one biomarker name.
+        - obsm["spatial"] present for spatial coordinates.
+        - uns["tissue_id"] for tissue ID if not provided.
         
         :param adata: anndata.AnnData object.
         :param tissue_id: Tissue identifier (if not provided, attempts to retrieve from adata.uns).
-        :param position: Optional tissue-level position.
         :return: A Tissue instance.
-        :raises ValueError: If required keys are missing.
+        :raises ValueError: If required keys or columns are missing.
         """
-        cells: List[Cell] = []
-        if tissue_id is None:
-            tissue_id = adata.uns.get("region_id", None)
+        # Check that obsm contains "spatial"
         if "spatial" not in adata.obsm:
-            raise ValueError("AnnData.obsm missing 'spatial' key; cannot obtain spatial coordinates.")
-        spatial_coords = adata.obsm["spatial"]
+            raise ValueError("AnnData.obsm is missing the 'spatial' key; cannot reconstruct Tissue.")
+        
+        # Check that obs contains the required columns: 'cell_type' and 'size'
+        required_obs_cols = {"cell_type", "size"}
+        if not required_obs_cols.issubset(adata.obs.columns):
+            missing = required_obs_cols - set(adata.obs.columns)
+            raise ValueError(f"AnnData.obs is missing required columns: {missing}")
+        
+        # Check that var is not empty (i.e. there is at least one biomarker)
+        if adata.var.empty:
+            raise ValueError("AnnData.var is empty; no biomarker names found.")
+
+        # Determine tissue_id from uns if not provided.
+        if tissue_id is None:
+            tissue_id = adata.uns.get("tissue_id", "UnknownTissue")
+        
+        # Extract biomarker names.
+        biomarker_names = list(adata.var.index)
+        
+        # Get the expression matrix.
         X_dense = adata.X.toarray() if hasattr(adata.X, "toarray") else np.array(adata.X)
+        
+        # Get spatial coordinates.
+        coords = adata.obsm["spatial"]
+        
+        cells = []
+        # Iterate over obs rows; use the index as cell_id if not explicitly provided in a column.
         for i, (cell_id, row) in enumerate(adata.obs.iterrows()):
-            cell_id = str(cell_id)
-            pos = spatial_coords[i]
-            cell_type = row.get("CELL_TYPE", None)
-            size = row.get("SIZE", None)
-            biomarker_dict: Dict[str, float] = {}
-            for j, biomarker in enumerate(adata.var.index):
-                biomarker_dict[biomarker] = X_dense[i, j]
+            pos = coords[i]
+            cell_type = row.get("cell_type", None)
+            size = row.get("size", None)
+            
+            # Rebuild the biomarker dictionary for this cell.
+            biomarker_dict = {}
+            for j, bm in enumerate(biomarker_names):
+                biomarker_dict[bm] = X_dense[i, j]
+            
+            # Construct the Biomarkers object and extract additional features.
+            from tic.data.cell import Biomarkers, Cell
             biomarkers_obj = Biomarkers(**biomarker_dict)
-            additional_features = row.drop(labels=["CELL_TYPE", "SIZE"]).to_dict()
-            cell = Cell(
+            # Remove known keys to leave additional features.
+            additional_features = row.drop(labels=["cell_type", "size"]).to_dict()
+            
+            # Create a Cell object.
+            cell_obj = Cell(
                 tissue_id=tissue_id,
-                cell_id=cell_id,
-                pos=pos,
-                size=size,
+                cell_id=str(cell_id),
+                pos=tuple(pos),
+                size=size if size is not None else 0.0,
                 cell_type=cell_type,
                 biomarkers=biomarkers_obj,
                 **additional_features
             )
-            cells.append(cell)
-        return cls(tissue_id=tissue_id, cells=cells, position=position)
+            cells.append(cell_obj)
+        
+        return cls(tissue_id=tissue_id, cells=cells)
 
     def to_anndata(self) -> anndata.AnnData:
         """
-        Convert the Tissue into an AnnData object.
-        
-        The AnnData object includes:
-          - X: biomarker expression matrix for all cells.
-          - obs: cell metadata (including cell type and size).
-          - obsm["spatial"]: spatial coordinates.
-          - var: biomarker annotations.
-        
-        :return: anndata.AnnData object.
+        Convert the Tissue into an AnnData object in a standardized format.
+
+        - X: biomarker expression matrix (n_cells x n_biomarkers).
+        - obs: includes "cell_id", "cell_type", "size", plus any additional features.
+        - var: biomarker names.
+        - obsm["spatial"]: spatial coordinates of cells.
+        - uns: includes {"data_level": "tissue", "tissue_id": self.tissue_id}
         """
+        # Collect all unique biomarker names.
         all_biomarkers = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
-        biomarker_names: List[str] = sorted(all_biomarkers)
-        
-        X_list: List[List[float]] = []
-        obs_data: List[Dict[str, Any]] = []
-        index: List[str] = []
+        biomarker_names = sorted(all_biomarkers)
+
+        # Build X (n_cells x n_biomarkers) and extra_obs.
+        X_list = []
+        extra_obs = []
         for cell in self.cells:
-            expr: List[float] = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
+            expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
             X_list.append(expr)
-            meta: Dict[str, Any] = {"CELL_TYPE": cell.cell_type, "SIZE": cell.size}
+            meta = {
+                "tissue_id": cell.tissue_id,
+                "cell_id": cell.cell_id,
+                "cell_type": cell.cell_type,
+                "size": cell.size
+            }
             meta.update(cell.additional_features)
-            obs_data.append(meta)
-            index.append(cell.cell_id)
-        
-        X = np.array(X_list)
-        obs_df = pd.DataFrame(obs_data, index=index)
-        var_df = pd.DataFrame(index=biomarker_names)
-        obsm: Dict[str, Any] = {"spatial": self.positions}
-        
-        adata = anndata.AnnData(X=X, obs=obs_df, var=var_df, obsm=obsm)
-        if self.tissue_id is not None:
-            adata.uns["region_id"] = self.tissue_id
-        adata.uns["data_level"] = "tissue"
+            extra_obs.append(meta)
+
+        X_array = np.array(X_list, dtype=float)
+        uns_info = {
+            "data_level": "tissue",
+            "tissue_id": self.tissue_id
+        }
+        adata = build_ann_data(
+            cells=self.cells,
+            X=X_array,
+            extra_obs=extra_obs,
+            uns=uns_info,
+            feature_names=biomarker_names
+        )
         return adata
 
     def __str__(self) -> str:
