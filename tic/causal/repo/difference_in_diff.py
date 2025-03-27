@@ -7,8 +7,8 @@ import pandas as pd
 import numpy as np
 import statsmodels.formula.api as smf
 
-from core.causal.base import BaseCausalMethod
-from core.causal.causal_input import CausalInput
+from tic.causal.base import BaseCausalMethod
+from tic.causal.causal_input import CausalInput
 
 logger = logging.getLogger(__name__)
 

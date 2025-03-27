@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats import rankdata
 import torch
 
-from core.constant import ALL_BIOMARKERS
+from tic.constant import ALL_BIOMARKERS
 
 def process_biomarker_expression(biomarker_expr_list, method='rank', lb=0, ub=1):
     """

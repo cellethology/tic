@@ -4,9 +4,9 @@ import anndata
 import torch
 from torch_geometric.data import Data
 
-from core.constant import MICROE_NEIGHBOR_CUTOFF
-from core.data.cell import Biomarkers, Cell
-from core.data.microe import MicroE
+from tic.constant import MICROE_NEIGHBOR_CUTOFF
+from tic.data.cell import Biomarkers, Cell
+from tic.data.microe import MicroE
 
 class Tissue:
     """

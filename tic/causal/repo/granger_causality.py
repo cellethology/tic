@@ -1,8 +1,8 @@
 from statsmodels.tsa.stattools import grangercausalitytests
 from typing import Any, Dict
 
-from core.causal.base import BaseCausalMethod
-from core.causal.causal_input import CausalInput
+from tic.causal.base import BaseCausalMethod
+from tic.causal.causal_input import CausalInput
 
 class GrangerCausalityMethod(BaseCausalMethod):
     """

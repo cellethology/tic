@@ -10,10 +10,10 @@ from torch.utils.tensorboard import SummaryWriter
 from torch_geometric.loader import DataLoader
 import hydra
 from omegaconf import DictConfig
-from core.data.dataset import MicroEDataset
-from core.model.feature import biomarker_pretransform
-from core.model.model import GNN_pred
-from core.model.transform import mask_transform
+from tic.data.dataset import MicroEDataset
+from tic.model.feature import biomarker_pretransform
+from tic.model.model import GNN_pred
+from tic.model.transform import mask_transform
 import time
 
 def set_seed(seed:int = 1120):

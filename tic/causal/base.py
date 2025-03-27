@@ -3,7 +3,7 @@
 import logging
 from abc import ABC, abstractmethod
 
-from core.causal.causal_input import CausalInput
+from tic.causal.causal_input import CausalInput
 
 logger = logging.getLogger(__name__)
 

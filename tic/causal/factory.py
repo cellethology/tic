@@ -1,7 +1,7 @@
-from core.causal.repo.difference_in_diff import DifferenceInDifferencesMethod
-from core.causal.repo.instrumental_vars import InstrumentalVariableMethod
-from core.causal.repo.matching import MatchingCausalMethod
-from core.causal.repo.propensity_score import PropensityScoreMethod
+from tic.causal.repo.difference_in_diff import DifferenceInDifferencesMethod
+from tic.causal.repo.instrumental_vars import InstrumentalVariableMethod
+from tic.causal.repo.matching import MatchingCausalMethod
+from tic.causal.repo.propensity_score import PropensityScoreMethod
 
 
 class CausalMethodFactory:

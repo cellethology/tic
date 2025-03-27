@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-from core.causal.base import BaseCausalMethod
-from core.causal.causal_input import CausalInput
+from tic.causal.base import BaseCausalMethod
+from tic.causal.causal_input import CausalInput
 
 
 logger = logging.getLogger(__name__)

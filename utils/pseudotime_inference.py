@@ -28,10 +28,10 @@ import argparse
 import numpy as np
 import torch
 
-from core.model.train_gnn import set_seed
-from core.pseduotime.clustering import Clustering
-from core.pseduotime.dimensionality_reduction import DimensionalityReduction
-from core.pseduotime.pseudotime import SlingshotMethod
+from tic.model.train_gnn import set_seed
+from tic.pseduotime.clustering import Clustering
+from tic.pseduotime.dimensionality_reduction import DimensionalityReduction
+from tic.pseduotime.pseudotime import SlingshotMethod
 
 def parse_arguments():
     """

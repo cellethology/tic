@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from scipy.spatial import Delaunay
 
-from core.data.cell import Cell
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, NEIGHBOR_EDGE_CUTOFF, EDGE_TYPES
+from tic.data.cell import Cell
+from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, NEIGHBOR_EDGE_CUTOFF, EDGE_TYPES
 
 def node_feature_fn(cell: Cell) -> List[float]:
     """

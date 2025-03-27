@@ -3,7 +3,7 @@ import os
 from typing import List
 import torch
 from torch.utils.data import DataLoader
-from core.data.dataset import MicroEDataset, MicroEWrapperDataset, collate_microe
+from tic.data.dataset import MicroEDataset, MicroEWrapperDataset, collate_microe
 
 def get_region_ids_from_raw(root: str) -> List[str]:
     """

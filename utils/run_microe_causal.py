@@ -21,13 +21,13 @@ import pandas as pd
 from typing import List, Optional
 import sys
 
-from core.data.dataset import MicroEDataset
-from core.data.cell import Cell
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
-from core.causal.base import BaseCausalMethod
-from core.causal.causal_input import CausalInput
-from core.causal.repo.granger_causality import GrangerCausalityMethod
-from core.data.microe import MicroE
+from tic.data.dataset import MicroEDataset
+from tic.data.cell import Cell
+from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
+from tic.causal.base import BaseCausalMethod
+from tic.causal.causal_input import CausalInput
+from tic.causal.repo.granger_causality import GrangerCausalityMethod
+from tic.data.microe import MicroE
 from utils.extract_representation import get_region_ids_from_raw
 from utils.plot import plot_top_x_effects, plot_x_effect_heatmap
 

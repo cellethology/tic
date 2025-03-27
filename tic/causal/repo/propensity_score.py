@@ -7,8 +7,8 @@ import pandas as pd
 
 from sklearn.linear_model import LogisticRegression
 
-from core.causal.base import BaseCausalMethod
-from core.causal.causal_input import CausalInput
+from tic.causal.base import BaseCausalMethod
+from tic.causal.causal_input import CausalInput
 
 
 logger = logging.getLogger(__name__)

@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import torch
 
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
-from core.data.microe import MicroE
-from core.data.tissue import Tissue
-from core.model.feature import process_biomarker_expression
+from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES
+from tic.data.microe import MicroE
+from tic.data.tissue import Tissue
+from tic.model.feature import process_biomarker_expression
 
 ###############################################################################
 #                           Tissue Plotting Functions                         #

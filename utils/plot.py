@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 import torch
 import matplotlib.pyplot as plt
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, GENERAL_CELL_TYPES
+from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, GENERAL_CELL_TYPES
 
 def plot_pseudotime_vs_feature(cells: list,
                                x_bins: int = 200,

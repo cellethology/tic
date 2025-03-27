@@ -2,10 +2,10 @@ import os
 import anndata
 import pandas as pd
 
-from core.constant import FILE_MAPPING
-from core.data.cell import Biomarkers, Cell
-from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
-from core.data.tissue import Tissue
+from tic.constant import FILE_MAPPING
+from tic.data.cell import Biomarkers, Cell
+from tic.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
+from tic.data.tissue import Tissue
 
 def process_region_to_tissue_generic(
     raw_dir: str, 

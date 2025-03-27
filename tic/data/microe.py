@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 from torch_geometric.data import Data
 
-from core.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, DEFAULT_REPRESENTATION_PIPELINE, REPRESENTATION_METHODS
-from core.data.cell import Cell
+from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, DEFAULT_REPRESENTATION_PIPELINE, REPRESENTATION_METHODS
+from tic.data.cell import Cell
 
 class MicroE:
     """

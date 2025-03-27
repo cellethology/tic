@@ -9,7 +9,7 @@ from argparse import Namespace
 import streamlit as st
 
 # Utility imports 
-from core.constant import ALL_BIOMARKERS
+from tic.constant import ALL_BIOMARKERS
 from utils.extract_representation import extract_center_cells, save_center_cells
 from utils.pseudotime_inference import (
     run_pseudotime_analysis,
@@ -17,8 +17,8 @@ from utils.pseudotime_inference import (
     extract_embeddings,
     attach_reduced_embedding
 )
-from core.pseduotime.clustering import Clustering
-from core.pseduotime.dimensionality_reduction import DimensionalityReduction
+from tic.pseduotime.clustering import Clustering
+from tic.pseduotime.dimensionality_reduction import DimensionalityReduction
 from utils.plot import (
     plot_pseudotime_vs_feature,
     moving_average,

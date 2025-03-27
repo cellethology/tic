@@ -5,9 +5,9 @@ import hydra
 from omegaconf import DictConfig
 from tqdm import tqdm
 
-from core.data.dataset import MicroEDataset
-from core.model.feature import biomarker_pretransform
-from core.model.model import GNN_pred
+from tic.data.dataset import MicroEDataset
+from tic.model.feature import biomarker_pretransform
+from tic.model.model import GNN_pred
 
 # Function to initialize the dataset and data loader
 def initialize_dataset_and_dataloader(cfg):

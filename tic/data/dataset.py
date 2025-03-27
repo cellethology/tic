@@ -4,10 +4,10 @@ import numpy as np
 from torch_geometric.data import InMemoryDataset
 from typing import List
 
-from core.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
-from core.data.microe import MicroE
-from core.model.feature import biomarker_pretransform
-from core.model.transform import mask_transform
+from tic.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
+from tic.data.microe import MicroE
+from tic.model.feature import biomarker_pretransform
+from tic.model.transform import mask_transform
 from utils.dataload import process_region_to_tissue_generic
 
 class MicroEDataset(InMemoryDataset):

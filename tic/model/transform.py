@@ -1,7 +1,7 @@
 import torch
 import random
 
-from core.constant import ALL_BIOMARKERS
+from tic.constant import ALL_BIOMARKERS
 
 def mask_biomarker_expression(data, mask_ratio=0.2):
     """
