@@ -1,27 +1,26 @@
-# core.data.cell
+# tic/data/cell.py
+from typing import Any, Dict, Optional, Tuple
 
 class Biomarkers:
     """
     A class to manage biomarkers and their expression levels.
-
-    This class allows you to store biomarker data and retrieve the expression level of each biomarker.
-    Biomarkers are stored as a dictionary, where the keys are biomarker names and the values are their expression levels.
+    
+    Biomarkers are stored as a dictionary mapping biomarker names (str)
+    to their expression levels (float).
     """
-
-    def __init__(self, **biomarker_values):
+    def __init__(self, **biomarker_values: float) -> None:
         """
         Initializes the Biomarkers object with dynamic biomarker data.
-        
-        :param biomarker_values: Keyword arguments representing biomarker names and their corresponding expression levels.
         """
-        self.biomarkers = biomarker_values
-    
-    def __getattr__(self, biomarker_name):
+        self.biomarkers: Dict[str, float] = biomarker_values
+
+    def __getattr__(self, biomarker_name: str) -> float:
         """
         Retrieve the expression level of a specified biomarker.
-
+        
         :param biomarker_name: The name of the biomarker to retrieve.
-        :return: The expression level of the biomarker if it exists, else raises AttributeError.
+        :return: The expression level if it exists.
+        :raises AttributeError: If the biomarker is not found.
         """
         biomarker_dict = self.__dict__.get("biomarkers", {})
         if biomarker_name in biomarker_dict:
@@ -29,77 +28,65 @@ class Biomarkers:
         else:
             raise AttributeError(f"Biomarker '{biomarker_name}' not found in this cell.")
 
-    def __repr__(self):
-        """ 
-        Returns a string representation of the biomarkers and their expression levels.
-        This is useful for debugging and logging.
-        """
+    def __repr__(self) -> str:
+        """Returns a string representation of the biomarkers."""
         return f"Biomarkers({self.biomarkers})"
+
+    def __getitem__(self, key: str) -> float:
+        """Allow dictionary-like access."""
+        return self.__getattr__(key)
 
 
 class Cell:
     """
-    A class representing a single cell with its attributes, including position, size, biomarkers, and other features.
-
-    This class stores information about the cell's ID, position, size, type, biomarkers, and any additional features.
-    It allows for easy retrieval of biomarker information and additional features.
+    A class representing a single cell with attributes such as position, size, biomarkers, etc.
     """
+    def __init__(
+        self,
+        tissue_id: str,
+        cell_id: str,
+        pos: Tuple[float, ...],
+        size: float,
+        cell_type: Optional[str] = None,
+        biomarkers: Optional[Biomarkers] = None,
+        **additional_features: Any
+    ) -> None:
+        """
+        Initializes the Cell object.
+        """
+        self.tissue_id: str = tissue_id
+        self.cell_id: str = cell_id
+        self.pos: Tuple[float, ...] = pos
+        self.size: float = size
+        self.cell_type: Optional[str] = cell_type
+        self.biomarkers: Biomarkers = biomarkers if biomarkers is not None else Biomarkers()
+        self.additional_features: Dict[str, Any] = additional_features
 
-    def __init__(self,tissue_id, cell_id, pos, size, cell_type=None, biomarkers=None, **additional_features):
-        """
-        Initializes the Cell object with the provided attributes.
-        
-        :param tissue_id: Unique identifier for the tissue or region.
-        :param cell_id: Unique identifier for the cell.
-        :param pos: The cell's spatial position (x, y, z).
-        :param size: The cell's size or volume.
-        :param cell_type: The type of the cell (e.g., "Tumor", "T cell").
-        :param biomarkers: A Biomarkers object containing the cell's biomarker data (default is empty).
-        :param additional_features: Additional features of the cell (e.g., gene expression, protein levels).
-        """
-        self.tissue_id = tissue_id
-        self.cell_id = cell_id
-        self.pos = pos
-        self.size = size
-        self.cell_type = cell_type
-        self.biomarkers = biomarkers if biomarkers else Biomarkers()  # Default to empty biomarkers
-        self.additional_features = additional_features
-    
-    def __str__(self):
-        """
-        Provides a string representation of the Cell object, including basic information such as its ID, position, and size.
-        
-        :return: A string describing the cell.
-        """
+    def __str__(self) -> str:
         return f"Cell {self.cell_id} at position {self.pos} with size {self.size} and type {self.cell_type}"
     
-    def get_biomarker(self, biomarker_name):
+    def get_biomarker(self, biomarker_name: str) -> Optional[float]:
         """
         Retrieves the expression level of a specific biomarker.
         
-        :param biomarker_name: The name of the biomarker to retrieve.
-        :return: The expression level of the biomarker if it exists, else None.
+        :param biomarker_name: Name of the biomarker.
+        :return: Expression level if exists; otherwise, returns None.
         """
         try:
             return self.biomarkers.__getattr__(biomarker_name)
         except AttributeError:
+            # Consider using logging.warning(...) here instead of print
             print(f"Warning: Biomarker '{biomarker_name}' not found in cell {self.cell_id}.")
-            return None  # Return None if biomarker doesn't exist
+            return None
     
-    def add_feature(self, feature_name, feature_value):
+    def add_feature(self, feature_name: str, feature_value: Any) -> None:
         """
-        Adds or updates an additional feature for the cell.
-        
-        :param feature_name: The name of the feature.
-        :param feature_value: The value of the feature (e.g., gene expression level).
+        Adds or updates an additional feature.
         """
         self.additional_features[feature_name] = feature_value
     
-    def get_feature(self, feature_name):
+    def get_feature(self, feature_name: str) -> Optional[Any]:
         """
-        Retrieves the value of a specific additional feature.
-        
-        :param feature_name: The name of the feature to retrieve.
-        :return: The value of the feature if it exists, else None.
+        Retrieves the value of an additional feature.
         """
         return self.additional_features.get(feature_name, None)

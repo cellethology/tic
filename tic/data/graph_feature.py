@@ -1,5 +1,6 @@
-# graph_feature.py
-from typing import List
+# tic.data.graph_feature
+
+from typing import List, Optional
 import numpy as np
 import torch
 from scipy.spatial import Delaunay
@@ -77,23 +78,21 @@ def edge_index_fn(cells: List[Cell]) -> torch.Tensor:
     edges = np.array(list(edges_set)).T  # Shape: [2, num_edges]
     return torch.tensor(edges, dtype=torch.long)
 
-def edge_attr_fn(cell1: Cell, cell2: Cell, edge_cutoff: float = NEIGHBOR_EDGE_CUTOFF) -> List[float]:
+def edge_attr_fn(cell1: Cell, cell2: Cell, edge_cutoff: Optional[float] = None) -> List[float]:
     """
     Compute edge attributes between two cells.
-    
     The attributes include:
-      - Edge type: 0 (neighbor) if the Euclidean distance is less than NEIGHBOR_EDGE_CUTOFF,
-                   otherwise 1 (distant). (Self edges, if needed, could be encoded as 2.)
+      - Edge type: 0 (neighbor) if the Euclidean distance is less than the cutoff,
+                   otherwise 1 (distant).
       - Distance: The Euclidean distance between the two cell positions.
     
     :param cell1: The first Cell object.
     :param cell2: The second Cell object.
+    :param edge_cutoff: Optional threshold; if not provided, uses NEIGHBOR_EDGE_CUTOFF.
     :return: A list containing the edge type and the distance.
     """
-    # Compute the Euclidean distance between cell positions
+    if edge_cutoff is None:
+        edge_cutoff = NEIGHBOR_EDGE_CUTOFF
     distance = np.linalg.norm(np.array(cell1.pos) - np.array(cell2.pos))
-    
-    # Determine the edge type based on the threshold
     edge_type = EDGE_TYPES["neighbor"] if distance < edge_cutoff else EDGE_TYPES["distant"]
-    
     return [edge_type, distance]

@@ -10,3 +10,5 @@ watchdog
 matplotlib
 pyslingshot
 Squidpy
+pytest
+ruff
