@@ -17,8 +17,8 @@ from utils.pseudotime_inference import (
     extract_embeddings,
     attach_reduced_embedding
 )
-from tic.pseduotime.clustering import Clustering
-from tic.pseduotime.dimensionality_reduction import DimensionalityReduction
+from tic.pseudotime.clustering import Clustering
+from tic.pseudotime.dimensionality_reduction import DimensionalityReduction
 from utils.plot import (
     plot_pseudotime_vs_feature,
     moving_average,
