@@ -1,8 +1,7 @@
-# tic.data.cell
+# tic/data/cell
 
 from typing import Any, Dict, Optional, Tuple
 import numpy as np
-import pandas as pd
 import anndata
 
 from tic.data.utils import build_ann_data

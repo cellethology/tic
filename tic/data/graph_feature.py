@@ -1,4 +1,4 @@
-# tic.data.graph_feature
+# tic/data/graph_feature
 
 from typing import List, Optional
 import numpy as np

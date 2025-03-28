@@ -5,7 +5,7 @@ from torch_geometric.data import Data
 
 from tic.data.cell import Biomarkers
 from tic.data.tissue import Tissue
-from tests.data.mock_data import create_mock_anndata, create_mock_cell, create_mock_tissue
+from utils.mock_data import create_mock_anndata, create_mock_cell, create_mock_tissue
 
 # -----------------------------------------------------------------------------
 # Fixtures for creating dummy AnnData and Tissue objects for testing

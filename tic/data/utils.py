@@ -4,11 +4,11 @@ import anndata
 from typing import Any, Dict, List
 
 def build_ann_data(
-    cells: List[Any],                # List of Cell-like objects with at least .cell_id and .pos
-    X: np.ndarray,                   # Expression (or representation) matrix (n_cells x n_features)
-    extra_obs: List[Dict[str, Any]], # Per-cell metadata dictionaries
-    uns: Dict[str, Any],             # Dictionary to store additional info (e.g., data_level, tissue_id)
-    feature_names: List[str] = None  # Optional list of variable/feature names
+    cells: List[Any],                
+    X: np.ndarray,                   
+    extra_obs: List[Dict[str, Any]], 
+    uns: Dict[str, Any],             
+    feature_names: List[str] = None  
 ) -> anndata.AnnData:
     """
     Build a standardized AnnData object from a list of cell-like objects.

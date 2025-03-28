@@ -1,3 +1,5 @@
+# tic.pseudotime.dimensionality_reduction
+
 import numpy as np
 from sklearn.decomposition import PCA
 from umap import UMAP

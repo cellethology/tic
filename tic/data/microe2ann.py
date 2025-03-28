@@ -1,7 +1,9 @@
-from typing import List, Optional
+from typing import List
+
+import anndata
 import numpy as np
 import pandas as pd
-import anndata
+
 from tic.data.microe import MicroE
 from tic.data.utils import build_ann_data
 
@@ -15,7 +17,7 @@ def export_center_cells(
     """
     Export each MicroE's center cell as a row in an AnnData object, where:
       - X is the biomarker expression matrix (as in cell.to_anndata)
-      - obs contains cell metadata (cell_id, cell_type, tissue_id, microe_neighbors_count)
+      - obs contains cell metadata (tissue_id, cell_id, cell_type, size, & microe_neighbors_count)
       - obsm contains additional multidimensional representation features (e.g., 
         raw_expression, neighbor_composition, nn_embedding) computed at the microenvironment level.
 
@@ -36,7 +38,7 @@ def export_center_cells(
          - obs: metadata for each center cell.
          - var: biomarker names.
          - obsm: includes "spatial" (cell positions) and additional keys for each representation.
-         - uns: additional metadata (e.g. data_level, tissue_id).
+         - uns: additional metadata (e.g. data_level).
     """
     if not microe_list:
         return anndata.AnnData(X=np.empty((0, 0)), obs=pd.DataFrame(), var=pd.DataFrame(), obsm={})
@@ -116,7 +118,7 @@ def export_center_cells(
         padded_X_rows.append(row)
     X_array = np.array(padded_X_rows, dtype=float)
     
-    uns = {"data_level": "center"}
+    uns = {"data_level": "center cell"}
 
     # Build AnnData using the biomarker expression (X), preserving cell_id in obs.
     adata = build_ann_data(

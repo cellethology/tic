@@ -7,7 +7,9 @@ Functionalities to test:
 """
 
 import pytest
-from tests.data.mock_data import create_mock_biomarkers, create_mock_cell
+
+from utils.mock_data import create_mock_biomarkers, create_mock_cell
+
 
 def test_biomarkers_getattr_success():
     b = create_mock_biomarkers(PanCK=1.5, CD3=2.0)

@@ -1,4 +1,4 @@
-# tests/data/mock_data.py
+# utils/mock_data.py
 
 import anndata
 import numpy as np

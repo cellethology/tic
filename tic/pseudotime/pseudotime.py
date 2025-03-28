@@ -1,3 +1,5 @@
+# tic.pseudotime.pseudotime
+
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
@@ -92,7 +94,7 @@ class SlingshotMethod(PseudotimeMethod):
         Returns:
             Slingshot: A fitted Slingshot object.
         """
-        slingshot = Slingshot(ad, celltype_key="celltype", obsm_key="X_umap", start_node=self.start_node)
+        slingshot = Slingshot(ad, celltype_key="celltype", obsm_key="X_umap", start_node=self.start_node if self.start_node is not None else 0)
         slingshot.fit(num_epochs=10)
         return slingshot
 

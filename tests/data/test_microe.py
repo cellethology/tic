@@ -9,10 +9,9 @@ Functionalities to test:
 
 import numpy as np
 import torch
-import pytest
 from tic.data.microe import MicroE
-from tic.data.cell import Cell, Biomarkers
-from tests.data.mock_data import create_mock_cell, create_mock_microe
+from tic.data.cell import Biomarkers
+from utils.mock_data import create_mock_cell, create_mock_microe
 
 # Simple mock functions for graph conversion
 def mock_node_feature_fn(cell):

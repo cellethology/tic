@@ -1,4 +1,4 @@
-# tic.data.tissue
+# tic/data/tissue
 
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
