@@ -1,5 +1,8 @@
 # tests/data/mock_data.py
 
+import anndata
+import numpy as np
+import pandas as pd
 from tic.data.cell import Biomarkers, Cell
 from tic.data.microe import MicroE
 from tic.data.tissue import Tissue
@@ -61,3 +64,34 @@ def create_mock_tissue(cells=None, tissue_id="T1", position=(0, 0)):
     if cells is None:
         cells = [create_mock_cell(cell_id=f"C{i}", pos=(i, i)) for i in range(1, 4)]
     return Tissue(tissue_id=tissue_id, cells=cells, position=position)
+
+def create_mock_anndata():
+    """
+    Create a mock AnnData object with:
+      - 3 cells and 2 biomarkers (e.g., Gene1, Gene2)
+      - obs including 'cell_type', 'size', and 'cell_id'
+      - obsm with 2D spatial coordinates
+      - uns with a 'tissue_id'
+    """
+    # Expression matrix: 3 cells x 2 genes/biomarkers
+    X = np.array([[1.0, 2.0],
+                  [3.0, 4.0],
+                  [5.0, 6.0]])
+    
+    # Observation metadata: required columns and a 'cell_id' column
+    obs = pd.DataFrame({
+        "cell_type": ["TypeA", "TypeB", "TypeA"],
+        "size": [10.0, 20.0, 15.0],
+        "cell_id": ["C1", "C2", "C3"]
+    }, index=["C1", "C2", "C3"])
+    
+    # Variable metadata: gene/biomarker names
+    var = pd.DataFrame(index=["Gene1", "Gene2"])
+    
+    # Spatial coordinates (n_cells x 2)
+    obsm = {"spatial": np.array([[0, 0], [1, 1], [2, 2]])}
+    
+    # Global information in uns
+    uns = {"tissue_id": "T1"}
+    
+    return anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm, uns=uns)

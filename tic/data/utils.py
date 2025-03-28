@@ -53,3 +53,42 @@ def build_ann_data(
     for key, value in uns.items():
         adata.uns[key] = value
     return adata
+
+def check_anndata_for_tissue(adata: anndata.AnnData) -> None:
+    """
+    Check if the provided AnnData object contains the required keys and structures for Tissue.from_anndata().
+
+    Required:
+      - adata.obsm contains a "spatial" key with a 2D array of spatial coordinates.
+      - adata.obs must include 'cell_type' and 'size' columns.
+      - adata.var.index must not be empty (i.e., there should be at least one biomarker/gene).
+      - The dimensions of adata.X must match those of adata.obs and adata.var.
+
+    Raises:
+      ValueError: if any of the required components is missing or mismatched.
+    """
+    # Check for spatial coordinates
+    if "spatial" not in adata.obsm:
+        raise ValueError("AnnData.obsm is missing the 'spatial' key, which is required for Tissue.from_anndata().")
+    
+    # Check that obs contains the required columns
+    required_obs_cols = {"cell_type", "size"}
+    missing_obs = required_obs_cols - set(adata.obs.columns)
+    if missing_obs:
+        raise ValueError(f"AnnData.obs is missing required columns: {missing_obs}. Please include 'cell_type' and 'size'.")
+    
+    # Check that var.index is not empty
+    if adata.var.index.empty:
+        raise ValueError("AnnData.var.index is empty. No biomarker/gene names were found.")
+    
+    # Verify that X dimensions are consistent with obs and var
+    n_cells, n_features = adata.X.shape
+    if n_cells != adata.obs.shape[0]:
+        raise ValueError(f"The number of rows in AnnData.X ({n_cells}) does not match the number of observations ({adata.obs.shape[0]}).")
+    if n_features != adata.var.shape[0]:
+        raise ValueError(f"The number of columns in AnnData.X ({n_features}) does not match the number of variables ({adata.var.shape[0]}).")
+    
+    # ensure the spatial coordinates are 2D
+    spatial = adata.obsm["spatial"]
+    if spatial.ndim != 2:
+        raise ValueError(f"Spatial coordinates (adata.obsm['spatial']) should be a 2D array, but got shape {spatial.shape}.")

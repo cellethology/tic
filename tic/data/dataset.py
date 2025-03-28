@@ -109,7 +109,7 @@ class MicroEDataset(InMemoryDataset):
                     adata = process_region_to_anndata(self.raw_dir, rid)
                 # Instantiate Tissue from AnnData.
                 from tic.data.tissue import Tissue  # local import to avoid circular dependency.
-                tissue = Tissue.from_anndata(adata, tissue_id=rid, position=None)
+                tissue = Tissue.from_anndata(adata, tissue_id=rid)
                 tissue.to_graph(node_feature_fn, edge_index_fn, edge_attr_fn)
                 torch.save(tissue, tissue_cache_path)
 

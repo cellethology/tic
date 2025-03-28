@@ -4,9 +4,7 @@ import os
 import anndata
 import pandas as pd
 from tic.constant import FILE_MAPPING
-from tic.data.graph_feature import edge_index_fn, node_feature_fn
-from tic.data.tissue import Tissue
-from utils.microe2ann import export_center_cells
+from tic.data.utils import check_anndata_for_tissue
 
 def process_region_to_anndata(
     raw_dir: str, 
@@ -105,24 +103,6 @@ def process_region_to_anndata(
     adata = anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm)
     adata.uns["tissue_id"] = region_id
     adata.uns["data_level"] = "tissue"
+    
+    check_anndata_for_tissue(adata)
     return adata
-
-if __name__ == "__main__":
-    example_dir = "data/example/Raw"
-    example_region = "UPMC_c001_v001_r001_reg001"
-    tissue_ann = process_region_to_anndata(raw_dir=example_dir,region_id=example_region)
-    print(tissue_ann)
-    tissue = Tissue.from_anndata(tissue_ann)
-    tissue_ann_exported = tissue.to_anndata()
-    tissue.to_graph(edge_index_fn=edge_index_fn, node_feature_fn=node_feature_fn)
-    microe = tissue.get_microenvironment(center_cell_id='1')
-    microe_ann = microe.to_anndata()
-    c_cell = microe.center_cell
-    cell_ann = c_cell.to_anndata()
-    print(cell_ann)
-    print(microe_ann)
-    print(tissue_ann_exported)
-
-    center_ann = export_center_cells([microe],representations= ["raw_expression", "neighbor_composition"])
-    print(center_ann)
-    print(center_ann.var)

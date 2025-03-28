@@ -300,10 +300,6 @@ class Tissue:
         if not required_obs_cols.issubset(adata.obs.columns):
             missing = required_obs_cols - set(adata.obs.columns)
             raise ValueError(f"AnnData.obs is missing required columns: {missing}")
-        
-        # Check that var is not empty (i.e. there is at least one biomarker)
-        if adata.var.empty:
-            raise ValueError("AnnData.var is empty; no biomarker names found.")
 
         # Determine tissue_id from uns if not provided.
         if tissue_id is None:
@@ -311,7 +307,8 @@ class Tissue:
         
         # Extract biomarker names.
         biomarker_names = list(adata.var.index)
-        
+        if biomarker_names == []:
+            raise ValueError("AnnData.var.index is empty; no biomarker names found.")
         # Get the expression matrix.
         X_dense = adata.X.toarray() if hasattr(adata.X, "toarray") else np.array(adata.X)
         
@@ -320,8 +317,9 @@ class Tissue:
         
         cells = []
         # Iterate over obs rows; use the index as cell_id if not explicitly provided in a column.
-        for i, (cell_id, row) in enumerate(adata.obs.iterrows()):
+        for i, (index, row) in enumerate(adata.obs.iterrows()):
             pos = coords[i]
+            cell_id = row.get("cell_id", None)
             cell_type = row.get("cell_type", None)
             size = row.get("size", None)
             
@@ -334,7 +332,7 @@ class Tissue:
             from tic.data.cell import Biomarkers, Cell
             biomarkers_obj = Biomarkers(**biomarker_dict)
             # Remove known keys to leave additional features.
-            additional_features = row.drop(labels=["cell_type", "size"]).to_dict()
+            additional_features = row.drop(labels=["cell_type", "size", "cell_id"]).to_dict()
             
             # Create a Cell object.
             cell_obj = Cell(
