@@ -1,4 +1,4 @@
-# causal_input.py
+# tic/causal/causal_input.py
 
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any

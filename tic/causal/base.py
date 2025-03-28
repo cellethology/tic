@@ -1,4 +1,4 @@
-# base.py
+# tic/causal/base.py
 
 import logging
 from abc import ABC, abstractmethod
