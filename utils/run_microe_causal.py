@@ -132,6 +132,7 @@ def microe_list_to_dataframe(
         logger.warning("No MicroE data was collected. Returning empty DataFrame.")
         return pd.DataFrame()
 
+    assert X_labels is not None and Y_labels is not None
     column_names = list(X_labels) + list(Y_labels)
     df = pd.DataFrame(data_rows, columns=column_names)
 

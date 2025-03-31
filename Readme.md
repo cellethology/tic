@@ -36,7 +36,7 @@ pip install -e .
 #### Verifying Installation
 After installation, you can check if TIC is installed correctly:
 ```bash
-python -c "import core; print('TIC installed successfully!')"
+python -c "import tic; print('TIC installed successfully!')"
 ```
 
 ## Project Framework
@@ -44,7 +44,7 @@ The directory structure for the TIC project is as follows:
 ```
 TIC/
 ├── config/             # Configuration files (Hydra-based)
-├── core/               # Core modules for data processing and analysis
+├── tic/               # Core modules for data processing and analysis
 ├── data/{dataset_root} # Directory for input datasets and intermediate files
     |—— Raw             # Your raw single cell csv files
     |—— Cache           # This will cache processed Cell, MicroE, Tissue Object
@@ -57,7 +57,7 @@ TIC/
 
 ```
 Key subdirectories and files include:
-* core/: Contains essential modules for data loading, feature extraction, and model definitions 
+* tic/: Contains essential modules for data loading, feature extraction, and model definitions 
 * scripts/: Houses pipeline scripts (like pseudotime_inference.py) that can be invoked from the command line to run end-to-end analyses.
 * utils/: Provides helper functions, plotting utilities, and code to assemble user-friendly workflows or UIs.
 

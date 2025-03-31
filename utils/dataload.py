@@ -1,6 +1,7 @@
 # utils/dataload.py
 
 import os
+from typing import Optional
 import anndata
 import pandas as pd
 from tic.constant import FILE_MAPPING
@@ -10,7 +11,7 @@ def process_region_to_anndata(
     raw_dir: str, 
     region_id: str,
     csv_file_mapping: dict = FILE_MAPPING,
-    required_columns: dict = None,
+    required_columns: Optional[dict] = None,
 ) -> anndata.AnnData:
     """
     Reads multiple CSV files corresponding to a single region and merges the data

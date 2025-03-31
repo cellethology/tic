@@ -5,16 +5,14 @@ Defines the Tissue class, representing a tissue sample with multiple cells,
 and provides methods to build a PyG graph and extract microenvironments.
 """
 
-import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
 import numpy as np
-import pandas as pd
 import torch
 import anndata
 from torch_geometric.data import Data
 from torch_geometric.utils import k_hop_subgraph, subgraph
 
-from tic.data.cell import Biomarkers, Cell
+from tic.data.cell import Cell
 from tic.data.microe import MicroE
 from tic.constant import MICROE_NEIGHBOR_CUTOFF
 from tic.data.utils import build_ann_data

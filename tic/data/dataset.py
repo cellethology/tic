@@ -9,7 +9,7 @@ import os
 import torch
 import numpy as np
 from torch_geometric.data import InMemoryDataset, Data
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Tuple
 import anndata
 
 from tic.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
@@ -70,6 +70,7 @@ class MicroEDataset(InMemoryDataset):
         self.subset_cells: bool = subset_cells
         self.center_cell_types: List[str] = list(center_cell_types)
         self.raw_to_anndata_func: Optional[RawToAnnDataFunc] = raw_to_anndata_func
+        self.index_map: List[Tuple[str, str]] = []
 
         super().__init__(root, transform, pre_transform)
         self.data, self.slices, self.index_map = torch.load(self.processed_paths[0])

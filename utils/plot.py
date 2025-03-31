@@ -1,18 +1,19 @@
 # utils/plot.py
+from typing import Any, Callable, List, Optional
 import anndata
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import torch
 import matplotlib.pyplot as plt
 from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, GENERAL_CELL_TYPES
 
 def plot_pseudotime_vs_feature(cells: list,
                                x_bins: int = 200,
-                               biomarkers: list = None,
-                               neighbor_types: list = None,
-                               y_transform: callable = None,
-                               save_path: str = None) -> plt.Figure:
+                               biomarkers: Optional[List[Any]] = None,
+                               neighbor_types: Optional[List[Any]] = None,
+                               y_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+                               save_path: Optional[str] = None
+) -> plt.Figure:
     """
     Plot pseudotime versus feature values for a list of cell objects.
 
@@ -67,23 +68,25 @@ def plot_pseudotime_vs_feature(cells: list,
             feature_means[bm] = means
     else:
         # Process neighbor composition
-        for ntype in neighbor_types:
-            agg_values = []
-            for cell in cells:
-                comp = cell.get_feature("neighbor_composition")
-                if comp is None or len(comp) != len(ALL_CELL_TYPES):
-                    agg_values.append(np.nan)
-                else:
-                    if ntype in GENERAL_CELL_TYPES:
-                        indices = [ALL_CELL_TYPES.index(sub) for sub in GENERAL_CELL_TYPES[ntype] if sub in ALL_CELL_TYPES]
-                        agg_val = np.sum(comp[indices])
+        if neighbor_types is not None:
+        # Process neighbor composition
+            for ntype in neighbor_types:
+                agg_values = []
+                for cell in cells:
+                    comp = cell.get_feature("neighbor_composition")
+                    if comp is None or len(comp) != len(ALL_CELL_TYPES):
+                        agg_values.append(np.nan)
                     else:
-                        try:
-                            idx = ALL_CELL_TYPES.index(ntype)
-                            agg_val = comp[idx]
-                        except ValueError:
-                            agg_val = np.nan
-                    agg_values.append(agg_val)
+                        if ntype in GENERAL_CELL_TYPES:
+                            indices = [ALL_CELL_TYPES.index(sub) for sub in GENERAL_CELL_TYPES[ntype] if sub in ALL_CELL_TYPES]
+                            agg_val = np.sum(comp[indices])
+                        else:
+                            try:
+                                idx = ALL_CELL_TYPES.index(ntype)
+                                agg_val = comp[idx]
+                            except ValueError:
+                                agg_val = np.nan
+                        agg_values.append(agg_val)
             values = np.array(agg_values, dtype=float)
             sums = np.zeros(x_bins)
             counts = np.zeros(x_bins)

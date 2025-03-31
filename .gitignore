@@ -24,7 +24,8 @@ test/
 release.sh
 
 
-
+# ignore ruff cache
+.ruff_cache
 
 
 

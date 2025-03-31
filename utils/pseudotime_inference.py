@@ -25,6 +25,7 @@ Example usage:
 
 import os
 import argparse
+from typing import List, Optional, Tuple
 import numpy as np
 import torch
 
@@ -94,7 +95,7 @@ def load_cells(file_path: str) -> list:
     print(f"[Info] Loaded {len(cells)} cells from {file_path}")
     return cells
 
-def select_subset(cells: list, num_cells: int = None) -> list:
+def select_subset(cells: list, num_cells: Optional[int] = None) -> list:
     """
     Randomly select a subset of cells if num_cells is specified.
 
@@ -111,7 +112,7 @@ def select_subset(cells: list, num_cells: int = None) -> list:
         print(f"[Info] Randomly selected {num_cells} cells for analysis.")
     return cells
 
-def extract_embeddings(cells: list, key: str) -> (np.ndarray, list): # type: ignore
+def extract_embeddings(cells: list, key: str) -> Tuple[np.ndarray, List]:
     """
     Extract representation embeddings from cells using the given key.
 
@@ -124,15 +125,16 @@ def extract_embeddings(cells: list, key: str) -> (np.ndarray, list): # type: ign
             - np.ndarray: Array of extracted embeddings.
             - list: List of cells with valid embeddings.
     """
-    embeddings = []
+    embedding_list = []
     valid_cells = []
     for cell in cells:
         rep = cell.get_feature(key)
         if rep is None:
             continue
-        embeddings.append(rep)
+        embedding_list.append(rep)
         valid_cells.append(cell)
-    embeddings = np.array(embeddings)
+
+    embeddings = np.array(embedding_list)
     print(f"[Info] Extracted embeddings for {len(valid_cells)} cells using key '{key}'.")
     return embeddings, valid_cells
 
