@@ -185,11 +185,11 @@ class MicroE:
             ]
             if cells_of_type:
                 for j, biomarker in enumerate(biomarkers):
-                    values = [
-                        c.get_biomarker(biomarker)
-                        for c in cells_of_type
-                        if c.get_biomarker(biomarker) is not None
-                    ]
+                    values: List[float] = []
+                    for c in cells_of_type:
+                        val = c.get_biomarker(biomarker)
+                        if val is not None:
+                            values.append(val)
                     if values:
                         biomatrix[i, j] = np.mean(values)
         return biomatrix
@@ -409,7 +409,7 @@ class MicroE:
         anndata.AnnData
             The resulting AnnData with data_level = 'microe'.
         """
-        all_biomarkers = set()
+        all_biomarkers: set[str] = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
         biomarker_names = sorted(all_biomarkers)

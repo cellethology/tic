@@ -8,7 +8,7 @@ These functions generate graph-based visualizations, including:
   - Heatmaps of neighbor biomarker matrices.
 """
 
-from typing import List
+from typing import List, Optional
 import numpy as np
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -204,7 +204,7 @@ def plot_microe_biomarker_matrix(
     ub: float = 1,
     cmap: str = "viridis",
     figsize: tuple = (8, 6),
-    save_path: str = None,
+    save_path: Optional[str] = None,
 ) -> None:
     """
     Visualize the neighborhood biomarker matrix of a MicroE as a heatmap.

@@ -159,9 +159,7 @@ class Tissue:
             sub_edge_attr = self.graph.edge_attr[edge_mask]
 
         micro_cells: List[Cell] = [self.cells[i] for i in subset.tolist()]
-        center_sub_idx = (
-            mapping.item() if isinstance(mapping, torch.Tensor) else mapping
-        )
+        center_sub_idx = int(mapping.item() if isinstance(mapping, torch.Tensor) else mapping)
 
         n: int = len(micro_cells)
         perm = [center_sub_idx] + list(range(0, center_sub_idx)) + list(range(center_sub_idx + 1, n))
@@ -242,11 +240,11 @@ class Tissue:
         ValueError
             If no valid values are found for the biomarker.
         """
-        values = [
-            cell.get_biomarker(biomarker_name)
-            for cell in self.cells
-            if cell.get_biomarker(biomarker_name) is not None
-        ]
+        values: List[float] = []
+        for cell in self.cells:
+            value = cell.get_biomarker(biomarker_name)
+            if value is not None:
+                values.append(value)
         if not values:
             msg = f"No data available for biomarker '{biomarker_name}'."
             raise ValueError(msg)
@@ -537,7 +535,7 @@ class Tissue:
               - obsm["spatial"]: spatial coordinates of cells
               - uns: includes {"data_level": "tissue", "tissue_id": self.tissue_id}
         """
-        all_biomarkers = set()
+        all_biomarkers: set[str] = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
         biomarker_names = sorted(all_biomarkers)

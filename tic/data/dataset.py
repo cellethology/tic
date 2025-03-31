@@ -9,7 +9,7 @@ import os
 import torch
 import numpy as np
 from torch_geometric.data import InMemoryDataset, Data
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional
 import anndata
 
 from tic.data.graph_feature import edge_attr_fn, edge_index_fn, node_feature_fn
@@ -36,7 +36,7 @@ class MicroEDataset(InMemoryDataset):
         pre_transform: Optional[Callable] = None,
         microe_neighbor_cutoff: float = 200.0,
         subset_cells: bool = False,
-        center_cell_types: List[str] = ("Tumor",),
+        center_cell_types: List[str] = ["Tumor"],
         raw_to_anndata_func: Optional[RawToAnnDataFunc] = None
     ) -> None:
         """
@@ -130,7 +130,6 @@ class MicroEDataset(InMemoryDataset):
         object, then instantiate a Tissue via Tissue.from_anndata.
         """
         data_list: List[Data] = []
-        self.index_map: List[Tuple[str, str]] = []
 
         from tic.data.tissue import Tissue
 

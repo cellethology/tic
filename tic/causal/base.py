@@ -6,6 +6,7 @@ Defines the abstract base class for causal inference methods.
 
 import logging
 from abc import ABC, abstractmethod
+from typing import Any
 
 from tic.causal.causal_input import CausalInput
 
@@ -45,7 +46,7 @@ class BaseCausalMethod(ABC):
         pass
 
     @abstractmethod
-    def estimate_effect(self, input_data: CausalInput, *args, **kwargs) -> any:
+    def estimate_effect(self, input_data: CausalInput, *args, **kwargs) -> Any:
         """
         After fitting, estimate the treatment effect or other relevant parameters.
 

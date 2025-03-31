@@ -6,7 +6,7 @@ This includes inherent biomarker expression, extra representation features,
 and a flattened neighbor biomarker matrix.
 """
 
-from typing import List
+from typing import Dict, List
 import numpy as np
 import pandas as pd
 import anndata
@@ -53,7 +53,7 @@ def export_center_cells(
     cells = []
     obs_list = []
     expected_dims = {}
-    rep_obsm = {}
+    rep_obsm: Dict[str, List[np.ndarray]] = {}
     neighbor_rep_list = []
     X_rows = []
 
