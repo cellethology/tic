@@ -1,3 +1,5 @@
+# tic/model/module.py
+
 # This part of code is directly copied from the original source code:
 # https://gitlab.com/enable-medicine-public/space-gm/-/blob/main/spacegm/models.py @author: zqwu
 import torch

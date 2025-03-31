@@ -1,4 +1,5 @@
 # utils/plot.py
+import anndata
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -217,3 +218,70 @@ def plot_x_effect_heatmap(results_df: pd.DataFrame, y_biomarkers: list|str, key:
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
         plt.show()
+
+def visualize_causal_results(adata: anndata.AnnData, top_n: int = 10) -> None:
+    """
+    Visualize further Bonferroni-adjusted p-values from causal inference results.
+    
+    The function assumes that adata.uns["causal_results"] is a dictionary mapping predictor
+    variable names (when multiple predictors are tested) to their causal inference result dictionaries.
+    Each result dictionary must include a key "p_value" representing the p-value after adjustment
+    for lag testing.
+    
+    This function then performs a Bonferroni correction for multiple independent tests 
+    (i.e., the number of predictors) by multiplying each p-value by the number of predictors and 
+    capping the result at 1.0.
+    
+    The function:
+      1. Extracts the p-values for all predictors.
+      2. Applies Bonferroni correction.
+      3. Sorts the predictors by the adjusted p-value (ascending).
+      4. Plots a horizontal bar plot for the top `top_n` predictors (lowest p-values).
+      5. Draws a vertical line at p = 0.05 to indicate the significance threshold.
+    
+    Parameters
+    ----------
+    adata : anndata.AnnData
+        AnnData object that has causal inference results stored in adata.uns["causal_results"].
+    top_n : int, optional
+        Number of top predictors (with lowest p-values) to display. Default is 10.
+    
+    Raises
+    ------
+    ValueError
+        If "causal_results" is not present in adata.uns.
+    TypeError:
+        If causal_results is not a dictionary.
+    """
+    if "causal_results" not in adata.uns:
+        raise ValueError("adata.uns does not contain 'causal_results'")
+    
+    causal_results = adata.uns["causal_results"]
+    
+    if not isinstance(causal_results, dict):
+        raise TypeError("Expected causal_results to be a dictionary mapping predictor names to results.")
+    
+    # Extract predictor names and their raw (lag-adjusted) p-values.
+    predictor_names = list(causal_results.keys())
+    num_predictors = len(predictor_names)
+    raw_pvalues = [causal_results[pred]["p_value"] for pred in predictor_names]
+    
+    # Apply Bonferroni correction: multiply each p-value by the number of predictors and cap at 1.0.
+    final_pvalues = np.array([min(p * num_predictors, 1.0) for p in raw_pvalues])
+    
+    # Sort predictors by final adjusted p-values (ascending order).
+    sorted_indices = np.argsort(final_pvalues)
+    top_indices = sorted_indices[:top_n]
+    top_predictors = [predictor_names[i] for i in top_indices]
+    top_pvalues = final_pvalues[top_indices]
+    
+    # Create horizontal bar plot.
+    plt.figure(figsize=(8, max(2, top_n * 0.5)))
+    plt.barh(range(len(top_predictors)), top_pvalues, color='skyblue')
+    plt.yticks(range(len(top_predictors)), top_predictors)
+    plt.xlabel("Final Bonferroni-adjusted p-value")
+    plt.title("Top {} Predictors by Adjusted p-value".format(len(top_predictors)))
+    plt.axvline(x=0.05, color="red", linestyle="--", label="p = 0.05")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()

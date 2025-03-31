@@ -1,8 +1,15 @@
 inference:
-  checkpoint_path: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/checkpoints/checkpoint_25_4000.pth"  # Path to the model checkpoint
+  checkpoint_path: "{checkpoint path}"  # Path to the model checkpoint
   batch_size: 64  # Batch size for inference
-  output_dir: "/Users/zhangjiahao/Project/tic/results/train/2025-02-26_14-56-11/embeddings"  # Directory to store inference results (embeddings and predictions)
+  output_dir: "{output dir}"  # Directory to store inference results (embeddings and predictions)
   device: "cpu"  # Device to run inference on, can be "cuda" or "cpu"
+
+
+
+
+# ----------------------------------------------------------------------------------------
+# These parts should remain same as config/train/main.yaml, otherwise you may meet model load issue
+# ----------------------------------------------------------------------------------------
 
 model:
   num_layer: 3
@@ -11,8 +18,8 @@ model:
   drop_ratio: 0.0
 
 dataset:
-  dataset_root: "/Users/zhangjiahao/Project/tic/data/example" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
-  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"]
+  dataset_root: "{absolute path}" # absolute path to your dataset(should have a sub folder named "Raw")
+  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"] # set null to use all regions or a List of region id
   k: 3 # k-hop for microenvironment extraction
   microe_neighbor_cutoff: 200.0
   subset_cells: false

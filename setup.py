@@ -6,10 +6,10 @@ def read_requirements():
 
 setup(
     name="tic",
-    version="1.0.0",  # 2025/03/05
+    version="1.1.0",  # 2025/03/31
     author="Jiahao Zhang",
     description="Temporal Inference of Tumor Cells",
-    packages=find_packages(include=['core', 'core.*', 'tools', 'tools.*', 'utils', 'utils.*']),
+    packages=find_packages(include=['tic', 'tic.*', 'tools', 'tools.*', 'utils', 'utils.*']),
     python_requires=">=3.9", # torch 2.5.* requires python >= 3.9
     install_requires=read_requirements(),
     classifiers=[

@@ -1,4 +1,9 @@
-# tic/data/microe.py
+"""
+Module: tic.data.microe
+
+Defines the MicroE class, which represents a microenvironment around a center
+cell, its neighbors, and an optional PyG graph representation.
+"""
 
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -10,7 +15,12 @@ import anndata
 from torch_geometric.data import Data
 
 from tic.data.cell import Cell
-from tic.constant import ALL_BIOMARKERS, ALL_CELL_TYPES, DEFAULT_REPRESENTATION_PIPELINE, REPRESENTATION_METHODS
+from tic.constant import (
+    ALL_BIOMARKERS,
+    ALL_CELL_TYPES,
+    DEFAULT_REPRESENTATION_PIPELINE,
+    REPRESENTATION_METHODS
+)
 from tic.data.utils import build_ann_data
 
 logger = logging.getLogger(__name__)
@@ -20,21 +30,29 @@ logger.setLevel(logging.INFO)
 class MicroE:
     """
     Represents the microenvironment centered on a specific cell.
-    
-    Core Attributes:
-      - center_cell: The primary Cell object.
-      - neighbors: A list of Cell objects representing neighboring cells.
-      - cells: A unified list combining the center cell and its neighbors.
-      - tissue_id: Identifier for the tissue or region.
-      - graph: An optional PyTorch Geometric Data object representing the graph of the microenvironment.
-    
-    Core Functionalities:
-      - Conversion of the microenvironment into a graph via a provided node and edge feature extraction functions.
-      - Computation of aggregated features (e.g., neighbor biomarker matrix).
-      - Computation of various representation vectors (raw expression, neighbor composition, NN embedding).
-      - Exporting the center cell with attached representations.
-      - Conversion to AnnData for further downstream analysis.
+
+    Core Attributes
+    --------------
+    center_cell : Cell
+        The primary Cell object.
+    neighbors : List[Cell]
+        Neighboring Cell objects.
+    cells : List[Cell]
+        A combined list of the center cell and its neighbors.
+    tissue_id : str
+        Identifier for the tissue or region.
+    graph : Optional[Data]
+        A PyTorch Geometric Data object representing the microenvironment graph.
+
+    Core Functionalities
+    --------------------
+    - Convert the microenvironment into a graph via node/edge feature extraction.
+    - Compute aggregated features (e.g., neighbor biomarker matrix).
+    - Compute representation vectors (raw expression, neighbor composition, NN embedding).
+    - Export the center cell with attached representations.
+    - Convert to AnnData for further downstream analysis.
     """
+
     def __init__(
         self,
         center_cell: Cell,
@@ -44,11 +62,17 @@ class MicroE:
     ) -> None:
         """
         Initialize a MicroE object.
-        
-        :param center_cell: The central Cell object.
-        :param neighbors: A list of neighboring Cell objects.
-        :param tissue_id: Tissue identifier.
-        :param graph: Optional precomputed PyG graph (Data object).
+
+        Parameters
+        ----------
+        center_cell : Cell
+            The primary Cell object.
+        neighbors : List[Cell]
+            Neighboring Cell objects.
+        tissue_id : str
+            Tissue identifier.
+        graph : Optional[Data]
+            Optional precomputed PyG graph (Data object).
         """
         self.center_cell: Cell = center_cell
         self.neighbors: List[Cell] = neighbors
@@ -71,39 +95,56 @@ class MicroE:
         edge_attr_fn: Optional[Callable[[Cell, Cell], Any]] = None
     ) -> Data:
         """
-        Convert the microenvironment into a PyG graph.
-        
-        This method uses lazy evaluation. If a graph is already cached, it returns it directly.
-        
-        :param node_feature_fn: A function that extracts node features from a Cell.
-        :param edge_index_fn: A function that computes the edge indices for a list of Cells.
-        :param edge_attr_fn: Optional function that computes edge attributes given two Cells.
-        :return: A PyG Data object representing the microenvironment graph.
-        :raises ValueError: If node features cannot be generated.
+        Convert the microenvironment into a PyG graph (lazy evaluation).
+
+        Parameters
+        ----------
+        node_feature_fn : Callable[[Cell], Any]
+            A function that extracts node features from a Cell.
+        edge_index_fn : Callable[[List[Cell]], torch.Tensor]
+            A function that computes the edge indices for a list of Cells.
+        edge_attr_fn : Optional[Callable[[Cell, Cell], Any]]
+            A function that computes edge attributes given two Cells.
+
+        Returns
+        -------
+        Data
+            A PyTorch Geometric Data object representing the microenvironment graph.
+
+        Raises
+        ------
+        ValueError
+            If node features cannot be generated.
         """
         if self.graph is not None:
             return self.graph
-        
+
         try:
             node_features = torch.tensor(
-                [node_feature_fn(cell) for cell in self.cells], dtype=torch.float
+                [node_feature_fn(cell) for cell in self.cells],
+                dtype=torch.float
             )
-        except Exception as e:
-            raise ValueError(f"Error generating node features: {e}")
-        
+        except Exception as exc:
+            msg = f"Error generating node features: {exc}"
+            raise ValueError(msg)
+
         edge_index: torch.Tensor = edge_index_fn(self.cells)
         edge_attr: Optional[torch.Tensor] = None
+
         if edge_attr_fn is not None:
             edges = edge_index.t().tolist()
             try:
                 edge_attr = torch.tensor(
-                    [edge_attr_fn(self.cells[i], self.cells[j]) for i, j in edges],
+                    [
+                        edge_attr_fn(self.cells[i], self.cells[j])
+                        for i, j in edges
+                    ],
                     dtype=torch.float
                 )
-            except Exception as e:
-                logger.warning(f"Error generating edge attributes: {e}")
+            except Exception as exc:
+                logger.warning(f"Error generating edge attributes: {exc}")
                 edge_attr = None
-        
+
         self.graph = Data(x=node_features, edge_index=edge_index, edge_attr=edge_attr)
         return self.graph
 
@@ -113,57 +154,120 @@ class MicroE:
         cell_types: List[str] = ALL_CELL_TYPES
     ) -> np.ndarray:
         """
-        Generate a biomarker expression matrix for the neighbor cells (excluding the center cell).
-        
-        Rows correspond to each cell type (as provided) and columns to each biomarker.
-        Missing values are filled with np.nan.
-        
-        :param biomarkers: List of biomarker names.
-        :param cell_types: List of cell types.
-        :return: A 2D numpy array with averaged biomarker expressions for each cell type.
+        Generate a biomarker expression matrix for the neighbor cells
+        (excluding the center cell).
+
+        Rows correspond to each cell type (from cell_types) and columns
+        to each biomarker. Missing values are filled with np.nan.
+
+        Parameters
+        ----------
+        biomarkers : List[str]
+            List of biomarker names.
+        cell_types : List[str]
+            List of cell types.
+
+        Returns
+        -------
+        np.ndarray
+            A 2D numpy array with averaged biomarker expressions for
+            each cell type and biomarker.
         """
         neighbor_cells: List[Cell] = self.neighbors
-        biomarker_matrix: np.ndarray = np.full((len(cell_types), len(biomarkers)), np.nan, dtype=float)
+        biomatrix = np.full(
+            (len(cell_types), len(biomarkers)),
+            np.nan,
+            dtype=float
+        )
         for i, ctype in enumerate(cell_types):
-            cells_of_type = [cell for cell in neighbor_cells if cell.cell_type == ctype]
+            cells_of_type = [
+                cell for cell in neighbor_cells if cell.cell_type == ctype
+            ]
             if cells_of_type:
                 for j, biomarker in enumerate(biomarkers):
-                    values = [cell.get_biomarker(biomarker) for cell in cells_of_type if cell.get_biomarker(biomarker) is not None]
+                    values = [
+                        c.get_biomarker(biomarker)
+                        for c in cells_of_type
+                        if c.get_biomarker(biomarker) is not None
+                    ]
                     if values:
-                        biomarker_matrix[i, j] = np.mean(values)
-        return biomarker_matrix
+                        biomatrix[i, j] = np.mean(values)
+        return biomatrix
 
-    def _get_raw_expression(self, biomarkers: List[str] = ALL_BIOMARKERS) -> np.ndarray:
+    def _get_raw_expression(
+        self,
+        biomarkers: List[str] = ALL_BIOMARKERS
+    ) -> np.ndarray:
         """
-        Compute a raw expression vector using the center cell's biomarker data.
-        
-        :param biomarkers: List of biomarker names.
-        :return: A numpy array of biomarker expression values.
-        """
-        return np.array([self.center_cell.get_biomarker(bm) for bm in biomarkers], dtype=float)
+        Compute a raw expression vector for the center cell.
 
-    def _get_neighbor_composition(self, cell_types: List[str] = ALL_CELL_TYPES) -> np.ndarray:
+        Parameters
+        ----------
+        biomarkers : List[str]
+            List of biomarker names.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array of the center cell's biomarker expressions.
+        """
+        return np.array(
+            [self.center_cell.get_biomarker(bm) for bm in biomarkers],
+            dtype=float
+        )
+
+    def _get_neighbor_composition(
+        self,
+        cell_types: List[str] = ALL_CELL_TYPES
+    ) -> np.ndarray:
         """
         Compute the neighbor cell composition as fractions of each cell type.
-        
-        :param cell_types: List of cell types.
-        :return: A numpy array representing the fraction of neighbors for each cell type.
+
+        Parameters
+        ----------
+        cell_types : List[str]
+            List of cell types.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array representing the fraction of neighbors
+            belonging to each cell type.
         """
         total_neighbors: int = len(self.neighbors)
         counts: List[float] = []
         for ctype in cell_types:
-            n: int = sum(1 for c in self.neighbors if c.cell_type == ctype)
-            counts.append(n / total_neighbors if total_neighbors > 0 else 0.0)
+            count_type = sum(
+                1 for c in self.neighbors if c.cell_type == ctype
+            )
+            fraction = count_type / total_neighbors if total_neighbors > 0 else 0.0
+            counts.append(fraction)
         return np.array(counts, dtype=float)
 
-    def _get_nn_embedding(self, model: nn.Module, device: torch.device) -> np.ndarray:
+    def _get_nn_embedding(
+        self,
+        model: nn.Module,
+        device: torch.device
+    ) -> np.ndarray:
         """
-        Compute an embedding for the microenvironment using a provided neural network.
-        
-        :param model: A PyTorch neural network model.
-        :param device: The torch.device to run the model on.
-        :return: A numpy array representing the computed embedding.
-        :raises ValueError: If the graph is not available.
+        Compute an embedding for the microenvironment using a neural network.
+
+        Parameters
+        ----------
+        model : nn.Module
+            A PyTorch neural network model.
+        device : torch.device
+            The device to run the model on.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array representing the computed embedding.
+
+        Raises
+        ------
+        ValueError
+            If the graph is not available.
         """
         if self.graph is None:
             raise ValueError("No PyG graph found. Build or assign self.graph first.")
@@ -173,7 +277,6 @@ class MicroE:
             embedding = model(graph_on_device)
         return embedding.cpu().numpy()
 
-    # Mapping from representation method names to internal functions.
     _REPRESENTATION_FUNCS: Dict[str, Any] = {
         REPRESENTATION_METHODS["raw_expression"]: _get_raw_expression,
         REPRESENTATION_METHODS["neighbor_composition"]: _get_neighbor_composition,
@@ -189,26 +292,36 @@ class MicroE:
         cell_types: List[str] = ALL_CELL_TYPES
     ) -> Cell:
         """
-        Compute selected representations for the microenvironment and attach them as additional features
-        to the center cell. Returns the updated center cell.
-        
-        :param representations: List of representation method names.
-        :param model: Optional neural network model (required for 'nn_embedding').
-        :param device: Optional torch.device (required for 'nn_embedding').
-        :param biomarkers: List of biomarkers (used for raw expression).
-        :param cell_types: List of cell types (used for neighbor composition).
-        :return: The center Cell with new features attached.
+        Compute selected representations for the microenvironment and attach them
+        as additional features to the center cell.
+
+        Parameters
+        ----------
+        representations : Optional[List[str]]
+            List of representation method names.
+        model : Optional[nn.Module]
+            A neural network model (required for 'nn_embedding').
+        device : Optional[torch.device]
+            A torch device (required for 'nn_embedding').
+        biomarkers : List[str]
+            Biomarkers for raw expression representation.
+        cell_types : List[str]
+            Cell types for neighbor composition representation.
+
+        Returns
+        -------
+        Cell
+            The center Cell with new representations attached as additional features.
         """
         if representations is None:
             representations = DEFAULT_REPRESENTATION_PIPELINE
-        
+
         for method_name in representations:
             func = self._REPRESENTATION_FUNCS.get(method_name)
             if func is None:
                 logger.warning(f"Unknown representation method '{method_name}' - skipping.")
                 continue
-            
-            # Call the appropriate function with the needed parameters.
+
             if method_name == REPRESENTATION_METHODS["raw_expression"]:
                 rep_vec = func(self, biomarkers=biomarkers)
             elif method_name == REPRESENTATION_METHODS["neighbor_composition"]:
@@ -221,22 +334,33 @@ class MicroE:
             else:
                 logger.warning(f"Method '{method_name}' not implemented.")
                 continue
-            
-            # Attach the representation vector as an additional feature to the center cell.
+
             self.center_cell.add_feature(method_name, rep_vec)
-        
         return self.center_cell
 
-    def get_center_biomarker_vector(self, y_biomarkers: Any) -> np.ndarray:
+    def get_center_biomarker_vector(
+        self,
+        y_biomarkers: Any
+    ) -> np.ndarray:
         """
         Retrieve one or multiple biomarker expression values from the center cell.
-        
-        :param y_biomarkers: A biomarker name or a list of names.
-        :return: A numpy array of the biomarker expression values.
+
+        Parameters
+        ----------
+        y_biomarkers : Any
+            A biomarker name or list of biomarker names.
+
+        Returns
+        -------
+        np.ndarray
+            A numpy array of the biomarker expression values for the center cell.
         """
         if isinstance(y_biomarkers, str):
             y_biomarkers = [y_biomarkers]
-        return np.array([self.center_cell.get_biomarker(bm) for bm in y_biomarkers], dtype=float)
+        return np.array(
+            [self.center_cell.get_biomarker(bm) for bm in y_biomarkers],
+            dtype=float
+        )
 
     def prepare_for_causal_inference(
         self,
@@ -245,56 +369,85 @@ class MicroE:
         x_cell_types: List[str] = ALL_CELL_TYPES
     ) -> Tuple[np.ndarray, np.ndarray, List[str], List[str]]:
         """
-        Prepare and return data for causal inference.
-        
-        :param y_biomarkers: Biomarker(s) to be used as outcome variables.
-        :param x_biomarkers: Biomarker names for the predictor variables.
-        :param x_cell_types: Cell types for generating predictors.
-        :return: A tuple (X, Y, X_labels, Y_labels) where:
-                 - X is a flattened predictor vector,
-                 - Y is a vector of center cell biomarkers,
-                 - X_labels and Y_labels are the corresponding feature labels.
+        Prepare data for causal inference.
+
+        Parameters
+        ----------
+        y_biomarkers : Any
+            Outcome biomarker(s).
+        x_biomarkers : List[str]
+            Predictor biomarker names.
+        x_cell_types : List[str]
+            Cell types used to generate predictors.
+
+        Returns
+        -------
+        Tuple[np.ndarray, np.ndarray, List[str], List[str]]
+            X, Y, X_labels, Y_labels
         """
-        neighborhood_matrix: np.ndarray = self.get_neighborhood_biomarker_matrix(biomarkers=x_biomarkers, cell_types=x_cell_types)
-        X: np.ndarray = neighborhood_matrix.flatten()
-        X_labels: List[str] = [f"{bm}&{ct}" for ct in x_cell_types for bm in x_biomarkers]
-        Y: np.ndarray = self.get_center_biomarker_vector(y_biomarkers)
-        Y_labels: List[str] = [y_biomarkers] if isinstance(y_biomarkers, str) else y_biomarkers
+        neighborhood_matrix = self.get_neighborhood_biomarker_matrix(
+            biomarkers=x_biomarkers,
+            cell_types=x_cell_types
+        )
+        X = neighborhood_matrix.flatten()
+        X_labels = [
+            f"{bm}&{ct}" for ct in x_cell_types for bm in x_biomarkers
+        ]
+        Y = self.get_center_biomarker_vector(y_biomarkers)
+        if isinstance(y_biomarkers, str):
+            Y_labels = [y_biomarkers]
+        else:
+            Y_labels = y_biomarkers
         return X, Y, X_labels, Y_labels
 
     def to_anndata(self) -> anndata.AnnData:
+        """
+        Convert the microenvironment to an AnnData object.
+
+        Returns
+        -------
+        anndata.AnnData
+            The resulting AnnData with data_level = 'microe'.
+        """
         all_biomarkers = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
         biomarker_names = sorted(all_biomarkers)
-        
+
         X_list = []
         extra_obs = []
         for i, cell in enumerate(self.cells):
-            expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
+            expr = [
+                cell.biomarkers.biomarkers.get(bm, np.nan)
+                for bm in biomarker_names
+            ]
             X_list.append(expr)
             meta = {
                 "tissue_id": cell.tissue_id,
                 "cell_id": cell.cell_id,
-                "cell_type": cell.cell_type, 
+                "cell_type": cell.cell_type,
                 "size": cell.size,
-
-                # additional
-                "cell_role": "center" if i == 0 else "neighbor"
+                "cell_role": "center" if i == 0 else "neighbor",
             }
             meta.update(cell.additional_features)
             extra_obs.append(meta)
-        
+
         X = np.array(X_list)
         uns = {
-                "data_level": "microe",
-                "tissue_id": self.tissue_id,
-
-                # additional
-                "center_cell_id": self.center_cell.cell_id, 
-            }
-        return build_ann_data(self.cells, X=X, extra_obs=extra_obs, uns=uns)
+            "data_level": "microe",
+            "tissue_id": self.tissue_id,
+            "center_cell_id": self.center_cell.cell_id,
+        }
+        return build_ann_data(
+            self.cells,
+            X=X,
+            extra_obs=extra_obs,
+            uns=uns
+        )
 
     def __str__(self) -> str:
         """Return a string summary of the microenvironment."""
-        return f"Microenvironment around Cell {self.center_cell.cell_id} with {len(self.neighbors)} neighbors"
+        return (
+            f"Microenvironment around Cell {self.center_cell.cell_id} "
+            f"with {len(self.neighbors)} neighbors"
+        )

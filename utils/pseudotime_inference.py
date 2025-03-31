@@ -28,7 +28,7 @@ import argparse
 import numpy as np
 import torch
 
-from tic.model.train_gnn import set_seed
+from scripts.train_gnn import set_seed
 from tic.pseudotime.clustering import Clustering
 from tic.pseudotime.dimensionality_reduction import DimensionalityReduction
 from tic.pseudotime.pseudotime import SlingshotMethod

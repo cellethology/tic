@@ -1,10 +1,14 @@
 # main.yaml
+hydra:
+  run:
+    dir: "./outputs/train/${now:%Y-%m-%d_%H-%M-%S}"  # Store logs with timestamp
+    
 trainer:
   num_epochs: 1000 
   num_steps: 10000 # early stop
   batch_size: 64
   learning_rate: 0.001
-  output_dir: "/Users/zhangjiahao/Project/tic/results/train/${now:%Y-%m-%d_%H-%M-%S}"
+  output_dir: "{hydra.run.dir}"
   log_dir: "${trainer.output_dir}/logs"
   checkpoint_dir: "${trainer.output_dir}/checkpoints"
   resume_training: False   # Set to true to resume training from the last checkpoint
@@ -14,12 +18,12 @@ trainer:
 model:
   num_layer: 3
   emb_dim: 512
-  gnn_type: "gin"
+  gnn_type: "gin" # ["gin","gcn","gat","graphsage"]
   drop_ratio: 0.25
 
 dataset:
-  dataset_root: "/Users/zhangjiahao/Project/tic/data/example" # "/Users/zhangjiahao/Dataset/CODEX/upmc/dataset"
-  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"]
+  dataset_root: "{absolute path}" # absolute path to your dataset(should have a sub folder named "Raw")
+  region_ids: ["UPMC_c001_v001_r001_reg001", "UPMC_c001_v001_r001_reg004"] # set null to use all regions or a List of region id
   k: 3 # k-hop for microenvironment extraction
   microe_neighbor_cutoff: 200.0
   subset_cells: false

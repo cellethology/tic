@@ -1,7 +1,14 @@
-import pandas as pd
-import numpy as np
-import anndata
+"""
+Module: tic.causal.utils
+
+Provides utility functions for causal inference, including constructing
+a time series DataFrame from an AnnData object.
+"""
+
 from typing import Optional
+import pandas as pd
+import anndata
+
 
 def construct_time_series(
     adata: anndata.AnnData,
@@ -11,38 +18,43 @@ def construct_time_series(
     """
     Construct a time series DataFrame for causal inference from an AnnData object.
 
-    The AnnData is expected to include:
-      - obs["pseudotime"]: The pseudotime values for each center cell.
-      - X: Center cell biomarker expression vector (used to extract outcome variable Y).
+    The AnnData object is expected to include:
+      - obs["pseudotime"]: Pseudotime values for each center cell.
+      - X: The center cell's biomarker expression vector (used to extract outcome variable Y).
       - obsm["neighbor_biomarker"]: A 2D array where each row is the flattened neighbor biomarker matrix.
-      - uns["neighbor_biomarker_feature_names"]: A list mapping each column in the neighbor matrix 
+      - uns["neighbor_biomarker_feature_names"]: A list mapping each column in the neighbor matrix
         to a (cell type & biomarker) identifier.
-    
-    The output DataFrame will include:
+
+    The resulting DataFrame will include:
       - A "pseudotime" column.
-      - A "Y" column representing the center cell's expression of the specified biomarker.
-      - Predictor columns with names as given in uns["neighbor_biomarker_feature_names"].
-      - Rows are sorted in ascending order by pseudotime.
-    
-    If the parameter `bin` is provided, the function groups rows into the specified number of bins 
-    based on pseudotime and returns the average value for each bin.
+      - A "Y" column representing the outcome biomarker.
+      - Predictor columns with names from uns["neighbor_biomarker_feature_names"].
+      - Rows sorted in ascending order by pseudotime.
+
+    If `bin` is provided, the DataFrame rows are grouped into the specified number of bins
+    based on pseudotime and the values averaged within each bin.
 
     Parameters
     ----------
     adata : anndata.AnnData
-        AnnData object output from export_center_cells and pseudotime inference.
+        AnnData object produced by export_center_cells and pseudotime inference.
     y_biomarker : str
-        The biomarker (e.g., "PanCK") to be used as the outcome variable.
-    bin : int or None, optional
-        If provided, group pseudotime values into this many bins and average the values within each bin.
-    
+        The biomarker to be used as the outcome variable (e.g., "PanCK").
+    bin : Optional[int], optional
+        Number of bins to group pseudotime values, by default None.
+
     Returns
     -------
     pd.DataFrame
-        A time series DataFrame for causal inference. If bin is provided, each row corresponds to 
-        the average values within that pseudotime bin.
+        A time series DataFrame for causal inference. If bin is provided, each row corresponds
+        to the average values within that pseudotime bin.
+
+    Raises
+    ------
+    ValueError
+        If required keys are missing in the AnnData object.
     """
-    # Check required keys
+    # Validate required keys in the AnnData object.
     if "pseudotime" not in adata.obs.columns:
         raise ValueError("AnnData.obs must contain a 'pseudotime' column.")
     if "neighbor_biomarker" not in adata.obsm:
@@ -50,7 +62,7 @@ def construct_time_series(
     if "neighbor_biomarker_feature_names" not in adata.uns:
         raise ValueError("AnnData.uns must contain 'neighbor_biomarker_feature_names'.")
 
-    # Extract pseudotime.
+    # Extract pseudotime values.
     pseudotime = adata.obs["pseudotime"].values
 
     # Extract outcome (Y) from the center cell's biomarker expression.
@@ -61,10 +73,10 @@ def construct_time_series(
     Y = adata.X[:, y_idx].flatten()
 
     # Extract predictor variables from the flattened neighbor biomarker matrix.
-    X_neighbor = adata.obsm["neighbor_biomarker"]  # shape: (n_cells, n_features_neighbor)
+    X_neighbor = adata.obsm["neighbor_biomarker"]
     predictor_names = adata.uns["neighbor_biomarker_feature_names"]
 
-    # Construct the DataFrame.
+    # Construct the time series DataFrame.
     df = pd.DataFrame({
         "pseudotime": pseudotime,
         "Y": Y
@@ -76,10 +88,9 @@ def construct_time_series(
     df.sort_values("pseudotime", inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    # If bin is provided, group data into bins and average within each bin.
+    # If binning is requested, group rows into bins and average values.
     if bin is not None:
         df["bin"] = pd.cut(df["pseudotime"], bins=bin)
-        df_binned = df.groupby("bin").mean().reset_index(drop=True)
-        df = df_binned
+        df = df.groupby("bin").mean().reset_index(drop=True)
 
     return df

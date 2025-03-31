@@ -1,6 +1,7 @@
 # train_gnn.py
 import csv
 import os
+print(f"Current working directory: {os.getcwd()}")
 import random
 import numpy as np
 import torch
@@ -202,7 +203,7 @@ def train(cfg: DictConfig):
 
     # Close TensorBoard writer
     writer.close()
-@hydra.main(config_path="../../config/train", config_name="main")
+@hydra.main(config_path="../config/train", config_name="main")
 def main(cfg: DictConfig):
     train(cfg)
 

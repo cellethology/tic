@@ -1,11 +1,19 @@
+"""
+Module: tic.pipeline.pseudotime
+
+Runs the high-level pseudotime inference pipeline on an AnnData object.
+This pipeline performs dimensionality reduction, clustering, and
+pseudotime inference using the Slingshot algorithm.
+"""
+
 from typing import Optional
-import os
 import numpy as np
 import anndata
 
 from tic.pseudotime.clustering import Clustering
 from tic.pseudotime.dimensionality_reduction import DimensionalityReduction
 from tic.pseudotime.pseudotime import SlingshotMethod
+
 
 def run_pseudotime_pipeline(
     adata: anndata.AnnData,
@@ -20,24 +28,24 @@ def run_pseudotime_pipeline(
 ) -> Optional[anndata.AnnData]:
     """
     Run a high-level pseudotime inference pipeline on an AnnData object.
-    
-    The pipeline consists of:
-      1. Dimensionality reduction on the representation specified by `rep_key` from adata.obsm.
-         If `rep_key` is not found, the pipeline falls back to using adata.X.
+
+    The pipeline performs the following steps:
+      1. Dimensionality reduction on the representation specified by `rep_key`
+         from adata.obsm. If not found, falls back to using adata.X.
       2. Clustering on the reduced embeddings.
       3. Pseudotime inference using the Slingshot algorithm.
-         - If start_node is provided, Slingshot uses that candidate.
-         - Otherwise, the pipeline iterates over all unique cluster labels and aggregates pseudotime.
-    
+         - If start_node is provided, it is used as the starting candidate.
+         - Otherwise, pseudotime is aggregated over all unique cluster labels.
+
     Parameters
     ----------
     adata : anndata.AnnData
         AnnData object containing center cell representations.
-        Expected to have a representation stored under obsm[rep_key] or, as a fallback, in X.
+        Expected to have a representation stored under obsm[rep_key] or in X.
     rep_key : str, optional
         Key in adata.obsm to use for dimensionality reduction, by default "raw_expression".
     copy : bool, optional
-        If True, operate on a copy of adata and return a new AnnData object; if False, modify adata in place and return None.
+        If True, work on a copy of adata and return a new object; otherwise, modify in place.
     dr_method : str, optional
         Dimensionality reduction method ("PCA" or "UMAP"). Default is "UMAP".
     n_components : int, optional
@@ -47,29 +55,28 @@ def run_pseudotime_pipeline(
     n_clusters : int, optional
         Number of clusters to form. Default is 2.
     start_node : Optional[int], optional
-        Starting node for pseudotime inference. If None, the pipeline iterates over all unique cluster labels
-        and aggregates the resulting pseudotime values.
+        Starting node for pseudotime inference. If None, the pipeline aggregates over clusters.
     output_dir : Optional[str], optional
         Directory to save pseudotime plots. If None, plots are not saved.
-    
+
     Returns
     -------
     Optional[anndata.AnnData]
         If copy is True, returns a new AnnData object with updated fields:
-            - obsm["rp_reduced"]: Reduced representation.
+            - obsm["rp_reduced"]: Reduced embeddings.
             - obs["cluster"]: Cluster labels.
             - obs["pseudotime"]: Inferred pseudotime values.
         If copy is False, modifies adata in place and returns None.
     """
-    # Work on a copy if required.
     if copy:
         adata = adata.copy()
-    
+
     # Step 1: Dimensionality Reduction.
     if rep_key in adata.obsm:
         embeddings = adata.obsm[rep_key]
     else:
         embeddings = adata.X
+
     dr = DimensionalityReduction(method=dr_method, n_components=n_components)
     reduced_embeddings = dr.reduce(embeddings)
     adata.obsm["rp_reduced"] = reduced_embeddings
@@ -91,7 +98,7 @@ def run_pseudotime_pipeline(
             pt_candidate = slingshot.analyze(cluster_labels, reduced_embeddings, output_dir="")
             pt_candidates.append(pt_candidate)
         pseudotime = np.min(np.vstack(pt_candidates), axis=0)
-    
+
     adata.obs["pseudotime"] = pseudotime
 
     return adata if copy else None

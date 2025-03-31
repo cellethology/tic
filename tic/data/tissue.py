@@ -1,4 +1,9 @@
-# tic/data/tissue
+"""
+Module: tic.data.tissue
+
+Defines the Tissue class, representing a tissue sample with multiple cells,
+and provides methods to build a PyG graph and extract microenvironments.
+"""
 
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type
@@ -17,16 +22,25 @@ from tic.data.utils import build_ann_data
 
 class Tissue:
     """
-    Represents a tissue sample with a collection of Cell objects and an optional precomputed graph.
-    
-    Attributes:
-      - tissue_id: Identifier for the tissue.
-      - cells: List of all Cell objects.
-      - cell_dict: Dictionary mapping cell IDs to Cell objects for quick lookup.
-      - pos: Tissue-level position (defaulted to (0, 0)).
-      - positions: A NumPy array containing each cell's spatial coordinates.
-      - graph: An optional PyG Data object representing the tissue graph.
+    Represents a tissue sample with a collection of Cell objects
+    and an optional precomputed graph.
+
+    Attributes
+    ----------
+    tissue_id : str
+        Identifier for the tissue.
+    cells : List[Cell]
+        A list of all Cell objects in the tissue.
+    cell_dict : Dict[str, Cell]
+        Maps cell IDs to Cell objects for quick lookup.
+    pos : Tuple[float, float]
+        Tissue-level position (defaults to (0, 0)).
+    positions : np.ndarray
+        Spatial coordinates for each cell.
+    graph : Optional[Data]
+        A PyG Data object representing the tissue graph.
     """
+
     def __init__(
         self,
         tissue_id: str,
@@ -36,41 +50,60 @@ class Tissue:
     ) -> None:
         """
         Initialize a Tissue object.
-        
-        :param tissue_id: Unique identifier for the tissue.
-        :param cells: List of Cell objects comprising the tissue.
-        :param position: Tissue-level spatial position (defaults to (0, 0) if not provided).
-        :param graph: Optional precomputed PyG graph.
+
+        Parameters
+        ----------
+        tissue_id : str
+            Unique identifier for the tissue.
+        cells : List[Cell]
+            A list of Cell objects.
+        position : Optional[Tuple[float, float]]
+            Tissue-level spatial position.
+        graph : Optional[Data]
+            Optional precomputed PyG graph.
         """
         self.tissue_id: str = tissue_id
         self.cells: List[Cell] = cells
-        self.cell_dict: Dict[str, Cell] = {cell.cell_id: cell for cell in cells}
-        self.pos: Tuple[float, float] = position if position is not None else (0.0, 0.0)
+        self.cell_dict: Dict[str, Cell] = {
+            cell.cell_id: cell for cell in cells
+        }
+        self.pos: Tuple[float, float] = position if position else (0.0, 0.0)
         self.positions: np.ndarray = np.array([cell.pos for cell in self.cells])
         self.validate_cells_positions()
         self.graph: Optional[Data] = graph
 
     def validate_cells_positions(self) -> None:
         """
-        Ensures all cells have spatial positions of consistent dimensions.
-        
-        :raises ValueError: If the positions array is not 2D or cell position dimensions are inconsistent.
+        Ensure all cells have spatial positions of consistent dimensions.
+
+        Raises
+        ------
+        ValueError
+            If positions are not 2D or have inconsistent dimensions.
         """
         if self.positions.ndim != 2:
             raise ValueError("Cell positions should be a 2D array.")
         expected_dim = self.positions.shape[1]
         if not all(len(cell.pos) == expected_dim for cell in self.cells):
-            raise ValueError("Inconsistent position dimensions in cell data.")
+            msg = "Inconsistent position dimensions in cell data."
+            raise ValueError(msg)
 
     def get_cell_by_id(self, cell_id: str) -> Optional[Cell]:
         """
         Retrieve a cell by its unique ID.
-        
-        :param cell_id: Cell identifier.
-        :return: The Cell object if found, else None.
+
+        Parameters
+        ----------
+        cell_id : str
+            The cell identifier.
+
+        Returns
+        -------
+        Optional[Cell]
+            The matching Cell object if found, otherwise None.
         """
         return self.cell_dict.get(cell_id, None)
-    
+
     def get_microenvironment(
         self,
         center_cell_id: str,
@@ -79,22 +112,32 @@ class Tissue:
     ) -> MicroE:
         """
         Extract the k-hop microenvironment for a given center cell.
-        
-        This function:
-          1. Uses the tissue's graph to extract a k-hop subgraph.
-          2. Reorders the subgraph so that the center cell is at index 0.
-          3. Filters cells based on a distance cutoff.
-        
-        :param center_cell_id: Identifier of the center cell.
-        :param k: Number of hops for the subgraph.
-        :param microe_neighbor_cutoff: Distance threshold for filtering neighbor cells.
-        :return: A MicroE instance representing the microenvironment.
-        :raises ValueError: If the tissue graph is not computed or the center cell is not found.
+
+        The subgraph is then filtered by distance to remove neighbors
+        beyond microe_neighbor_cutoff.
+
+        Parameters
+        ----------
+        center_cell_id : str
+            Identifier of the center cell.
+        k : int
+            Number of hops for the subgraph.
+        microe_neighbor_cutoff : float
+            Distance threshold for filtering neighbor cells.
+
+        Returns
+        -------
+        MicroE
+            A MicroE instance representing the microenvironment.
+
+        Raises
+        ------
+        ValueError
+            If the tissue graph is not computed or the center cell is not found.
         """
         if self.graph is None:
-            raise ValueError("Tissue graph has not been computed. Please call to_graph() first.")
-        
-        # Find index of the center cell.
+            raise ValueError("Tissue graph not computed. Call to_graph() first.")
+
         center_index: Optional[int] = None
         for idx, cell in enumerate(self.cells):
             if cell.cell_id == center_cell_id:
@@ -102,23 +145,26 @@ class Tissue:
                 break
         if center_index is None:
             raise ValueError("Center cell not found in Tissue.")
-        
-        # Extract k-hop subgraph.
+
         subset, sub_edge_index, mapping, edge_mask = k_hop_subgraph(
-            center_index, num_hops=k, edge_index=self.graph.edge_index,
-            relabel_nodes=True, num_nodes=len(self.cells)
+            center_index,
+            num_hops=k,
+            edge_index=self.graph.edge_index,
+            relabel_nodes=True,
+            num_nodes=len(self.cells)
         )
-        
-        # Get edge attributes if available.
-        sub_edge_attr = self.graph.edge_attr[edge_mask] if (hasattr(self.graph, 'edge_attr') and self.graph.edge_attr is not None) else None
-        
-        # Construct microenvironment cells from the subset indices.
+
+        sub_edge_attr = None
+        if hasattr(self.graph, "edge_attr") and self.graph.edge_attr is not None:
+            sub_edge_attr = self.graph.edge_attr[edge_mask]
+
         micro_cells: List[Cell] = [self.cells[i] for i in subset.tolist()]
-        center_sub_idx = mapping.item() if isinstance(mapping, torch.Tensor) else mapping
-        
-        # Permute so that center cell is first.
+        center_sub_idx = (
+            mapping.item() if isinstance(mapping, torch.Tensor) else mapping
+        )
+
         n: int = len(micro_cells)
-        perm: List[int] = [center_sub_idx] + list(range(0, center_sub_idx)) + list(range(center_sub_idx + 1, n))
+        perm = [center_sub_idx] + list(range(0, center_sub_idx)) + list(range(center_sub_idx + 1, n))
         perm_tensor = torch.tensor(perm, dtype=torch.long)
         old_x = self.graph.x[subset]
         new_x = old_x[perm_tensor]
@@ -126,52 +172,84 @@ class Tissue:
         new_edge_index = inv_perm[sub_edge_index]
         new_edge_attr = sub_edge_attr
         micro_cells = [micro_cells[i] for i in perm]
+
         center_cell: Cell = micro_cells[0]
-        
         micro_graph = Data(x=new_x, edge_index=new_edge_index, edge_attr=new_edge_attr)
         micro_env = MicroE(center_cell, micro_cells, tissue_id=self.tissue_id, graph=None)
         micro_env.graph = micro_graph
 
-        # Filter cells that are beyond the distance cutoff.
+        # Filter by distance cutoff
         filtered_indices: List[int] = []
         for i, cell in enumerate(micro_cells):
-            dist: float = np.linalg.norm(np.array(cell.pos) - np.array(center_cell.pos))
+            dist = np.linalg.norm(np.array(cell.pos) - np.array(center_cell.pos))
             if dist <= microe_neighbor_cutoff:
                 filtered_indices.append(i)
         if 0 not in filtered_indices:
             filtered_indices.insert(0, 0)
         filtered_indices_tensor = torch.tensor(filtered_indices, dtype=torch.long)
         filt_edge_index, filt_edge_attr = subgraph(
-            filtered_indices_tensor, micro_env.graph.edge_index, micro_env.graph.edge_attr,
-            relabel_nodes=True, num_nodes=micro_env.graph.num_nodes
+            filtered_indices_tensor,
+            micro_env.graph.edge_index,
+            micro_env.graph.edge_attr,
+            relabel_nodes=True,
+            num_nodes=micro_env.graph.num_nodes
         )
         filt_x = micro_env.graph.x[filtered_indices_tensor]
         micro_cells = [micro_cells[i] for i in filtered_indices]
         micro_env.graph = Data(x=filt_x, edge_index=filt_edge_index, edge_attr=filt_edge_attr)
         micro_env.cells = micro_cells
-        micro_env.neighbors = [cell for i, cell in enumerate(micro_cells) if i != 0]
+        micro_env.neighbors = [cell for idx, cell in enumerate(micro_cells) if idx != 0]
         return micro_env
 
     def get_biomarkers_of_all_cells(self, biomarker_name: str) -> Dict[str, Any]:
         """
-        Retrieve a dictionary mapping cell IDs to the expression level of a specified biomarker.
-        
-        :param biomarker_name: The biomarker to retrieve.
-        :return: A dictionary {cell_id: expression_value}.
-        """
-        return {cell.cell_id: cell.get_biomarker(biomarker_name) for cell in self.cells}
+        Retrieve a dictionary mapping cell IDs to the expression level of a biomarker.
 
-    def get_statistics_for_biomarker(self, biomarker_name: str) -> Tuple[float, float]:
+        Parameters
+        ----------
+        biomarker_name : str
+            The biomarker name.
+
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary of cell_id -> expression_level.
         """
-        Calculate the mean and standard deviation of a given biomarker's expression across all cells.
-        
-        :param biomarker_name: The biomarker name.
-        :return: Tuple (mean, std).
-        :raises ValueError: If no valid values are found.
+        return {
+            cell.cell_id: cell.get_biomarker(biomarker_name) for cell in self.cells
+        }
+
+    def get_statistics_for_biomarker(
+        self,
+        biomarker_name: str
+    ) -> Tuple[float, float]:
         """
-        values = [cell.get_biomarker(biomarker_name) for cell in self.cells if cell.get_biomarker(biomarker_name) is not None]
+        Calculate mean and standard deviation of a biomarker expression
+        across all cells in the tissue.
+
+        Parameters
+        ----------
+        biomarker_name : str
+            Name of the biomarker.
+
+        Returns
+        -------
+        Tuple[float, float]
+            mean, std of the biomarker expression.
+
+        Raises
+        ------
+        ValueError
+            If no valid values are found for the biomarker.
+        """
+        values = [
+            cell.get_biomarker(biomarker_name)
+            for cell in self.cells
+            if cell.get_biomarker(biomarker_name) is not None
+        ]
         if not values:
-            raise ValueError(f"No data available for biomarker '{biomarker_name}'.")
+            msg = f"No data available for biomarker '{biomarker_name}'."
+            raise ValueError(msg)
         return float(np.mean(values)), float(np.std(values))
 
     def to_graph(
@@ -181,35 +259,60 @@ class Tissue:
         edge_attr_fn: Optional[Callable[[Cell, Cell], Any]] = None
     ) -> Data:
         """
-        Convert the entire tissue into a PyG graph.
-        
-        Uses lazy evaluation: if the graph is already computed, returns it; otherwise, computes it.
-        
-        :param node_feature_fn: Function to compute node features.
-        :param edge_index_fn: Function to compute edge indices.
-        :param edge_attr_fn: Optional function to compute edge attributes.
-        :return: PyG Data object.
+        Convert the entire tissue into a PyG graph (lazy evaluation).
+
+        Parameters
+        ----------
+        node_feature_fn : Callable[[Cell], Any]
+            Function to compute node features.
+        edge_index_fn : Callable[[List[Cell]], torch.Tensor]
+            Function to compute edge indices.
+        edge_attr_fn : Optional[Callable[[Cell, Cell], Any]]
+            Function to compute edge attributes.
+
+        Returns
+        -------
+        Data
+            The PyG Data object for the tissue.
         """
         if self.graph is not None:
             return self.graph
+
         node_features = self._generate_node_features(node_feature_fn)
         edge_index = edge_index_fn(self.cells)
         edge_attr = self._generate_edge_attributes(edge_attr_fn, edge_index)
         self.graph = Data(x=node_features, edge_index=edge_index, edge_attr=edge_attr)
         return self.graph
 
-    def _generate_node_features(self, node_feature_fn: Callable[[Cell], Any]) -> torch.Tensor:
+    def _generate_node_features(
+        self,
+        node_feature_fn: Callable[[Cell], Any]
+    ) -> torch.Tensor:
         """
         Generate node features for each cell using the provided function.
-        
-        :param node_feature_fn: Function that returns features for a cell.
-        :return: A torch.Tensor of node features.
-        :raises ValueError: If features cannot be generated.
+
+        Parameters
+        ----------
+        node_feature_fn : Callable[[Cell], Any]
+            Function returning features for a given cell.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of node features.
+
+        Raises
+        ------
+        ValueError
+            If features cannot be generated.
         """
         try:
-            return torch.tensor([node_feature_fn(cell) for cell in self.cells], dtype=torch.float)
-        except Exception as e:
-            raise ValueError(f"Error generating node features: {e}")
+            return torch.tensor(
+                [node_feature_fn(cell) for cell in self.cells],
+                dtype=torch.float
+            )
+        except Exception as exc:
+            raise ValueError(f"Error generating node features: {exc}") from exc
 
     def _generate_edge_attributes(
         self,
@@ -218,11 +321,23 @@ class Tissue:
     ) -> Optional[torch.Tensor]:
         """
         Generate edge attributes using the provided function.
-        
-        :param edge_attr_fn: Function that returns attributes for a pair of cells.
-        :param edge_index: Tensor of edge indices.
-        :return: A torch.Tensor of edge attributes or None if not provided.
-        :raises ValueError: If edge attributes cannot be computed.
+
+        Parameters
+        ----------
+        edge_attr_fn : Optional[Callable[[Cell, Cell], Any]]
+            Function returning attributes for a pair of cells.
+        edge_index : torch.Tensor
+            Tensor of edge indices.
+
+        Returns
+        -------
+        Optional[torch.Tensor]
+            A tensor of edge attributes or None if not provided.
+
+        Raises
+        ------
+        ValueError
+            If edge attributes cannot be computed.
         """
         if edge_attr_fn is None:
             return None
@@ -234,107 +349,167 @@ class Tissue:
             if cell1 and cell2:
                 edge_attrs.append(edge_attr_fn(cell1, cell2))
             else:
-                raise ValueError(f"Error retrieving cells for edge: {edge}")
+                msg = f"Error retrieving cells for edge: {edge}"
+                raise ValueError(msg)
         return torch.tensor(edge_attrs, dtype=torch.float)
 
     def save_graph(self, filepath: str) -> None:
         """
         Save the tissue graph to disk.
-        
-        :param filepath: Path where the graph will be saved.
-        :raises ValueError: If no graph is available.
+
+        Parameters
+        ----------
+        filepath : str
+            Path to the file for saving the graph.
+
+        Raises
+        ------
+        ValueError
+            If no graph is available.
         """
         if self.graph is None:
-            raise ValueError("No precomputed graph available to save. Call to_graph() first.")
+            raise ValueError(
+                "No precomputed graph available to save. Call to_graph() first."
+            )
         torch.save(self.graph, filepath)
 
     @classmethod
-    def load_graph(cls: Type["Tissue"], tissue_id: str, cells: List[Cell], filepath: str, position: Optional[Tuple[float, float]] = None) -> "Tissue":
+    def load_graph(
+        cls: Type["Tissue"],
+        tissue_id: str,
+        cells: List[Cell],
+        filepath: str,
+        position: Optional[Tuple[float, float]] = None
+    ) -> "Tissue":
         """
         Load a Tissue object from a saved PyG graph.
-        
-        :param tissue_id: Tissue identifier.
-        :param cells: List of Cell objects.
-        :param filepath: Path to the saved graph.
-        :param position: Optional tissue-level position.
-        :return: A Tissue object with the loaded graph.
+
+        Parameters
+        ----------
+        tissue_id : str
+            Tissue identifier.
+        cells : List[Cell]
+            A list of Cell objects.
+        filepath : str
+            Path to the saved graph.
+        position : Optional[Tuple[float, float]]
+            Optional tissue-level position.
+
+        Returns
+        -------
+        Tissue
+            A Tissue object with the loaded graph.
         """
         graph = torch.load(filepath)
         return cls.from_pyg_graph(tissue_id, cells, graph, position)
 
     @classmethod
-    def from_pyg_graph(cls: Type["Tissue"], tissue_id: str, cells: List[Cell], pyg_graph: Data, position: Optional[Tuple[float, float]] = None) -> "Tissue":
+    def from_pyg_graph(
+        cls: Type["Tissue"],
+        tissue_id: str,
+        cells: List[Cell],
+        pyg_graph: Data,
+        position: Optional[Tuple[float, float]] = None
+    ) -> "Tissue":
         """
         Construct a Tissue instance from a PyG graph.
-        
-        :param tissue_id: Tissue identifier.
-        :param cells: List of Cell objects.
-        :param pyg_graph: PyG Data object representing the tissue graph.
-        :param position: Optional tissue-level position.
-        :return: A Tissue instance.
+
+        Parameters
+        ----------
+        tissue_id : str
+            Tissue identifier.
+        cells : List[Cell]
+            A list of Cell objects.
+        pyg_graph : Data
+            A PyG Data object representing the tissue graph.
+        position : Optional[Tuple[float, float]]
+            Tissue-level position.
+
+        Returns
+        -------
+        Tissue
+            A Tissue instance.
         """
-        return cls(tissue_id, cells, position, graph=pyg_graph)
+        return cls(
+            tissue_id=tissue_id,
+            cells=cells,
+            position=position,
+            graph=pyg_graph
+        )
 
     @classmethod
-    def from_anndata(cls: Type["Tissue"], adata: anndata.AnnData, tissue_id: Optional[str] = None) -> "Tissue":
+    def from_anndata(
+        cls: Type["Tissue"],
+        adata: anndata.AnnData,
+        tissue_id: Optional[str] = None
+    ) -> "Tissue":
         """
         Instantiate a Tissue from an AnnData object produced by to_anndata.
-        
+
         Expects:
-        - obs with 'cell_type' and 'size' columns. (Cell IDs should be in obs.index or in a 'cell_id' column.)
-        - var.index containing at least one biomarker name.
-        - obsm["spatial"] present for spatial coordinates.
-        - uns["tissue_id"] for tissue ID if not provided.
-        
-        :param adata: anndata.AnnData object.
-        :param tissue_id: Tissue identifier (if not provided, attempts to retrieve from adata.uns).
-        :return: A Tissue instance.
-        :raises ValueError: If required keys or columns are missing.
+          - obs with 'cell_type' and 'size' columns.
+          - var.index containing biomarker names.
+          - obsm["spatial"] for spatial coordinates.
+          - uns["tissue_id"] for tissue ID if not provided.
+
+        Parameters
+        ----------
+        adata : anndata.AnnData
+            The AnnData object.
+        tissue_id : Optional[str]
+            The tissue ID (if not provided, retrieved from adata.uns).
+
+        Returns
+        -------
+        Tissue
+            A Tissue instance.
+
+        Raises
+        ------
+        ValueError
+            If required keys/columns are missing or if no biomarker names are found.
         """
-        # Check that obsm contains "spatial"
         if "spatial" not in adata.obsm:
-            raise ValueError("AnnData.obsm is missing the 'spatial' key; cannot reconstruct Tissue.")
-        
-        # Check that obs contains the required columns: 'cell_type' and 'size'
+            raise ValueError(
+                "AnnData.obsm is missing 'spatial' key; cannot reconstruct Tissue."
+            )
+
         required_obs_cols = {"cell_type", "size"}
         if not required_obs_cols.issubset(adata.obs.columns):
             missing = required_obs_cols - set(adata.obs.columns)
-            raise ValueError(f"AnnData.obs is missing required columns: {missing}")
+            raise ValueError(
+                f"AnnData.obs is missing required columns: {missing}"
+            )
 
-        # Determine tissue_id from uns if not provided.
         if tissue_id is None:
             tissue_id = adata.uns.get("tissue_id", "UnknownTissue")
-        
-        # Extract biomarker names.
+
         biomarker_names = list(adata.var.index)
-        if biomarker_names == []:
+        if not biomarker_names:
             raise ValueError("AnnData.var.index is empty; no biomarker names found.")
-        # Get the expression matrix.
-        X_dense = adata.X.toarray() if hasattr(adata.X, "toarray") else np.array(adata.X)
-        
-        # Get spatial coordinates.
+
+        X_dense = (
+            adata.X.toarray() if hasattr(adata.X, "toarray") else np.array(adata.X)
+        )
         coords = adata.obsm["spatial"]
-        
+
         cells = []
-        # Iterate over obs rows; use the index as cell_id if not explicitly provided in a column.
+        from tic.data.cell import Biomarkers, Cell
         for i, (index, row) in enumerate(adata.obs.iterrows()):
             pos = coords[i]
-            cell_id = row.get("cell_id", None)
+            cell_id = row.get("cell_id", index)
             cell_type = row.get("cell_type", None)
             size = row.get("size", None)
-            
-            # Rebuild the biomarker dictionary for this cell.
+
             biomarker_dict = {}
             for j, bm in enumerate(biomarker_names):
                 biomarker_dict[bm] = X_dense[i, j]
-            
-            # Construct the Biomarkers object and extract additional features.
-            from tic.data.cell import Biomarkers, Cell
+
             biomarkers_obj = Biomarkers(**biomarker_dict)
-            # Remove known keys to leave additional features.
-            additional_features = row.drop(labels=["cell_type", "size", "cell_id"]).to_dict()
-            
-            # Create a Cell object.
+            additional_features = row.drop(
+                labels=["cell_type", "size", "cell_id"], errors="ignore"
+            ).to_dict()
+
             cell_obj = Cell(
                 tissue_id=tissue_id,
                 cell_id=str(cell_id),
@@ -345,36 +520,40 @@ class Tissue:
                 **additional_features
             )
             cells.append(cell_obj)
-        
+
         return cls(tissue_id=tissue_id, cells=cells)
 
     def to_anndata(self) -> anndata.AnnData:
         """
         Convert the Tissue into an AnnData object in a standardized format.
 
-        - X: biomarker expression matrix (n_cells x n_biomarkers).
-        - obs: includes "cell_id", "cell_type", "size", plus any additional features.
-        - var: biomarker names.
-        - obsm["spatial"]: spatial coordinates of cells.
-        - uns: includes {"data_level": "tissue", "tissue_id": self.tissue_id}
+        Returns
+        -------
+        anndata.AnnData
+            The constructed AnnData object with:
+              - X: biomarker expression matrix (n_cells x n_biomarkers)
+              - obs: includes "cell_id", "cell_type", "size", plus any additional features
+              - var: biomarker names
+              - obsm["spatial"]: spatial coordinates of cells
+              - uns: includes {"data_level": "tissue", "tissue_id": self.tissue_id}
         """
-        # Collect all unique biomarker names.
         all_biomarkers = set()
         for cell in self.cells:
             all_biomarkers.update(cell.biomarkers.biomarkers.keys())
         biomarker_names = sorted(all_biomarkers)
 
-        # Build X (n_cells x n_biomarkers) and extra_obs.
         X_list = []
         extra_obs = []
         for cell in self.cells:
-            expr = [cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names]
+            expr = [
+                cell.biomarkers.biomarkers.get(bm, np.nan) for bm in biomarker_names
+            ]
             X_list.append(expr)
             meta = {
                 "tissue_id": cell.tissue_id,
                 "cell_id": cell.cell_id,
                 "cell_type": cell.cell_type,
-                "size": cell.size
+                "size": cell.size,
             }
             meta.update(cell.additional_features)
             extra_obs.append(meta)

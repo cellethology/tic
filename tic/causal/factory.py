@@ -1,28 +1,37 @@
-# tic/causal/factory.py
+"""
+Module: tic.causal.factory
 
-from tic.causal.repo.difference_in_diff import DifferenceInDifferencesMethod
+Provides a factory to instantiate causal method objects based on a string identifier.
+"""
+
 from tic.causal.repo.granger_causality import GrangerCausalityMethod
-from tic.causal.repo.instrumental_vars import InstrumentalVariableMethod
-from tic.causal.repo.matching import MatchingCausalMethod
-from tic.causal.repo.propensity_score import PropensityScoreMethod
 
 
 class CausalMethodFactory:
     """
-    A simple factory that returns the correct causal method object
-    based on a string identifier.
+    Factory class for creating causal method objects.
     """
+
     @staticmethod
     def get_method(method_name: str):
-        if method_name.lower() == "matching":
-            return MatchingCausalMethod()
-        elif method_name.lower() == "propensityscore":
-            return PropensityScoreMethod()
-        elif method_name.lower() == "instrumentalvariables":
-            return InstrumentalVariableMethod()
-        elif method_name.lower() == "differenceindifferences":
-            return DifferenceInDifferencesMethod()
-        elif method_name.lower() == "granger_causality":
+        """
+        Return the causal method instance corresponding to the given identifier.
+
+        Parameters
+        ----------
+        method_name : str
+            The identifier for the causal method (e.g., "granger_causality").
+
+        Returns
+        -------
+        An instance of a causal method.
+
+        Raises
+        ------
+        ValueError
+            If the method name is unknown.
+        """
+        if method_name.lower() == "granger_causality":
             return GrangerCausalityMethod()
         else:
             raise ValueError(f"Unknown causal method: {method_name}")
