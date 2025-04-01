@@ -13,14 +13,17 @@ class CausalMethodFactory:
     """
 
     @staticmethod
-    def get_method(method_name: str):
+    def get_method(method_name: str, **kwargs):
         """
-        Return the causal method instance corresponding to the given identifier.
+        Return the causal method instance corresponding to the given identifier,
+        passing additional keyword arguments to the method constructor.
 
         Parameters
         ----------
         method_name : str
             The identifier for the causal method (e.g., "granger_causality").
+        **kwargs
+            Additional parameters to pass to the causal method's constructor.
 
         Returns
         -------
@@ -32,6 +35,6 @@ class CausalMethodFactory:
             If the method name is unknown.
         """
         if method_name.lower() == "granger_causality":
-            return GrangerCausalityMethod()
+            return GrangerCausalityMethod(**kwargs)
         else:
             raise ValueError(f"Unknown causal method: {method_name}")

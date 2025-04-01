@@ -23,7 +23,8 @@ def run_causal_pipeline(
     causal_method: str = "granger_causality",
     copy: bool = True,
     bins: Optional[int] = None,
-    causal_kwargs: Optional[Dict[str, Any]] = None
+    causal_kwargs: Optional[Dict[str, Any]] = None,
+    method_kwargs: Optional[Dict[str, Any]] = None
 ) -> Optional[anndata.AnnData]:
     """
     Run a high-level causal inference pipeline on an AnnData object that already contains pseudotime values.
@@ -36,6 +37,7 @@ def run_causal_pipeline(
          - Predictor variables extracted from obsm["neighbor_biomarker"]
       3. For each predictor column (or the ones specified in x_variable), wrap the data into a CausalInput,
          then use the causal method (from CausalMethodFactory) to fit and estimate effect.
+         Initialization parameters for the causal method can be passed via method_kwargs.
       4. Store the causal results in adata.uns["causal_results"].
 
     Parameters
@@ -59,7 +61,10 @@ def run_causal_pipeline(
     bins : Optional[int], optional
         Number of bins for grouping time-series data (averaging values within each bin).
     causal_kwargs : Optional[Dict[str, Any]], optional
-        Additional keyword arguments to pass to the causal inference method.
+        Additional keyword arguments to pass to the causal inference method's fit and
+        estimate_effect methods.
+    method_kwargs : Optional[Dict[str, Any]], optional
+        Additional keyword arguments to pass to the causal method's constructor.
 
     Returns
     -------
@@ -74,6 +79,8 @@ def run_causal_pipeline(
     """
     if causal_kwargs is None:
         causal_kwargs = {}
+    if method_kwargs is None:
+        method_kwargs = {}
 
     if copy:
         adata = adata.copy()
@@ -107,7 +114,7 @@ def run_causal_pipeline(
             covariates=[],
             extra_params={}
         )
-        causal_method_obj = CausalMethodFactory.get_method(causal_method)
+        causal_method_obj = CausalMethodFactory.get_method(causal_method, **method_kwargs)
         causal_method_obj.fit(ci, **causal_kwargs)
         result = causal_method_obj.estimate_effect(ci, **causal_kwargs)
         causal_results[pred] = result
