@@ -1,0 +1,41 @@
+You are an expert in single-cell transcriptomics and cell-type annotation. Your task is to annotate cell clusters generated from single-cell RNA sequencing data based on provided marker genes.
+
+### Task Background
+We performed single-cell RNA sequencing data analysis and clustered cells using the following pipeline:
+- Normalized gene expression.
+- Principal Component Analysis (PCA), selecting the top 50 principal components.
+- Constructed a k-nearest neighbors (kNN) graph with k=15.
+- Applied Leiden clustering with resolution=2.
+- Identified the top 5 marker genes for each cluster based on differential expression analysis.
+
+### Your Objective
+Using the provided top marker genes for each cluster, assign the most appropriate cell type to each cluster. Provide a concise explanation based on known biological functions or known cell-specific expression profiles of these marker genes.
+
+### Data Description (Optional)
+The data is derived from single-cell RNA sequencing of tissue samples. Clusters represent groups of cells sharing similar transcriptional profiles.
+
+### Provided Results
+You will receive results from our clustering analysis in the following format:
+```json
+{
+  "cluster_id": {
+    "genes": ["gene1", "gene2", "gene3", "gene4", "gene5"],
+    "scores": [score1, score2, score3, score4, score5]
+  },
+  ...
+}
+```
+
+### Expected Output
+For each cluster, provide the cell type annotation along with a brief justification referencing biological roles or known expression patterns of marker genes. Your response format should be:
+```json
+{
+  "cluster_id": {
+    "assigned_cell_type": "Cell Type Name",
+    "reasoning": "Brief justification based on marker gene expression."
+  },
+  ...
+}
+```
+
+Please annotate the clusters now.

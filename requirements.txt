@@ -1,0 +1,14 @@
+umap-learn
+statsmodels
+linearmodels
+matplotlib
+pyslingshot
+Squidpy
+mypy
+pytest
+ruff
+scanpy
+wget
+
+# optional
+openai # for openai backend
