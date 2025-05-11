@@ -1,3 +1,11 @@
+# tic.data.loader
+"""
+This module provides functions to load and process various spatial transcriptomics datasets.
+
+It includes:
+- Loading Codex datasets: Codex-UPMC, Codex-Charville, Codex-DFCI
+- Loading Xenium datasets: Xenium-Pancreas-Cancer, Xenium-Colorectal-Cancer
+"""
 import os
 from typing import Literal, Optional
 
@@ -9,22 +17,57 @@ from anndata import AnnData
 from ..constant import DEFAULT_DATACACHE_DIR
 from .io import download_codex_dataset, download_xenium_pancreas_cancer_data, download_xenium_colorectal_cancer_data
 
-def load_codex_upmc(
-    data_root: str = os.path.join(DEFAULT_DATACACHE_DIR, "codex_upmc"),
+def load_codex_dataset(
+    dataset: str | Literal["upmc", "charville", "dfci"] = "upmc",
+    dataset_root: str | None = None,
     region_id: str = "UPMC_c001_v001_r001_reg001",
 ) -> AnnData:
-    if not os.path.exists(data_root):
-        # download data
-        print(f"[INFO] Downloading Codex UPMc data to {data_root}")
-        download_codex_dataset(dataset="upmc")
+    """
+    Load Codex dataset
+    
+    Parameters
+    ----------
+    dataset: str | Literal["upmc", "charville", "dfci"] = "upmc"
+        The dataset to load.
+    dataset_root: str | None = None
+        The root directory to store the dataset. If None, the dataset will be downloaded to the default cache directory. 
+        Else, the dataset will be loaded from the given directory.
+    region_id: str = "UPMC_c001_v001_r001_reg001"
+        The region id to load.
 
+    Returns
+    -------
+    AnnData
+        .obs:
+            - cell_id: the cell id
+            - cell_type: the cell type
+            - size: the size of the cell
+        .var:
+            - biomarker_cols: the biomarker columns
+        .obsm:
+            - spatial: the spatial coordinates
+        .uns:
+            - tissue_id: the tissue id
+            - data_level: the data level
+    """
+    mapping = {
+        "upmc": "codex_upmc",
+        "charville": "codex_charville",
+        "dfci": "codex_dfci",
+    }
+    dataset_root = os.path.join(DEFAULT_DATACACHE_DIR, mapping[dataset]) if dataset_root is None else dataset_root
+
+    if not os.path.exists(dataset_root):
+        print(f"[INFO] Downloading Codex {dataset.capitalize()} data to {dataset_root}")
+        download_codex_dataset(dataset=dataset)
+    
     file_template = {
         "coords": "{region_id}.cell_data.csv",
         "features": "{region_id}.cell_features.csv",
         "types": "{region_id}.cell_types.csv",
         "expression": "{region_id}.expression.csv"
     }
-    paths = {key: os.path.join(data_root, tpl.format(region_id=region_id)) for key, tpl in file_template.items()}
+    paths = {key: os.path.join(dataset_root, tpl.format(region_id=region_id)) for key, tpl in file_template.items()}
     dfs = {key: pd.read_csv(path) for key, path in paths.items()}
 
     for df in dfs.values():

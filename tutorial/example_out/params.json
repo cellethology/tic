@@ -1,0 +1,1 @@
+{"rep_key": "composition", "dr_method": "pca", "n_components": 2, "cluster_method": "kmeans", "n_clusters": 2, "start_node": null, "epochs": 10, "random_state": 42, "output_dir": "example_out", "monotonicity_method": "spearman", "trend_method": "mann_kendall", "step_order": null}

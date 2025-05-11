@@ -31,12 +31,17 @@ Stub for future Xenium colorectal data integration.(Not available yet)
 
 ## 🧬 Dataset Loaders
 
-### `load_codex_upmc()`
+### `load_codex_dataset()`
+We currently support three Codex datasets:
+- Codex-UPMC
+- Codex-Charville
+- Codex-DFCI
 
-Loads Codex UPMC region as an `AnnData` object with:
+Loads Codex dataset as an `AnnData` object with:
 - `.X`: marker expressions
 - `.obs`: cell_id, cell_type, size
 - `.obsm["spatial"]`: 2D coordinates
+- `.uns`: tissue_id, data_level
 
 ### `load_xenium_pancreas_cancer()`
 
