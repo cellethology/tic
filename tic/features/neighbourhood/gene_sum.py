@@ -32,7 +32,7 @@ class NeighbourGeneSum(FeatureExtractor):
     ) -> np.ndarray:
         if self._n == 0:
             self._n = adata.n_vars
-            self._feature_names = list(adata.var_names)
+            self._feature_names = [f"{self.name}:{i}" for i in list(adata.var_names)]
 
         X = adata.X[neighbour_idx]
         if sp.issparse(X):

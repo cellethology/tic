@@ -40,7 +40,7 @@ class _SameTypeBase(FeatureExtractor):
     ) -> np.ndarray:
         if self._n == 0:
             self._n = adata.n_vars
-            self._feature_names = list(adata.var_names)
+            self._feature_names = [f"{self.name}:{i}" for i in list(adata.var_names)]
 
         centre_type = adata.obs[self.obs_key].iat[centre_idx]
         same = [i for i in neighbour_idx if adata.obs[self.obs_key].iat[i] == centre_type]

@@ -165,6 +165,10 @@ def plot_causal_heatmap(
     matrix, sig_map = _extract_matrix(
         results, metric, n_tests, log2_transform, highlight_pval
     )
+    if all(not is_sig for is_sig in sig_map.values()):
+        print("No statistically significant predictors found (p ≥ {:.3f}).".format(highlight_pval))
+        return
+
     if matrix.empty:
         print("No valid predictors after filtering; nothing to plot.")
         return

@@ -1,170 +1,188 @@
 # file: tic/wrappers/causal.py
+"""
+High‑level wrapper that converts pseudo‑time + neighbourhood features
+into a tidy DataFrame → runs causal inference → stores results in `adata.uns`.
+"""
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Literal, Sequence, List, Optional
 
 import numpy as np
 import pandas as pd
 from anndata import AnnData
+from scipy.sparse import issparse
 
 from ..constant import DEFAULT_KEY
-from ..data.utils import get_cell_types, get_biomarkers
 from ..causal.factory import CausalMethodFactory
-from ..plotting import plot_causal_heatmap, plot_causal_bar, plot_causal_volcano
+from ..plotting import (
+    plot_causal_heatmap,
+    plot_causal_bar,
+    plot_causal_volcano,
+)
 
 
-class CausalWrapper:
-    """One-stop causal inference + plotting interface, now supports generic obsm features."""
-    def __init__(
+class CausalWrapper:  # pylint: disable=too-few-public-methods
+    """
+    One‑stop causal inference + plotting interface.
+
+    Parameters
+    ----------
+    outcome
+        Biomarker name (must be in ``adata.var_names``) used as *Y*.
+    feature_key
+        Matrix of *all* potential predictors (defaults to ``"X_predictors"``).
+    include_extractors
+        Only use columns whose extractor prefix (before the *first* ``":"``)
+        appears in this list.  E.g. ``["celltype_gene_count"]``.
+        If ``None`` → keep every column in ``feature_key``.
+    method
+        Causal method string recognised by :pyclass:`tic.causal.factory`.
+    bins
+        Number of pseudotime bins.  ``None`` or ``<=1`` → no binning.
+    method_kwargs
+        Extra kwargs forwarded to the causal method constructor.
+    """
+
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         *,
         outcome: str,
-        feature_key: str,
-        feature_names: Optional[Sequence[str]] = None,
+        feature_key: str = "X_predictors",
+        include_extractors: Optional[Sequence[str]] = ("celltype_gene_count",),
         method: str = "granger_causality",
         bins: int | None = 100,
         method_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
-        """
-        Parameters
-        ----------
-        outcome
-            outcome biomarker name in adata.var_names
-        feature_key
-            key in adata.obsm for the predictor matrix (shape = n_obs × n_features)
-        feature_names
-            names for each column in that matrix;
-            if None, we assume a celltype×gene matrix and auto-generate via get_cell_types/get_biomarkers
-        method
-            causal method
-        bins
-            number of pseudotime bins (None or <=1 disables binning)
-        """
         self.outcome = outcome
         self.feature_key = feature_key
-        self.feature_names = feature_names
+        self.include_extractors: Optional[tuple[str, ...]] = (
+            tuple(include_extractors) if include_extractors is not None else None
+        )
         self.method = method
         self.bins = bins
         self.method_kwargs = method_kwargs or {}
-        self._results: Dict[str, Dict[str, Any]] | None = None
 
+        self._results: Dict[str, Dict[str, Any]] | None = None  # cache
+
+    # --------------------------------------------------------------------- public
     def fit(self, adata: AnnData) -> Dict[str, Dict[str, Any]]:
-        """Run causal inference and store in .uns."""
+        """Run causal inference for every selected predictor."""
         df = self._prepare_dataframe(adata)
         predictors = [c for c in df.columns if c not in ("time", "Y")]
 
+        from ..causal.causal_input import CausalInput
+
         results: Dict[str, Dict[str, Any]] = {}
         for pred in predictors:
-            from ..causal.causal_input import CausalInput
-
-            ci = CausalInput(
-                data=df[["Y", pred]].dropna(),
-                treatment_col=pred,
-                outcome_col="Y",
-            )
-            method_obj = CausalMethodFactory.get_method(self.method, **self.method_kwargs)
-            method_obj.fit(ci)
-            results[pred] = method_obj.estimate_effect(ci)
+            ci = CausalInput(data=df[["Y", pred]].dropna(),
+                             treatment_col=pred,
+                             outcome_col="Y")
+            method = CausalMethodFactory.get_method(self.method, **self.method_kwargs)
+            method.fit(ci)
+            results[pred] = method.estimate_effect(ci)
 
         self._results = results
         adata.uns[DEFAULT_KEY.get("causal_results")] = results
-        return results
+        return adata
 
+    def plot(self, adata: AnnData, kind: str | Literal["heatmap", "bar", "volcano"] = "bar", **kwargs) -> None:
+        """
+        Plot the causal results.
+
+        Parameters
+        ----------
+        adata
+            Annotated data object.
+        kind
+            for more details, see :func:`plot_causal_heatmap`, :func:`plot_causal_bar`, :func:`plot_causal_volcano`. at tic.plotting.casual
+        """
+        _map = {"heatmap": plot_causal_heatmap,
+                "bar": plot_causal_bar,
+                "volcano": plot_causal_volcano}
+        if kind not in _map:
+            raise ValueError(f"Unknown plot kind '{kind}'.")
+        _map[kind](adata, **kwargs)
+
+    # ------------------------------------------------------------------ helpers
     def _prepare_dataframe(self, adata: AnnData) -> pd.DataFrame:
-        """
-        Aggregate into a DataFrame with columns:
-          - time: bin centre
-          - Y: mean outcome expression
-          - <feature_names[i]>: mean of obsm[:, i] per bin
-        """
-        # 1. sanity checks
-        if DEFAULT_KEY.get('pseudotime') not in adata.obs:
-            raise KeyError("Run pseudotime first: missing .obs['pseudotime']")
+        # 1) -------- sanity
+        pt_key = DEFAULT_KEY.get("pseudotime")
+        if pt_key not in adata.obs:
+            raise KeyError(f"Missing pseudo‑time in .obs['{pt_key}'].")
         if self.outcome not in adata.var_names:
-            raise ValueError(f"Outcome '{self.outcome}' not in .var_names")
+            raise ValueError(f"Outcome '{self.outcome}' not in adata.var_names.")
         if self.feature_key not in adata.obsm:
-            raise KeyError(f".obsm['{self.feature_key}'] not found")
+            raise KeyError(f"Feature matrix .obsm['{self.feature_key}'] not found.")
 
-        # 2. load data
-        pt = adata.obs[DEFAULT_KEY.get('pseudotime')].to_numpy()
-        mat = np.asarray(adata.obsm[self.feature_key])
+        # 2) -------- load matrix & names
+        mat = adata.obsm[self.feature_key]
+        if issparse(mat):
+            mat = mat.toarray()
+        mat = np.asarray(mat, dtype=np.float32)
         if mat.ndim == 1:
             mat = mat[:, None]
-        n_feat = mat.shape[1]
 
-        # 3. determine column names
-        if self.feature_names is not None:
-            if len(self.feature_names) != n_feat:
-                raise ValueError(
-                    f"feature_names length ({len(self.feature_names)}) "
-                    f"!= number of columns in obsm ({n_feat})"
-                )
-            feat_names = list(self.feature_names)
+        if "X_predictors_names" in adata.uns:
+            all_names: List[str] = list(adata.uns["X_predictors_names"])
         else:
-            # assume celltype×gene layout
-            cell_types = get_cell_types(adata)
-            genes = get_biomarkers(adata)
+            # fallback – synthetic column names
+            all_names = [f"{self.feature_key}:{i}" for i in range(mat.shape[1])]
 
-            def _make_feature_names(cell_types: Sequence[str], genes: Sequence[str]) -> List[str]:
-                """Return ``count_<cell>_<gene>`` for all combinations (row‑major)."""
-                return [f"count_{ct}_{g}" for ct in cell_types for g in genes]
-            
-            feat_names = _make_feature_names(cell_types, genes)
+        if len(all_names) != mat.shape[1]:
+            raise ValueError("Column‑name list length does not match feature matrix.")
 
-            if len(feat_names) != n_feat:
-                raise ValueError(
-                    "obsm matrix columns != len(cell_types)*len(genes). "
-                    "Either provide feature_names or use the matching obsm key."
-                )
+        # 3) -------- optional extractor filtering
+        if self.include_extractors is not None:
+            keep_mask = [
+                name.split(":", 1)[0] in self.include_extractors
+                for name in all_names
+            ]
+            if not any(keep_mask):
+                raise ValueError("No columns match `include_extractors`.")
+            mat = mat[:, keep_mask]
+            feat_names = [n for n, keep in zip(all_names, keep_mask) if keep]
+        else:
+            feat_names = all_names
 
-        # 4. find outcome index
-        var_list = list(adata.var_names)
-        y_idx = var_list.index(self.outcome)
+        # 4) -------- bin pseudo‑time & aggregate
+        pt = adata.obs[pt_key].to_numpy()
+        y_idx = list(adata.var_names).index(self.outcome)
 
-        # 5. bin pseudotime
         if self.bins is None or self.bins <= 1:
             bin_ids = np.zeros_like(pt, dtype=int)
-            centers = np.array([pt.mean()])
+            centres = np.array([float(pt.mean())])
         else:
             edges = np.linspace(pt.min(), pt.max(), self.bins + 1)
-            bin_ids = np.digitize(pt, edges) - 1
-            bin_ids[bin_ids == self.bins] = self.bins - 1
-            centers = (edges[:-1] + edges[1:]) / 2
+            bin_ids = np.clip(np.digitize(pt, edges) - 1, 0, self.bins - 1)
+            centres = (edges[:-1] + edges[1:]) / 2
 
-        # 6. aggregate
-        rows = []
+        rows: list[dict[str, float]] = []
         for b in np.unique(bin_ids):
             idx = np.where(bin_ids == b)[0]
             if idx.size == 0:
                 continue
-            y_mean = float(adata.X[idx, y_idx].mean())
-            feat_mean = mat[idx].mean(axis=0)
-            row = {"time": float(centers[b]), "Y": y_mean}
-            row.update({name: float(val) for name, val in zip(feat_names, feat_mean)})
+            row: dict[str, float] = {
+                "time": float(centres[b]),
+                "Y": float(adata.X[idx, y_idx].mean()),
+            }
+            row.update({n: float(mat[idx, j].mean()) for j, n in enumerate(feat_names)})
             rows.append(row)
 
-        df = pd.DataFrame(rows).sort_values("time").reset_index(drop=True)
+        df = (pd.DataFrame(rows)
+                .sort_values("time")
+                .reset_index(drop=True))
 
-        # 7. drop constant predictors
+        # 5) -------- drop constant predictors
         pred_cols = [c for c in df.columns if c not in ("time", "Y")]
-        const_cols = [c for c in pred_cols if df[c].nunique(dropna=True) <= 1]
-        if const_cols:
-            df.drop(columns=const_cols, inplace=True)
+        const = [c for c in pred_cols if df[c].nunique(dropna=True) <= 1]
+        if const:
+            df.drop(columns=const, inplace=True)
 
         return df
 
-    def plot(self, adata: AnnData, kind: str = "heatmap", **kwargs) -> None:
-        fn_map = {
-            "heatmap": plot_causal_heatmap,
-            "bar": plot_causal_bar,
-            "volcano": plot_causal_volcano,
-        }
-        if kind not in fn_map:
-            raise ValueError(f"Unknown plot kind '{kind}'")
-        fn_map[kind](adata, **kwargs)
-
+    # ------------------------------------------------------------------ results
     @property
     def results(self) -> Dict[str, Dict[str, Any]]:
         if self._results is None:
-            raise RuntimeError("Run `.fit()` first.")
+            raise RuntimeError("Call `.fit()` first.")
         return self._results
