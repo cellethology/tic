@@ -27,20 +27,24 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
     centre_types : Optional[Sequence[str]]
         Categories in `adata.obs['cell_type']` to treat as micro-environment centres.
         If `None`, all cells are used as centres.
-    graph_params : Optional[Dict[str, Any]]
+    graph_params : Optional[Dict[str, Any]] see `tic.graph.pp.compute_neighbors` for more details
         Overrides for the recipe's graph-building extractor.
+        graph_params will be passed to `tic.graph.pp.compute_neighbors` and saved in `adata.uns['graph_params']`
         Common keys:
-          - method: str (e.g. 'knn' or 'radius')
-          - k: int
-          - radius: float
+          - method: str (e.g. 'knn' or 'radius' or 'voronoi')
+          - k: int (only for knn)
+          - radius: float (only for radius)
           - metric: str
           - key: Optional[str]
-    subgraph_params : Optional[Dict[str, Any]]
+    subgraph_params : Optional[Dict[str, Any]] see `tic.graph.tl.extract_subgraph` for more details
         Overrides for the recipe's subgraph-extraction extractor.
+        subgraph_params will be passed to `tic.graph.tl.extract_subgraph`
         Common keys:
           - strategy: str (e.g. "knn", "radius", "k_hop_shortest", "k_hop_pyg", "bfs_python", "slice_adj" )
           - hop: int
-          - radius: float
+          - radius: float 
+            for 'radius' strategy: this is the radius of the circle
+            for other strategies: this will cut off the edges longer than the radius 
 
     Examples
     --------
@@ -48,8 +52,8 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
     >>> fw = FeatureWrapper(
     ...     recipe='tme_default',
     ...     centre_types=['Tumor'],
-    ...     graph_params={'method':'knn','k':6},
-    ...     subgraph_params={'strategy':'k_hop','hop':2},
+    ...     graph_params={'method':'voronoi'},
+    ...     subgraph_params={'strategy':'k_hop_pyg','hop':2},
     ... )
     >>> fea_adata = fw.fit(adata)
     >>> fea_adata.obs.head()

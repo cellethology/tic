@@ -9,7 +9,7 @@ To use TIC, follow these steps:
 
 ### Step 1: Clone the Repository
 ```
-git clone https://github.com/cellethology/tic
+git clone https://github.com/cellethology/tic.git
 cd tic
 ```
 ### Step 2: Install Dependencies

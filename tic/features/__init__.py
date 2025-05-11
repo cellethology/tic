@@ -82,7 +82,14 @@ def extract(
     """
     # 1) determine centre indices
     if centre_types is not None:
-        centres = np.where(adata.obs['cell_type'].isin(centre_types))[0]
+        try:
+            if 'cell_type' not in adata.obs.columns:
+                raise ValueError("centre_types must be specified if adata.obs['cell_type'] is not present")
+            if centre_types not in adata.obs['cell_type'].unique():
+                raise ValueError("centre_types must be in adata.obs['cell_type']")
+            centres = np.where(adata.obs['cell_type'].isin(centre_types))[0]
+        except KeyError:
+            raise ValueError("centre_types must be specified if adata.obs['cell_type'] is not present")
     else:
         centres = np.arange(adata.n_obs)
 
