@@ -138,6 +138,26 @@ def extract(
     out.uns['graph_params'] = graph_params or {}
     out.uns['subgraph_params'] = sub_kwargs
 
+    # 10) build unified predictor matrix & meta
+    blocks = []
+    name_cols: list[str] = []
+    meta_rows = []
+
+    for ext in extractors:
+        block = out.obsm[ext.name]          # (n_centres, n_features_i)
+        blocks.append(block)
+
+        # feature names / meta
+        name_cols.extend(ext.feature_names(adata))
+        meta_dict = ext.feature_meta(adata)
+        if meta_dict is None:
+            meta_dict = {"name": ext.feature_names(adata)}
+        meta_rows.append(pd.DataFrame(meta_dict))
+
+    out.obsm["X_predictors"] = np.hstack(blocks)
+    out.uns["X_predictors_names"] = name_cols
+    out.uns["X_predictors_meta"] = pd.concat(meta_rows, ignore_index=True)
+
     return out
 
 

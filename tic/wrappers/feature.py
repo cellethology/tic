@@ -43,9 +43,30 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
           - strategy: str (e.g. "knn", "radius", "k_hop_shortest", "k_hop_pyg", "bfs_python", "slice_adj" )
           - hop: int
           - radius: float 
-            for 'radius' strategy: this is the radius of the circle
-            for other strategies: this will cut off the edges longer than the radius 
+            - for 'radius' strategy: this is the radius of the circle
+            - for other strategies: this will cut off the edges longer than the radius 
 
+    Returns
+    -------
+    adata : AnnData
+        Annotated data object with the extracted features.
+
+        added key:
+            uns['feature_modes'] : list[str]
+                The modes of the extracted features.
+                e.g. ['centre_gene', 'composition', 'neighbor_gene_sum', 'same_type_gene_sum', 
+                'same_type_gene_average', 'celltype_gene_count']
+            uns['graph_params'] : dict
+                The parameters used to build the graph.
+            uns['subgraph_params'] : dict
+                The parameters used to extract the subgraph.
+            uns['X_predictors_names'] : list[str]
+                The names of the extracted features.
+            uns['X_predictors_meta'] : pd.DataFrame
+                The meta data of the extracted features.
+            obsm['X_predictors'] : np.ndarray
+            obsm[feature_key] : np.ndarray, feature_key is the key of the extracted features, saved in `adata.uns['feature_modes']`
+    
     Examples
     --------
     >>> from tic.wrappers.feature import FeatureWrapper
