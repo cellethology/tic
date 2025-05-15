@@ -11,6 +11,7 @@ CausalWrapper, where each result dict contains at least:
 
 from __future__ import annotations
 
+import os
 from typing import Dict, List, Optional, Tuple
 
 import anndata
@@ -223,7 +224,10 @@ def plot_causal_heatmap(
 
     plt.tight_layout()
     if save_path:
+        # make the directory if not exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=300)
+        plt.close()
     return plt.gca()
 
 
@@ -275,7 +279,10 @@ def plot_causal_bar(
     plt.tight_layout()
 
     if save_path:
+        # make the directory if not exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=300)
+        plt.close()
     return plt.gca()
 
 
@@ -388,5 +395,8 @@ def plot_causal_volcano(
     plt.tight_layout()
 
     if save_path:
+        # make the directory if not exists
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=300)
+        plt.close()
     return plt.gca()

@@ -67,6 +67,7 @@ def scatter_embedding(
     ax.set(title=kind.capitalize(), xlabel="Dim 1", ylabel="Dim 2", aspect="equal")
     if save_path:
         plt.savefig(save_path)
+        plt.close()
     return ax
 
 def plot_biomarker_trends(
@@ -103,7 +104,7 @@ def plot_biomarker_trends(
     ax : plt.Axes
         Optional Axes to plot into.
     save_path : str
-        If set, saves the figure.
+        If set, saves the figure. Will not show the figure.
 
     Examples
     --------
@@ -195,5 +196,8 @@ def plot_biomarker_trends(
 
     if save_path:
         plt.savefig(save_path)
-
-    return ax
+        plt.close()
+        return None 
+    else:
+        plt.show()
+        return ax

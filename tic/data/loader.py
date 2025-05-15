@@ -17,6 +17,58 @@ from anndata import AnnData
 from ..constant import DEFAULT_DATACACHE_DIR
 from .io import download_codex_dataset, download_xenium_pancreas_cancer_data, download_xenium_colorectal_cancer_data
 
+def list_codex_datasets(
+    dataset: str | Literal["upmc", "charville", "dfci"] = "upmc",
+    dataset_root: str | None = None,
+    ) -> list[str]:
+    """
+    List the available regions in the given Codex dataset.
+
+    Parameters
+    ----------
+    dataset: str | Literal["upmc", "charville", "dfci"] = "upmc"
+        The dataset to list.
+    dataset_root: str | None = None
+        The root directory to store the dataset. If None, the dataset will be downloaded to the default cache directory. 
+    
+    Returns
+    -------
+    list[str]
+        The list of available regions in the given Codex dataset.
+
+    Examples
+    --------
+    >>> list_codex_datasets()
+    ['UPMC_c001_v001_r001_reg001', 'UPMC_c001_v001_r001_reg002']
+    >>> list_codex_datasets(dataset="charville")
+    ['Charville_c001_v001_r001_reg001', 'Charville_c001_v001_r001_reg002']
+    >>> list_codex_datasets(dataset="dfci", dataset_root="/path/to/dfci")
+    ['s271_c001_v001_r001_reg001', 's271_c001_v001_r001_reg004', 's271_c001_v001_r001_reg004']
+    """
+    mapping = {
+        "upmc": "codex_upmc",
+        "charville": "codex_charville",
+        "dfci": "codex_dfci",
+    }
+    dataset_root = os.path.join(DEFAULT_DATACACHE_DIR, mapping[dataset]) if dataset_root is None else dataset_root
+
+    if not os.path.exists(dataset_root):
+        print(f"[INFO] Downloading Codex {dataset.capitalize()} data to {dataset_root}")
+        download_codex_dataset(dataset=dataset)
+    
+    def get_region_ids(dir_path):
+        """Get all region IDs based on JSON files in the directory."""
+        region_ids = []
+        for file in os.listdir(dir_path):
+            if file.endswith(".cell_data.csv"):
+                region_ids.append(file.split(".")[0])
+        return sorted(region_ids)
+
+    return get_region_ids(dataset_root)
+    
+
+
+
 def load_codex_dataset(
     dataset: str | Literal["upmc", "charville", "dfci"] = "upmc",
     dataset_root: str | None = None,

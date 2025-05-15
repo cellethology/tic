@@ -1,0 +1,1 @@
+{"rep_key": "composition", "dr_method": "pca", "n_components": 2, "cluster_method": "kmeans", "n_clusters": 2, "start_node": null, "epochs": 10, "random_state": 42, "output_dir": "../tutorial/example_out/multi_regions/EXP_UPMC_DEMO/UPMC_c001_v001_r001_reg001", "monotonicity_method": "spearman", "trend_method": "mann_kendall", "step_order": null}

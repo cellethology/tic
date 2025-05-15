@@ -10,6 +10,7 @@ from .io import (
 )
 
 from .loader import (
+    list_codex_datasets,
     load_codex_dataset,
     load_xenium_pancreas_cancer,
     load_xenium_colorectal_cancer,
@@ -25,4 +26,5 @@ __all__ = [
     "remove_cache",
     "list_datasets",
     "remove_dataset",
+    "list_codex_datasets",
 ]
