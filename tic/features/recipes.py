@@ -9,11 +9,12 @@ __all__ = ["get_recipe"]
 
 _BUILTIN: Dict[str, Dict[str, Dict[str, Any]]] = {
     # cell‑level only
-    "cell_basic": {
+    "cell_default": {
         "centre_gene": {},
     },
     # full micro‑environment default
     "tme_default": {
+        "geometry_features": {},
         "centre_gene": {},
         "composition": {"normalize": True},
         "neighbor_gene_sum": {},

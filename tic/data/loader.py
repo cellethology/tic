@@ -254,14 +254,11 @@ def load_xenium_dataset(
             "cell": ["cell_boundaries.parquet", "cell_boundaries.csv.gz"],
             "nucleus": ["nucleus_boundaries.parquet", "nucleus_boundaries.csv.gz"]
         }
-        # make sure the file exists
+
+        adata.uns["cell_boundaries"] = {}
+
         for mask_type, filenames in boundary_files.items():
-            for fname in filenames:
-                path = os.path.join(ds_dir, fname)
-                if not os.path.exists(path):
-                    raise FileNotFoundError(f"File {path} not found")
-        
-        for mask_type, filenames in boundary_files.items():
+            found = False
             for fname in filenames:
                 path = os.path.join(ds_dir, fname)
                 if os.path.exists(path):
@@ -271,12 +268,21 @@ def load_xenium_dataset(
                         if path.endswith(".parquet")
                         else pd.read_csv(path)
                     )
-                    # Ensure 'cell_id' is str for join consistency
                     df["cell_id"] = df["cell_id"].astype(str)
-                    if "cell_boundaries" not in adata.uns:
-                        adata.uns["cell_boundaries"] = {}
+                    df = df[df["cell_id"].isin(adata.obs_names)]
+
                     adata.uns["cell_boundaries"][mask_type] = df
-                    break  # Stop once one format is loaded
+                    found = True
+                    break
+
+            if not found:
+                raise FileNotFoundError(
+                    f"[ERROR] Cannot find {mask_type} boundary file in expected formats: {filenames}"
+                )
+    # 9) Ensure dense expression matrix
+    if not isinstance(adata.X, np.ndarray):
+        adata.X = adata.X.toarray()
+
     return adata
 
 
