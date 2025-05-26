@@ -1,6 +1,8 @@
 scripts/
 scr/
 
+utils/config.py
+
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
 __pycache__/

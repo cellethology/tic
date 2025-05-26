@@ -25,7 +25,7 @@ def list_datasets(cache_dir: str = DEFAULT_DATACACHE_DIR):
 def remove_dataset(dataset_name: str, cache_dir: str = DEFAULT_DATACACHE_DIR):
     os.remove(os.path.join(cache_dir, dataset_name))
 
-# ── Codex UPMC ────────────────────────────────────────────────────────────────
+# ── Codex ────────────────────────────────────────────────────────────────────
 CODEX_DATASETS = {
     "upmc": {
         "url": "https://zenodo.org/records/13179600/files/upmc_raw_data.zip?download=1",
@@ -39,6 +39,33 @@ CODEX_DATASETS = {
         "url": "https://zenodo.org/records/13179600/files/dfci_raw_data.zip?download=1",
         "zip_name": "dfci_raw_data.zip",
     },
+}
+
+# ── Xenium ────────────────────────────────────────────────────────────────────
+XENIUM_DATASETS: dict[str, dict[str, str]] = {
+    # ────────────────────────────────────────────────────────────────
+    #  key ↓                     Main zip file URL ↓
+    # ────────────────────────────────────────────────────────────────
+    "xenium_ffpe_human_breast": {
+        "zip": (
+            "https://cf.10xgenomics.com/samples/xenium/1.0.2/"
+            "Xenium_V1_FFPE_Human_Breast_ILC/"
+            "Xenium_V1_FFPE_Human_Breast_ILC_outs.zip"
+        ),
+        "expr": "cell_feature_matrix.h5",
+        "cells": "cells.csv.gz",
+    },
+    "xenium_pancreas_cancer": {
+        "zip": (
+            "https://cf.10xgenomics.com/samples/xenium/1.6.0/"
+            "Xenium_V1_hPancreas_Cancer_Add_on_FFPE/"
+            "Xenium_V1_hPancreas_Cancer_Add_on_FFPE_outs.zip"
+        ),
+        "extra": "Xenium_V1_hPancreas_Cancer_Add_on_FFPE_cell_groups.csv",
+        "expr": "cell_feature_matrix.h5",
+        "cells": "cells.csv.gz",
+    },
+    # add new dataset here
 }
 
 def download_codex_dataset(dataset: str | Literal["upmc", "charville", "dfci"], cache_dir: str = DEFAULT_DATACACHE_DIR):
@@ -88,7 +115,73 @@ def download_codex_dataset(dataset: str | Literal["upmc", "charville", "dfci"], 
 
     print(f"Codex {dataset.capitalize()} data is available in: {dataset_dir}")
 
-# ── Xenium ────────────────────────────────────────────────────────────────────
+
+def download_xenium_dataset(
+    dataset: str | Literal['xenium_ffpe_human_breast'],
+    cache_dir: str = DEFAULT_DATACACHE_DIR,
+    *,
+    force: bool = False,
+) -> str:
+    """
+    Download and extract the specified Xenium dataset.
+
+    Parameters
+    ----------
+    dataset : str
+        The dataset to download.
+    cache_dir : str
+        The directory to store the downloaded dataset.
+    force : bool
+        If True, the dataset will be downloaded even if it already exists.
+
+    Returns
+    -------
+    str
+        The path to the extracted dataset directory.
+    """
+    if dataset not in XENIUM_DATASETS:
+        raise KeyError(f"Unknown Xenium dataset: {dataset}")
+
+    ds_cfg = XENIUM_DATASETS[dataset]
+    ds_dir = os.path.join(cache_dir, dataset)
+    if os.path.exists(ds_dir):
+        print(f"Dataset already exists in {ds_dir}, skipping download.")
+        return ds_dir
+    os.makedirs(ds_dir, exist_ok=True)
+
+    zip_url = ds_cfg["zip"]
+    zip_path = os.path.join(ds_dir, os.path.basename(zip_url))
+
+    if force or not os.path.exists(zip_path):
+        download_file(zip_url, zip_path)
+
+    # if already unzipped and force=False, skip
+    expected_expr = os.path.join(ds_dir, ds_cfg["expr"])
+    if not os.path.exists(expected_expr) or force:
+        print(f"[INFO] Extracting {zip_path} …")
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            zf.extractall(ds_dir)
+
+        # 10x zip contains *_outs subdirectory, unzip the files
+        for out in (p := os.listdir(ds_dir)):
+            if out.endswith("_outs"):
+                inner = os.path.join(ds_dir, out)
+                for f in os.listdir(inner):
+                    shutil.move(os.path.join(inner, f), ds_dir)
+                shutil.rmtree(inner)
+                break
+
+    # extra csv (e.g. cell_groups) are downloaded directly, no need to unzip
+    if "extra" in ds_cfg:
+        extra_path = os.path.join(ds_dir, ds_cfg["extra"])
+        if force or not os.path.exists(extra_path):
+            download_file(
+                ds_cfg["zip"].replace("_outs.zip", f'_{ds_cfg["extra"]}'), extra_path
+            )
+
+    return ds_dir
+
+# ── Special Xenium  without standard 10x Genomics zip file ────────────────────────────────────────────────────────────────────
 def download_xenium_pancreas_cancer_data(cache_dir: str = DEFAULT_DATACACHE_DIR):
     '''
     Download Xenium Pancreas Cancer dataset from 10x Genomics -> ~.cache/tic/xenium_pancreas_cancer
@@ -124,4 +217,5 @@ def download_xenium_colorectal_cancer_data(cache_dir: str = DEFAULT_DATACACHE_DI
     os.makedirs(xenium_dir, exist_ok=True)
 
     raise NotImplementedError("Xenium colorectal cancer data is not available yet.")
+
     

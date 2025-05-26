@@ -15,7 +15,7 @@ import scanpy as sc
 from anndata import AnnData
 
 from ..constant import DEFAULT_DATACACHE_DIR
-from .io import download_codex_dataset, download_xenium_pancreas_cancer_data, download_xenium_colorectal_cancer_data
+from .io import XENIUM_DATASETS, download_codex_dataset, download_xenium_dataset, download_xenium_pancreas_cancer_data, download_xenium_colorectal_cancer_data
 
 def list_codex_datasets(
     dataset: str | Literal["upmc", "charville", "dfci"] = "upmc",
@@ -148,6 +148,140 @@ def load_codex_dataset(
     adata.uns["data_level"] = "tissue"
     return adata
 
+# ── Xenium ────────────────────────────────────────────────────────────────────
+def load_xenium_dataset(
+    dataset: str | Literal['xenium_ffpe_human_breast'],
+    cache_dir: str = DEFAULT_DATACACHE_DIR,
+    *,
+    force_download: bool = False,
+    normalize: Literal[None, "size", "counts"] = None,
+    n_cells: int | None = None,
+    include_mask: bool | None = None,
+) -> AnnData:
+    """
+    Load Standardized AnnData from Xenium dataset. The raw data should at least contain:
+    - cell_feature_matrix.h5
+    - cells.csv.gz
+    - (optional) cell_groups.csv
+
+    Parameters
+    ----------
+    dataset: str
+        The dataset to load.
+    cache_dir: str = DEFAULT_DATACACHE_DIR
+        The directory to store the downloaded dataset.
+    force_download: bool = False
+        If True, the dataset will be downloaded even if it already exists.
+    normalize: Literal[None, "size", "counts"] = None
+        If "size", normalize the expression matrix by cell area.
+        If "counts", normalize the expression matrix by total counts.
+    n_cells: int | None = None
+        If not None, sample n_cells from the central spatial region.
+    include_mask: bool | None = None
+        If not None, include the mask in the AnnData.uns
+
+    Returns  
+    -------
+    AnnData
+        .X: the expression matrix
+        .obs: the cell table
+        .obsm: the spatial coordinates
+            - spatial: the spatial coordinates
+            - data_level: 'tissue'
+            - cell_boundaries: the cell boundaries
+                - 'cell': the cell boundaries dataframe, column: 'cell_id', 'vertex_x', 'vertex_y'
+                - 'nucleus': the nucleus boundaries dataframe, column: 'cell_id', 'vertex_x', 'vertex_y'
+        .uns: the metadata
+            - tissue_id: the tissue id
+            - data_level: the data level
+    """
+    ds_dir = download_xenium_dataset(dataset, cache_dir, force=force_download)
+    cfg = XENIUM_DATASETS[dataset]
+
+    # 1) expression matrix
+    expr_path = os.path.join(ds_dir, cfg["expr"])
+    adata = sc.read_10x_h5(expr_path, gex_only=False)
+    adata.var_names_make_unique()
+
+    # 2) cell table
+    cells_path = os.path.join(ds_dir, cfg["cells"])
+    cells_df = pd.read_csv(cells_path, compression="infer").set_index("cell_id")
+
+    # (optional) cell type additional table
+    if "extra" in cfg:
+        extra_path = os.path.join(ds_dir, cfg["extra"])
+        if os.path.exists(extra_path):
+            types_df = pd.read_csv(extra_path)
+            cells_df = cells_df.merge(types_df, how="left", on="cell_id")
+            cells_df["cell_type"] = cells_df.get("group", "Unknown")
+
+    # 3) align
+    adata.obs_names = adata.obs_names.astype(str)
+    cells_df.index = cells_df.index.astype(str)
+    shared = adata.obs_names.intersection(cells_df.index)
+    adata = adata[shared].copy()
+    cells_df = cells_df.loc[shared]
+
+    # 4) obs / obsm
+    adata.obs = cells_df
+    adata.obsm["spatial"] = cells_df[["x_centroid", "y_centroid"]].values
+    if "cell_type" not in adata.obs:
+        adata.obs["cell_type"] = "unknown"
+
+    # 5) (optional) circular n_cells sampling (same as pancreas logic)
+    if n_cells is not None:
+        xy = adata.obsm["spatial"]
+        ctr = xy.mean(axis=0)
+        d = np.linalg.norm(xy - ctr, axis=1)
+        keep = np.argsort(d)[:n_cells]
+        adata = adata[keep].copy()
+
+    # 6) (optional) normalize
+    if normalize == "size" and "cell_area" in adata.obs:
+        adata.X = adata.X / adata.obs["cell_area"].values[:, None]
+    elif normalize == "counts":
+        totals = adata.X.sum(axis=1)
+        adata.X = adata.X / totals[:, None]
+
+    # 7) Metadata
+    adata.uns["tissue_id"] = dataset
+    adata.uns["data_level"] = "tissue"
+    print(f"[✓] Loaded {dataset}: {adata.n_obs} cells × {adata.n_vars} genes.")
+
+    # 8) (optional) load cell/nucleus mask polygon data
+    if include_mask:
+        boundary_files = {
+            "cell": ["cell_boundaries.parquet", "cell_boundaries.csv.gz"],
+            "nucleus": ["nucleus_boundaries.parquet", "nucleus_boundaries.csv.gz"]
+        }
+        # make sure the file exists
+        for mask_type, filenames in boundary_files.items():
+            for fname in filenames:
+                path = os.path.join(ds_dir, fname)
+                if not os.path.exists(path):
+                    raise FileNotFoundError(f"File {path} not found")
+        
+        for mask_type, filenames in boundary_files.items():
+            for fname in filenames:
+                path = os.path.join(ds_dir, fname)
+                if os.path.exists(path):
+                    print(f"[INFO] Loading {mask_type} boundaries from: {fname}")
+                    df = (
+                        pd.read_parquet(path)
+                        if path.endswith(".parquet")
+                        else pd.read_csv(path)
+                    )
+                    # Ensure 'cell_id' is str for join consistency
+                    df["cell_id"] = df["cell_id"].astype(str)
+                    if "cell_boundaries" not in adata.uns:
+                        adata.uns["cell_boundaries"] = {}
+                    adata.uns["cell_boundaries"][mask_type] = df
+                    break  # Stop once one format is loaded
+    return adata
+
+
+# ── Special Xenium  without standard 10x Genomics zip file ────────────────────────────────────────────────────────────────────
+
 def load_xenium_pancreas_cancer(
     data_root: str = os.path.join(DEFAULT_DATACACHE_DIR, "xenium_pancreas_cancer"),
     tissue_id: str = "Xenium_hPancreas",
@@ -175,7 +309,7 @@ def load_xenium_pancreas_cancer(
         Annotated data matrix with gene expression, cell metadata, and spatial coordinates.
     """
     if not os.path.exists(data_root):
-        download_xenium_pancreas_cancer_data(data_root)
+        download_xenium_pancreas_cancer_data()
 
     feature_matrix = os.path.join(data_root, 'cell_feature_matrix.h5')
     cells_file = os.path.join(data_root, 'cells.csv.gz')

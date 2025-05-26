@@ -4,6 +4,7 @@ from .io import (
     download_codex_dataset,
     download_xenium_pancreas_cancer_data,
     download_xenium_colorectal_cancer_data,
+    download_xenium_dataset,
     remove_cache,
     list_datasets,
     remove_dataset,
@@ -14,12 +15,14 @@ from .loader import (
     load_codex_dataset,
     load_xenium_pancreas_cancer,
     load_xenium_colorectal_cancer,
+    load_xenium_dataset,
 )
 
 __all__ = [
     "download_codex_dataset",
     "download_xenium_pancreas_cancer_data",
     "download_xenium_colorectal_cancer_data",
+    "download_xenium_dataset",
     "load_codex_dataset",
     "load_xenium_pancreas_cancer",
     "load_xenium_colorectal_cancer",
@@ -27,4 +30,5 @@ __all__ = [
     "list_datasets",
     "remove_dataset",
     "list_codex_datasets",
+    "load_xenium_dataset",
 ]

@@ -9,6 +9,8 @@ pytest
 ruff
 scanpy
 wget
+igraph
+leidenalg
 
 # optional
 openai # for openai backend
