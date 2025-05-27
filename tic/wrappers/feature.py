@@ -7,13 +7,15 @@ and override key parameters for graph construction and subgraph extraction.
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Sequence, Optional
+from typing import Any, Dict, Sequence, Optional, Mapping
+
 from anndata import AnnData
 
 
 from ..config import FeatureConfig
 from .base import BaseWrapper
 from ..features import extract
+from ..features.recipes import get_recipe
 
 class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
     """
@@ -78,20 +80,36 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
     ... )
     >>> fea_adata = fw.fit(adata)
     >>> fea_adata.obs.head()
+
+    custom recipe:
+    >>> from tic.wrappers.feature import FeatureWrapper
+    >>> fw = FeatureWrapper(
+    ...     recipe={
+            'geometry_features': {},
+            "composition": {},
+        },
+    ...     centre_types=['Tumor'],
+    ...     graph_params={'method':'voronoi'},
+    ...     subgraph_params={'strategy':'k_hop_pyg','hop':2},
+    ... )
+    >>> fea_adata = fw.fit(adata)
+    >>> fea_adata.obs.head()
     """
 
     def __init__(
         self,
         *,
-        recipe: str = "tme_default",
+        recipe: str | Mapping[str, Mapping[str, Any]] = "tme_default",
         centre_types: Optional[Sequence[str]] = None,
         graph_params: Optional[Dict[str, Any]] = None,
         subgraph_params: Optional[Dict[str, Any]] = None,
         build_graph_if_missing: bool = True,
     ) -> None:
+        
+        recipe_dict = get_recipe(recipe)
         super().__init__(
             FeatureConfig(
-                recipe=recipe,
+                recipe=recipe_dict,
                 centre_types=list(centre_types) if centre_types else None,
                 graph_params=dict(graph_params) if graph_params else None,
                 subgraph_params=dict(subgraph_params) if subgraph_params else None,

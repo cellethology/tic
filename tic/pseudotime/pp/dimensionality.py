@@ -6,6 +6,7 @@ from typing import Literal
 
 import numpy as np
 from sklearn.decomposition import PCA, KernelPCA
+from sklearn.discriminant_analysis import StandardScaler
 from sklearn.manifold import TSNE, MDS, Isomap, LocallyLinearEmbedding
 from umap import UMAP
 
@@ -64,8 +65,11 @@ class DimensionalityReduction:
         X_reduced
             Transformed data of shape (n_samples, n_components).
         """
+        # Normalize each feature to mean 0 and std 1
+        X_scaled = StandardScaler().fit_transform(X)
+
         model = self._create_model()
-        return model.fit_transform(X)
+        return model.fit_transform(X_scaled)
 
     def _create_model(self):
         """Instantiate and return the underlying reduction estimator."""

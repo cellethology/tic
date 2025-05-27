@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, Literal, Mapping, Sequence
+from typing import Any, Dict, Literal, Mapping, Sequence, Union
 
 from .pseudotime.pp.clustering import ClusterMethod
 from .pseudotime.pp.dimensionality import ReductionMethod
@@ -74,15 +74,16 @@ class FeatureConfig:
     Recipe-driven micro-environment feature extraction.
     
     Attributes:
-        recipe: Recipe to use for feature extraction.
+        recipe: Recipe dict or string name.
         centre_types: Types of cells to use as centres.
         graph_params: Parameters for the graph construction.
         subgraph_params: Parameters for the subgraph construction.
     """
-    recipe: str | Literal["tme_default", "cell_basic"] = "tme_default"
+    recipe: Union[str, Mapping[str, Mapping[str, Any]]] = "tme_default"
     centre_types: Sequence[str] | None = None
     graph_params: Mapping[str, Any] | None = None
     subgraph_params: Mapping[str, Any] | None = None
     build_graph_if_missing: bool = True
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

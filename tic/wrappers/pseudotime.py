@@ -10,6 +10,7 @@ import numpy as np
 from anndata import AnnData
 from matplotlib import pyplot as plt
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
 
 from ..constant import DEFAULT_KEY
 from ..pseudotime.pp.clustering import ClusterMethod
@@ -55,13 +56,21 @@ class PseudotimeWrapper(BaseWrapper[PseudotimeConfig, AnnData]):
             os.makedirs(self.cfg.output_dir, exist_ok=True)
             self.save_params(os.path.join(self.cfg.output_dir, 'params.json'))
     
-    def _check_reprensation(self, adata: AnnData): 
+    def _check_reprensation(self, adata: AnnData):
         """
         Check if the representation obsm data is valid: 
-            the data should be a 2D array-like object and can be converted to a numpy array.
+        the data should be a 2D array-like object and can be converted to a numpy array.
+        Also normalize the features (mean 0, std 1).
         """
-        if not isinstance(adata.obsm[self.cfg.rep_key], np.ndarray):
-            adata.obsm[self.cfg.rep_key] = adata.obsm[self.cfg.rep_key].toarray()
+        rep = adata.obsm[self.cfg.rep_key]
+
+        if not isinstance(rep, np.ndarray):
+            rep = rep.toarray()
+
+        # Normalize features: mean 0, std 1
+        rep = StandardScaler().fit_transform(rep)
+
+        adata.obsm[self.cfg.rep_key] = rep
         return adata
     # ------------------------------------------------------------------
     def _fit_impl(self, adata: AnnData, *, copy: bool = True) -> AnnData:  # noqa: D401
