@@ -14,13 +14,16 @@ _BUILTIN: Dict[str, Dict[str, Dict[str, Any]]] = {
     },
     # full micro‑environment default
     "tme_default": {
-        "geometry_features": {},
         "centre_gene": {},
         "composition": {"normalize": True},
         "neighbor_gene_sum": {},
         "same_type_gene_sum": {},
         "same_type_gene_average": {},
         "celltype_gene_count": {},
+    },
+    "geometry_features": {
+        "geometry_basic": {},
+        "fourier_features": {},
     },
 }
 

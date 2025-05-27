@@ -6,4 +6,4 @@ from __future__ import annotations
 
 __all__ = ["GeometryFeatureExtractor"]
 
-from .shape import GeometryFeatureExtractor
+from .basic import GeometryFeatureExtractor

@@ -9,7 +9,7 @@ from .utils import moving_average, normalize, default_y_transform
 from .casual import plot_causal_heatmap, plot_causal_bar, plot_causal_volcano
 from .metrics import plot_monotonicity_metrics_bar, plot_trend_metrics_bar
 from .cross_region_heatmap import plot_cross_region_causal_heatmap
-from .geometry import plot_cell_boundary
+from .geometry import plot_cell_boundary, plot_fourier_normalized_shape, generate_fourier_reconstruction_gif
 __all__ = [
     "plot_graph",
     "scatter_embedding",
@@ -24,4 +24,6 @@ __all__ = [
     "plot_trend_metrics_bar",
     "plot_cross_region_causal_heatmap",
     "plot_cell_boundary",
+    "plot_fourier_normalized_shape",
+    "generate_fourier_reconstruction_gif",
 ]

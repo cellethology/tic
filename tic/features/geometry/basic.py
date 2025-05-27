@@ -26,7 +26,7 @@ class GeometryFeatureExtractor(FeatureExtractor):
     - centroid_y: float, the y-coordinate of the centroid
     """
 
-    name = "geometry_features"
+    name = "geometry_basic"
 
     def __init__(self):
         super().__init__()
