@@ -1,98 +1,132 @@
-# `tic.data`
+# tic.data
 
-The `tic.data` module provides a comprehensive interface for **downloading**, **loading**, and **validating** spatial transcriptomics datasets including **Codex UPMC**, **Xenium Pancreas Cancer**, and **Xenium Colorectal Cancer** (WIP). It also includes utility functions for data I/O and biomarker metadata management.
+Low- and high-level utilities for downloading, extracting, validating and loading  
+spatial transcriptomics datasets into `anndata.AnnData`.
 
----
-
-## 📦 Module Structure
+## 📦 Package Structure
 
 ```bash
-tic.data
-├── io.py                 # Download and unzip dataset files
-├── loader.py             # Load datasets into AnnData format
-├── utils.py          # Input checks and biomarker utilities
-├── __init__.py
+tic/data
+├── io.py                 # download_file, extract_zip, cache management
+├── utils.py              # AnnData checks & biomarker/cell-type helpers
+├── xenium
+│   ├── download.py       # Xenium dataset registry & download wrappers
+│   └── loader.py         # load_xenium_dataset → AnnData
+├── codex
+│   ├── download.py       # CODEX dataset registry & download wrappers
+│   └── loader.py         # list_regions, load_region → AnnData
+└── __init__.py           # exposes all public APIs
 ```
 
 ---
 
-## 📥 Dataset Download
+## 🔧 Low-level I/O
 
-### `download_codex_dataset()`
-Downloads and unpacks the Codex UPMC dataset from Zenodo.
+- **`download_file(url, dest)`**  
+  Fetch a URL into a local file (skips if exists).
 
-### `download_xenium_pancreas_cancer_data()`
-Downloads Xenium human pancreas cancer data from 10x Genomics.
+- **`extract_zip(archive, out_dir, cleanup=False, members=None)`**  
+  Unpack a ZIP archive, optionally removing it afterwards.
 
-### `download_xenium_colorectal_cancer_data()`
-Stub for future Xenium colorectal data integration.(Not available yet)
+- **`remove_cache(cache_dir)`**  
+  Delete entire cache directory tree.
+
+- **`list_datasets(cache_dir)`** → `List[str]`  
+  All top-level dataset names in cache.
+
+- **`remove_dataset(name, cache_dir)`**  
+  Delete a single dataset directory.
 
 ---
 
-## 🧬 Dataset Loaders
+## 🔍 Validation & Metadata
 
-### `load_codex_dataset()`
-We currently support three Codex datasets:
-- Codex-UPMC
-- Codex-Charville
-- Codex-DFCI
+- **`check_spatial_anndata(adata)`**  
+  Ensure `.X`, `.var_names`, and `.obsm["spatial"]` exist; densify sparse matrices.
 
-Loads Codex dataset as an `AnnData` object with:
-- `.X`: marker expressions
-- `.obs`: cell_id, cell_type, size
-- `.obsm["spatial"]`: 2D coordinates
-- `.uns`: tissue_id, data_level
+- **`check_EMT_genes(adata)`**  
+  Confirm EMT marker genes are in `adata.var_names`.
 
-### `load_xenium_pancreas_cancer()`
+- **`get_cell_types(adata)`** → `List[str]`  
+  Ordered list of cell types from `.obs["cell_type"]` or fallback to `["Unassigned"]`.
 
-Loads Xenium dataset with optional filtering:
+- **`get_biomarkers(adata)`** → `List[str]`  
+  Ordered biomarkers from `adata.var_names` or auto-generated names.
+
+---
+
+## 🧬 Xenium Datasets
+
+### `ensure_xenium_dataset(name, cache_dir, force=False)` → `Path`
+
+Registry keys:
+
+- `xenium_ffpe_human_breast`
+- `xenium_pancreas_cancer`
+
+Downloads and extracts the 10x Xenium `.zip` into `cache_dir/name`.
+
+### `download_xenium_dataset(name, cache_dir, force=False)`
+
+Wrapper around `ensure_xenium_dataset`, discarding the return path.
+
+### `load_xenium_dataset(name, cache_dir, force_download=False,  
+                         normalize=None, n_cells=None, include_mask=False)`  
+→ `AnnData`
+
+Loads a Xenium dataset as an `AnnData` with:
+
+- `.X`: expression matrix  
+- `.obs`: cell metadata (including centroids in `x_centroid`, `y_centroid`)  
+- `.obsm["spatial"]`: centroids array  
+- `.uns["tissue_id"]`, `.uns["data_level"]`  
+- optional polygon masks in `.uns["cell_boundaries"]`.
+
 ```python
-adata = load_xenium_pancreas_cancer(normalize_method="counts", n_cells=5000)
+from tic.data import load_xenium_dataset
+adata = load_xenium_dataset(
+    "xenium_pancreas_cancer",
+    normalize="counts",
+    n_cells=5000,
+    include_mask=True,
+)
 ```
 
-- Auto-detects circular spatial region
-- Supports area-based or count-based normalization
-
-### `load_xenium_colorectal_cancer()`
-
-Prepares `.X`, `.var_names`, and adds `spot` type metadata (requires `.h5ad` file).
-
 ---
 
-## 🔍 Utils
+## 🧪 CODEX Datasets
 
-### `check_spatial_anndata()`
+### `ensure_codex_dataset(dataset, cache_dir)` → `Path`
 
-Checks and validates AnnData for spatial transcriptomics compatibility:
-- Presence of `.X`, `.var_names`, `.obsm["spatial"]`
-- Converts sparse matrix to dense if needed
+Registry keys:
 
-### `check_EMT_genes()`
+- `upmc`, `charville`, `dfci`
 
-Validates whether EMT marker genes are available in `.var_names`.
+Fetches and flattens the CODEX `.zip` from Zenodo into `cache_dir/codex_<dataset>`.
 
-### `get_cell_types()`
+### `download_codex_dataset(dataset, cache_dir)`
 
-Returns ordered list of cell types from `.obs["cell_type"]` or fallback.
+Convenience wrapper for `ensure_codex_dataset`.
 
-### `get_biomarkers()`
+### `list_regions(dataset, cache_dir)` → `List[str]`
 
-Returns list of biomarker names from `.var_names`.
+Enumerate available region IDs (e.g. `UPMC_c001_v001_r001_reg001`).
 
----
+### `load_region(dataset, region_id, cache_dir)` → `AnnData`
 
-## ✅ Example Usage
+Loads one CODEX region into an `AnnData`:
+
+- `.X`: marker expression (`float32`)  
+- `.obs`: cell metadata (`cell_id`, `cell_type`, `size`)  
+- `.obsm["spatial"]`: 2D coordinates  
+- `.uns["tissue_id"]`, `.uns["data_level"]`
 
 ```python
-from tic.data import load_codex_upmc, check_spatial_anndata
-
-adata = load_codex_upmc(region_id="UPMC_c001_v001_r001_reg001")
-adata = check_spatial_anndata(adata)
+from tic.data import list_regions, load_region
+regions = list_regions("upmc")
+adata = load_region("upmc", regions[0])
 ```
 
 ---
 
-## 📎 Notes
-
-- All datasets are cached under `~/.cache/tic/`.
-- `load_*` functions return `AnnData` objects ready for analysis.
+_All datasets are cached under `~/.cache/tic/` by default._

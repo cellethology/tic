@@ -1,34 +1,50 @@
-from __future__ import annotations
+# tic/data/__init__.py
+
+"""
+tic.data
+========
+
+High-level interface for downloading, extracting, validating and loading
+spatial transcriptomics datasets (Xenium, CODEX) and low-level I/O utilities.
+"""
 
 from .io import (
-    download_codex_dataset,
-    download_xenium_pancreas_cancer_data,
-    download_xenium_colorectal_cancer_data,
-    download_xenium_dataset,
+    download_file,
+    extract_zip,
     remove_cache,
     list_datasets,
     remove_dataset,
 )
-
-from .loader import (
-    list_codex_datasets,
-    load_codex_dataset,
-    load_xenium_pancreas_cancer,
-    load_xenium_colorectal_cancer,
-    load_xenium_dataset,
+from .utils import (
+    check_spatial_anndata,
+    check_EMT_genes,
+    get_cell_types,
+    get_biomarkers,
 )
+from .xenium.download import ensure_xenium_dataset, download_xenium_dataset
+from .xenium.loader import load_xenium_dataset
+from .codex.download import ensure_codex_dataset, download_codex_dataset
+from .codex.loader import list_regions, load_region
 
 __all__ = [
-    "download_codex_dataset",
-    "download_xenium_pancreas_cancer_data",
-    "download_xenium_colorectal_cancer_data",
-    "download_xenium_dataset",
-    "load_codex_dataset",
-    "load_xenium_pancreas_cancer",
-    "load_xenium_colorectal_cancer",
+    # low-level I/O
+    "download_file",
+    "extract_zip",
     "remove_cache",
     "list_datasets",
     "remove_dataset",
-    "list_codex_datasets",
+    # validation / metadata utils
+    "check_spatial_anndata",
+    "check_EMT_genes",
+    "get_cell_types",
+    "get_biomarkers",
+    # Xenium
+    "ensure_xenium_dataset",
+    "download_xenium_dataset",
     "load_xenium_dataset",
+    # CODEX
+    "ensure_codex_dataset",
+    "download_codex_dataset",
+    "list_regions",
+    "load_region",
 ]

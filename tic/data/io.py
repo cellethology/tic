@@ -1,221 +1,188 @@
-import os
-import shutil
-from typing import Literal
-import zipfile
+"""tic.data.io
+============
 
-import wget
+Low-level file download and archive extraction utilities for the `tic` package.
+
+This module centralizes all interactions with remote URLs and local cache directories,
+ensuring consistent logging, error handling, and path management.
+
+Functions
+---------
+- download_file: Fetch a URL to a local path, skipping if already present.
+- extract_zip: Unpack a ZIP archive to a directory, with optional cleanup.
+- remove_cache: Remove the entire cache directory tree.
+- list_datasets: Enumerate top-level dataset directories in the cache.
+- remove_dataset: Delete a single dataset folder.
+"""
+
+from __future__ import annotations
+
+import logging
+import shutil
+import zipfile
+from pathlib import Path
+from typing import Union, Iterable
+
+import wget  # type: ignore
 
 from ..constant import DEFAULT_DATACACHE_DIR
 
-# ── Utilities ────────────────────────────────────────────────────────────────
-def download_file(url: str, save_path: str):
-    if os.path.exists(save_path):
-        print(f"File already exists at {save_path}, skipping download.")
+# Initialize module logger
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+
+PathLike = Union[str, Path]
+
+
+def download_file(url: str, dest: PathLike) -> None:
+    """
+    Download a file from `url` to local path `dest`.
+
+    If the destination file already exists, the download is skipped.
+    Creates parent directories as needed.
+
+    Parameters
+    ----------
+    url : str
+        HTTP/HTTPS URL of the remote file.
+    dest : Union[str, Path]
+        Local filesystem path where the file will be saved.
+
+    Raises
+    ------
+    RuntimeError
+        If the download fails (e.g., network error).
+    """
+    dest_path = Path(dest).expanduser().resolve()
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+    if dest_path.exists():
+        logger.info("Skipping download; file exists: %s", dest_path)
         return
-    print(f"Downloading from {url} to {save_path} using wget ...")
-    wget.download(url, save_path, bar=wget.bar_adaptive)  # or bar_thermometer
-    print("\nDownload complete.")
 
-def remove_cache(cache_dir: str = DEFAULT_DATACACHE_DIR):
-    shutil.rmtree(cache_dir)
+    logger.info("Downloading %s → %s", url, dest_path)
+    try:
+        wget.download(url, dest_path.as_posix(), bar=wget.bar_adaptive)
+        print()
+        logger.info("Download complete: %s", dest_path)
+    except Exception as e:
+        logger.error("Failed to download %s: %s", url, e)
+        raise RuntimeError(f"Download failed: {e}") from e
 
-def list_datasets(cache_dir: str = DEFAULT_DATACACHE_DIR):
-    return os.listdir(cache_dir)
 
-def remove_dataset(dataset_name: str, cache_dir: str = DEFAULT_DATACACHE_DIR):
-    os.remove(os.path.join(cache_dir, dataset_name))
-
-# ── Codex ────────────────────────────────────────────────────────────────────
-CODEX_DATASETS = {
-    "upmc": {
-        "url": "https://zenodo.org/records/13179600/files/upmc_raw_data.zip?download=1",
-        "zip_name": "upmc_raw_data.zip",
-    },
-    "charville": {
-        "url": "https://zenodo.org/records/13179600/files/charville_raw_data.zip?download=1",
-        "zip_name": "charville_raw_data.zip",
-    },
-    "dfci": {
-        "url": "https://zenodo.org/records/13179600/files/dfci_raw_data.zip?download=1",
-        "zip_name": "dfci_raw_data.zip",
-    },
-}
-
-# ── Xenium ────────────────────────────────────────────────────────────────────
-XENIUM_DATASETS: dict[str, dict[str, str]] = {
-    # ────────────────────────────────────────────────────────────────
-    #  key ↓                     Main zip file URL ↓
-    # ────────────────────────────────────────────────────────────────
-    "xenium_ffpe_human_breast": {
-        "zip": (
-            "https://cf.10xgenomics.com/samples/xenium/1.0.2/"
-            "Xenium_V1_FFPE_Human_Breast_ILC/"
-            "Xenium_V1_FFPE_Human_Breast_ILC_outs.zip"
-        ),
-        "expr": "cell_feature_matrix.h5",
-        "cells": "cells.csv.gz",
-    },
-    "xenium_pancreas_cancer": {
-        "zip": (
-            "https://cf.10xgenomics.com/samples/xenium/1.6.0/"
-            "Xenium_V1_hPancreas_Cancer_Add_on_FFPE/"
-            "Xenium_V1_hPancreas_Cancer_Add_on_FFPE_outs.zip"
-        ),
-        "extra": "Xenium_V1_hPancreas_Cancer_Add_on_FFPE_cell_groups.csv",
-        "expr": "cell_feature_matrix.h5",
-        "cells": "cells.csv.gz",
-    },
-    # add new dataset here
-}
-
-def download_codex_dataset(dataset: str | Literal["upmc", "charville", "dfci"], cache_dir: str = DEFAULT_DATACACHE_DIR):
+def extract_zip(
+    archive: PathLike,
+    out_dir: PathLike,
+    cleanup: bool = False,
+    members: Iterable[str] | None = None
+) -> None:
     """
-    Download and prepare Codex dataset (upmc, charville, or dfci) from Zenodo.
+    Extract a ZIP archive to a target directory.
 
     Parameters
     ----------
-    dataset : str
-        Dataset name, one of "upmc", "charville", or "dfci".
-    cache_dir : str
-        Cache directory to store the dataset.
+    archive : Union[str, Path]
+        Path to the .zip archive.
+    out_dir : Union[str, Path]
+        Directory where contents will be extracted.
+    cleanup : bool, optional
+        If True, delete the archive after successful extraction.
+    members : Iterable[str], optional
+        Specific members (file names) to extract; if None, extract all.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the archive does not exist.
+    RuntimeError
+        If extraction fails.
     """
-    if dataset not in CODEX_DATASETS:
-        raise ValueError(f"Unsupported dataset: {dataset}. Choose from {list(CODEX_DATASETS.keys())}")
+    archive_path = Path(archive).expanduser().resolve()
+    target_dir = Path(out_dir).expanduser().resolve()
+    target_dir.mkdir(parents=True, exist_ok=True)
 
-    dataset_info = CODEX_DATASETS[dataset]
-    dataset_dir = os.path.join(cache_dir, f"codex_{dataset}")
-    os.makedirs(dataset_dir, exist_ok=True)
+    if not archive_path.exists():
+        logger.error("Archive not found: %s", archive_path)
+        raise FileNotFoundError(f"Archive not found: {archive_path}")
 
-    zip_path = os.path.join(dataset_dir, dataset_info["zip_name"])
-    url = dataset_info["url"]
-
-    if not os.path.exists(zip_path):
-        print(f"Downloading Codex {dataset.capitalize()} dataset to {zip_path} ...")
-        wget.download(url, zip_path)
-        print("\nDownload complete.")
-    else:
-        print(f"Found existing zip file at {zip_path}, skipping download.")
-
-    sample_file = os.path.join(dataset_dir, "1000.cell_data.csv")
-    if not os.path.exists(sample_file):
-        print("Unzipping dataset...")
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(dataset_dir)
-        print("Unzip complete.")
-
-        # Handle inner raw_data directory
-        raw_data_path = os.path.join(dataset_dir, "raw_data")
-        if os.path.isdir(raw_data_path):
-            for fname in os.listdir(raw_data_path):
-                shutil.move(os.path.join(raw_data_path, fname), dataset_dir)
-            shutil.rmtree(raw_data_path)
-            print("Moved files from raw_data and cleaned up directory.")
-    else:
-        print("Data already unzipped.")
-
-    print(f"Codex {dataset.capitalize()} data is available in: {dataset_dir}")
+    logger.info("Extracting %s → %s", archive_path.name, target_dir)
+    try:
+        with zipfile.ZipFile(archive_path, 'r') as zf:
+            if members:
+                zf.extractall(path=target_dir, members=members)
+            else:
+                zf.extractall(path=target_dir)
+        logger.info("Extraction complete: %s", target_dir)
+        if cleanup:
+            archive_path.unlink(missing_ok=True)
+            logger.info("Deleted archive: %s", archive_path)
+    except Exception as e:
+        logger.error("Failed to extract %s: %s", archive_path, e)
+        raise RuntimeError(f"Extraction failed: {e}") from e
 
 
-def download_xenium_dataset(
-    dataset: str | Literal['xenium_ffpe_human_breast'],
-    cache_dir: str = DEFAULT_DATACACHE_DIR,
-    *,
-    force: bool = False,
-) -> str:
+def remove_cache(cache_dir: PathLike = DEFAULT_DATACACHE_DIR) -> None:
     """
-    Download and extract the specified Xenium dataset.
+    Recursively delete the cache directory tree.
 
     Parameters
     ----------
-    dataset : str
-        The dataset to download.
-    cache_dir : str
-        The directory to store the downloaded dataset.
-    force : bool
-        If True, the dataset will be downloaded even if it already exists.
+    cache_dir : Union[str, Path]
+        Root directory to remove.
+    """
+    path = Path(cache_dir).expanduser().resolve()
+    if path.exists():
+        shutil.rmtree(path)
+        logger.info("Removed cache directory: %s", path)
+    else:
+        logger.warning("Cache directory not found: %s", path)
+
+
+def list_datasets(cache_dir: PathLike = DEFAULT_DATACACHE_DIR) -> list[str]:
+    """
+    List all top-level dataset directories in the cache.
+
+    Parameters
+    ----------
+    cache_dir : Union[str, Path]
+        Directory containing cached datasets.
 
     Returns
     -------
-    str
-        The path to the extracted dataset directory.
+    List[str]
+        Sorted list of dataset directory names.
     """
-    if dataset not in XENIUM_DATASETS:
-        raise KeyError(f"Unknown Xenium dataset: {dataset}")
+    path = Path(cache_dir).expanduser().resolve()
+    if not path.exists():
+        logger.warning("Cache directory not found: %s", path)
+        return []
 
-    ds_cfg = XENIUM_DATASETS[dataset]
-    ds_dir = os.path.join(cache_dir, dataset)
-    if os.path.exists(ds_dir):
-        print(f"Dataset already exists in {ds_dir}, skipping download.")
-        return ds_dir
-    os.makedirs(ds_dir, exist_ok=True)
+    return sorted(
+        entry.name
+        for entry in path.iterdir()
+        if entry.is_dir()
+    )
 
-    zip_url = ds_cfg["zip"]
-    zip_path = os.path.join(ds_dir, os.path.basename(zip_url))
 
-    if force or not os.path.exists(zip_path):
-        download_file(zip_url, zip_path)
+def remove_dataset(dataset: str, cache_dir: PathLike = DEFAULT_DATACACHE_DIR) -> None:
+    """
+    Delete a single dataset folder from the cache.
 
-    # if already unzipped and force=False, skip
-    expected_expr = os.path.join(ds_dir, ds_cfg["expr"])
-    if not os.path.exists(expected_expr) or force:
-        print(f"[INFO] Extracting {zip_path} …")
-        with zipfile.ZipFile(zip_path, "r") as zf:
-            zf.extractall(ds_dir)
-
-        # 10x zip contains *_outs subdirectory, unzip the files
-        for out in (p := os.listdir(ds_dir)):
-            if out.endswith("_outs"):
-                inner = os.path.join(ds_dir, out)
-                for f in os.listdir(inner):
-                    shutil.move(os.path.join(inner, f), ds_dir)
-                shutil.rmtree(inner)
-                break
-
-    # extra csv (e.g. cell_groups) are downloaded directly, no need to unzip
-    if "extra" in ds_cfg:
-        extra_path = os.path.join(ds_dir, ds_cfg["extra"])
-        if force or not os.path.exists(extra_path):
-            download_file(
-                ds_cfg["zip"].replace("_outs.zip", f'_{ds_cfg["extra"]}'), extra_path
-            )
-
-    return ds_dir
-
-# ── Special Xenium  without standard 10x Genomics zip file ────────────────────────────────────────────────────────────────────
-def download_xenium_pancreas_cancer_data(cache_dir: str = DEFAULT_DATACACHE_DIR):
-    '''
-    Download Xenium Pancreas Cancer dataset from 10x Genomics -> ~.cache/tic/xenium_pancreas_cancer
-    '''
-    xenium_dir = os.path.join(cache_dir, "xenium_pancreas_cancer")
-    os.makedirs(xenium_dir, exist_ok=True)
-
-    base_url = "https://cf.10xgenomics.com/samples/xenium/1.6.0/Xenium_V1_hPancreas_Cancer_Add_on_FFPE"
-    cell_groups_url = f"{base_url}/Xenium_V1_hPancreas_Cancer_Add_on_FFPE_cell_groups.csv"
-    outs_zip_url = f"{base_url}/Xenium_V1_hPancreas_Cancer_Add_on_FFPE_outs.zip"
-
-    cell_groups_path = os.path.join(xenium_dir, "Xenium_V1_hPancreas_Cancer_cell_groups.csv")
-    outs_zip_path = os.path.join(xenium_dir, "Xenium_V1_hPancreas_Cancer_outs.zip")
-
-    download_file(cell_groups_url, cell_groups_path)
-    download_file(outs_zip_url, outs_zip_path)
-
-    expected_file = os.path.join(xenium_dir, "cells.csv.gz")
-    if not os.path.exists(expected_file):
-        print("Unzipping expression data...")
-        with zipfile.ZipFile(outs_zip_path, 'r') as zip_ref:
-            zip_ref.extractall(xenium_dir)
-        print("Unzip complete.")
+    Parameters
+    ----------
+    dataset : str
+        Name of the dataset directory to remove.
+    cache_dir : Union[str, Path]
+        Root cache directory.
+    """
+    ds_path = Path(cache_dir).expanduser().resolve() / dataset
+    if ds_path.exists():
+        shutil.rmtree(ds_path)
+        logger.info("Removed dataset: %s", ds_path)
     else:
-        print("Expression data already unzipped.")
-
-    print(f"All data available in: {xenium_dir}")
-
-# ── Xenium Colorectal Cancer ────────────────────────────────────────────────────
-# TODO: find data source
-def download_xenium_colorectal_cancer_data(cache_dir: str = DEFAULT_DATACACHE_DIR):
-    xenium_dir = os.path.join(cache_dir, "xenium_colorectal_cancer")
-    os.makedirs(xenium_dir, exist_ok=True)
-
-    raise NotImplementedError("Xenium colorectal cancer data is not available yet.")
-
-    
+        logger.warning("Dataset not found: %s", ds_path)
