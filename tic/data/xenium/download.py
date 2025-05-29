@@ -11,6 +11,7 @@ Provides:
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Literal, Union
 
@@ -47,6 +48,15 @@ XENIUM_DATASETS: dict[str, dict[str, str]] = {
             "https://cf.10xgenomics.com/samples/xenium/1.5.0/"
             "Xenium_V1_hKidney_cancer_section/"
             "Xenium_V1_hKidney_cancer_section_outs.zip"
+        ),
+        "expr": "cell_feature_matrix.h5",
+        "cells": "cells.csv.gz",
+    },
+    "xenium_invasive_lung_cancer": {
+        "zip": (
+            "https://s3-us-west-2.amazonaws.com/10x.files/samples/xenium/1.3.0/"
+            "Xenium_Preview_Human_Lung_Cancer_With_Add_on_2_FFPE/"
+            "Xenium_Preview_Human_Lung_Cancer_With_Add_on_2_FFPE_outs.zip"
         ),
         "expr": "cell_feature_matrix.h5",
         "cells": "cells.csv.gz",
@@ -91,7 +101,7 @@ def ensure_xenium_dataset(
     
     # First check if the dataset is already in the cache directory
     root = Path(cache_dir).expanduser().resolve() / name
-    if root.exists():
+    if root.exists() and any(root.iterdir()) and not force:
         logger.info("Xenium dataset '%s' already exists at %s", name, root)
         return root
 
@@ -118,7 +128,8 @@ def ensure_xenium_dataset(
 
     # Download optional extra table (cell_groups)
     if extra := cfg.get("extra"):
-        extra_url = zip_url.replace("_outs.zip", f"_{extra}")
+        base_url = "/".join(zip_url.split("/")[:-1]) 
+        extra_url = f"{base_url}/{extra}"
         extra_path = root / extra
         if force or not extra_path.exists():
             download_file(extra_url, extra_path)

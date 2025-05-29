@@ -6,10 +6,14 @@ Core entry points
 list_available    List names of all registered extractors.
 describe          Return the docstring of a particular extractor.
 extract           Run a *recipe* to build feature vectors with user-specified graph/subgraph params.
-register          Add a custom FeatureExtractor class to the registry.
 """
 
 from __future__ import annotations
+__all__ = [
+    "list_available",
+    "describe",
+    "extract",
+]
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time

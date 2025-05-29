@@ -47,6 +47,7 @@ def load_xenium_dataset(
         "xenium_ffpe_human_breast",
         "xenium_kidney_cancer",
         "xenium_pancreas_cancer",
+        "xenium_invasive_lung_cancer",
     ],
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,

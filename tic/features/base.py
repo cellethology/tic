@@ -40,7 +40,7 @@ class FeatureExtractor(ABC):
 
     def feature_names(self, adata: AnnData) -> List[str]:  # type: ignore[override]
         """
-        Human‑readable column names, length == `n_features`.
+        Human-readable column names, length == `n_features`.
 
         Default fallback: ``f"{self.name}:{i}"``.
         """
@@ -48,7 +48,7 @@ class FeatureExtractor(ABC):
 
     def feature_meta(self, adata: AnnData) -> Dict[str, list] | None:  # noqa: D401
         """
-        Optional per‑feature metadata (dict of column‑name → list).
+        Optional per-feature metadata (dict of column-name → list).
 
         Return *None* if not needed.
         """

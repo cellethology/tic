@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Sequence, List, Dict
+from typing import Sequence, List
 
 import numpy as np
-import pandas as pd
 from anndata import AnnData
 
-from tic.features.base import FeatureExtractor
-from tic.features.registry import register
+from ..base import FeatureExtractor
+from ..registry import register
 
 
 @register

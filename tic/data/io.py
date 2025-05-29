@@ -23,7 +23,8 @@ import zipfile
 from pathlib import Path
 from typing import Union, Iterable
 
-import wget  # type: ignore
+import requests
+from tqdm import tqdm
 
 from ..constant import DEFAULT_DATACACHE_DIR
 
@@ -41,44 +42,53 @@ PathLike = Union[str, Path]
 
 def download_file(url: str, dest: PathLike) -> None:
     """
-    Download a file from `url` to local path `dest`.
-
-    If the destination file already exists, the download is skipped.
-    Creates parent directories as needed.
+    Robust file downloader with custom headers and tqdm progress bar.
 
     Parameters
     ----------
     url : str
-        HTTP/HTTPS URL of the remote file.
-    dest : Union[str, Path]
-        Local filesystem path where the file will be saved.
-
-    Raises
-    ------
-    RuntimeError
-        If the download fails (e.g., network error).
+        URL of the file to download.
+    dest : PathLike
+        Path to save the downloaded file.
     """
     dest_path = Path(dest).expanduser().resolve()
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if dest_path.exists():
-        logger.info("Skipping download; file exists: %s", dest_path)
+        print(f"Skipping download; file exists: {dest_path}")
         return
 
-    logger.info("Downloading %s → %s", url, dest_path)
+    headers = {
+        "User-Agent": "Wget/1.21.1"
+    }
+
+    print(f"Downloading {url} → {dest_path}")
+
     try:
-        wget.download(url, dest_path.as_posix(), bar=wget.bar_adaptive)
-        print()
-        logger.info("Download complete: %s", dest_path)
+        with requests.get(url, headers=headers, stream=True, timeout=60) as r:
+            r.raise_for_status()
+            total = int(r.headers.get('content-length', 0))
+            with open(dest_path, 'wb') as f, tqdm(
+                desc=dest_path.name,
+                total=total,
+                unit='B',
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as bar:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+                        bar.update(len(chunk))
+        print(f"Download complete: {dest_path}")
     except Exception as e:
-        logger.error("Failed to download %s: %s", url, e)
+        print(f"Failed to download {url}: {e}")
         raise RuntimeError(f"Download failed: {e}") from e
 
 
 def extract_zip(
     archive: PathLike,
     out_dir: PathLike,
-    cleanup: bool = False,
+    cleanup: bool = True,
     members: Iterable[str] | None = None
 ) -> None:
     """
