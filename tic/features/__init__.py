@@ -1,46 +1,31 @@
-# tic/features/__init__.py
 """
 High-level API for feature extraction.
 
 Core entry points
 -----------------
-list_available
-    List names of all registered extractors.
-describe
-    Return the docstring of a particular extractor.
-extract
-    Run a *recipe* to build feature vectors with user-specified graph/subgraph params.
-register
-    Add a custom FeatureExtractor class to the registry.
+list_available    List names of all registered extractors.
+describe          Return the docstring of a particular extractor.
+extract           Run a *recipe* to build feature vectors with user-specified graph/subgraph params.
+register          Add a custom FeatureExtractor class to the registry.
 """
 
 from __future__ import annotations
-from concurrent.futures import ThreadPoolExecutor
-import os
-
-from tic.graph.utils import estimate_radius
-
-__all__ = [
-    "list_available",
-    "describe",
-    "extract",
-    "register",
-]
-
-from typing import Any, Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import time
+import os
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
-from anndata import AnnData
 from tqdm import tqdm
+from anndata import AnnData
 
 from ..graph.pp import compute_neighbors
 from ..graph.tl import extract_subgraph
-
+from ..graph.utils import estimate_radius
 from .recipes import get_recipe
-from .registry import FeatureRegistry, register
+from .registry import FeatureRegistry
 
 # set up logger
 logger = logging.getLogger(__name__)
@@ -59,6 +44,7 @@ def describe(name: str) -> str:
     """Return the docstring for a registered extractor."""
     cls = FeatureRegistry.get(name)
     return cls.__doc__ or "No description available."
+
 
 def extract(
     adata: AnnData,
@@ -128,7 +114,7 @@ def extract(
     obsm_data: dict[str, list[np.ndarray]] = {ext.name: [] for ext in extractors}
     obs_rows: list[pd.DataFrame] = []
 
-    # 5) Parallel subgraph extract & transform
+    # 5) Parallel subgraph extract & transform with progress bar
     def _process(c: int):
         neigh = extract_subgraph(adata, c, return_type='indices', **sub_kwargs)
         feats = [ext.transform(adata, centre_idx=c, neighbour_idx=neigh) for ext in extractors]
@@ -137,12 +123,21 @@ def extract(
     max_workers = n_jobs or os.cpu_count() or 1
     if test_mode:
         t0 = time.time()
+    # submit all tasks
     with ThreadPoolExecutor(max_workers=max_workers) as exe:
-        futures = list(exe.map(_process, centres))
+        futures = [exe.submit(_process, c) for c in centres]
+        results: list[tuple[int, list[np.ndarray]]] = []
+        for fut in tqdm(
+            as_completed(futures),
+            total=len(futures),
+            desc="Extracting subgraphs"
+        ):
+            results.append(fut.result())
     if test_mode:
         logger.info(f"parallel extract time: {time.time() - t0:.3f}s")
 
-    for c, feats in tqdm(futures, total=len(centres), desc="Extracting subgraphs"):
+    # unpack results
+    for c, feats in results:
         obs_rows.append(adata.obs.iloc[[c]])
         for ext, vec in zip(extractors, feats):
             obsm_data[ext.name].append(vec)
