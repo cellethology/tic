@@ -35,27 +35,59 @@ def list_regions(
     """
     List all region IDs available within a CODEX dataset.
 
-    Parameters
-    ----------
-    dataset
-        One of 'upmc', 'charville', or 'dfci'.
-    cache_dir
-        Root cache directory where datasets are stored.
-
     Returns
     -------
     List[str]
-        Sorted list of region identifiers (filenames without extension).
-
-    Example
-    -------
-    >>> list_regions('upmc')
-    ['UPMC_c001_v001_r001_reg001', 'UPMC_c001_v001_r001_reg002', ...]
+        Sorted list of region identifiers like 'UPMC_c001_v001_r001_reg001'
     """
     root = ensure_codex_dataset(dataset, cache_dir)
     pattern = '*.cell_data.csv'
-    return sorted(p.stem for p in Path(root).glob(pattern))
+    return sorted(
+        p.name.split(".cell_data")[0]
+        for p in Path(root).glob(pattern)
+    )
 
+def _find_file(root: Path, region_id: str, suffix: str) -> Path:
+    """
+    Locate a data file with flexible matching.
+
+    Supports both:
+    - {region_id}.{suffix}.csv
+    - {region_id}.{suffix}.csv.gz
+    If region_id already ends with .{suffix}, assumes user passed full stem.
+
+    Parameters
+    ----------
+    root : Path
+        Directory to search in.
+    region_id : str
+        Region identifier without suffix, e.g. 'UPMC_c007_v001_r001_reg062'.
+    suffix : str
+        Type of file: 'cell_data', 'cell_features', 'cell_types', or 'expression'.
+
+    Returns
+    -------
+    Path
+        The matched file path.
+
+    Raises
+    ------
+    FileNotFoundError
+        If no file is found matching the pattern.
+    """
+    if region_id.endswith(f".{suffix}"):
+        base = region_id
+    else:
+        base = f"{region_id}.{suffix}"
+
+    for ext in [".csv", ".csv.gz"]:
+        candidate = root / f"{base}{ext}"
+        if candidate.exists():
+            return candidate
+
+    raise FileNotFoundError(
+        f"No file found for pattern {base}.csv[.gz] in directory: {root}"
+    )
 
 def load_region(
     dataset: Literal["upmc", "charville", "dfci"],
@@ -86,15 +118,18 @@ def load_region(
     """
     root = ensure_codex_dataset(dataset, cache_dir)
 
-    # Define file paths
-    files = {
-        'coords': Path(root) / f"{region_id}.cell_data.csv",
-        'features': Path(root) / f"{region_id}.cell_features.csv",
-        'types': Path(root) / f"{region_id}.cell_types.csv",
-        'expr': Path(root) / f"{region_id}.expression.csv",
+    # locate each file robustly
+    coords_fp   = _find_file(root, region_id, "cell_data")
+    features_fp = _find_file(root, region_id, "cell_features")
+    types_fp    = _find_file(root, region_id, "cell_types")
+    expr_fp     = _find_file(root, region_id, "expression")
+
+    dfs = {
+        'coords': pd.read_csv(coords_fp),
+        'features': pd.read_csv(features_fp),
+        'types': pd.read_csv(types_fp),
+        'expr': pd.read_csv(expr_fp),
     }
-    # Read tables
-    dfs = {k: pd.read_csv(p) for k, p in files.items()}
 
     # Normalize cell IDs to strings
     for df in dfs.values():
