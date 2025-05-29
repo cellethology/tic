@@ -39,7 +39,7 @@ PathLike = Union[str, Path]
 
 
 def load_xenium_dataset(
-    name: Literal["xenium_ffpe_human_breast"],
+    name: Literal["xenium_ffpe_human_breast", "xenium_kidney_cancer"],
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,
     force_download: bool = False,

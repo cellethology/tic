@@ -25,4 +25,8 @@ DEFAULT_KEY = {
     'pipeline_config': 'pipeline_config', # the key in adata.uns to store the pipeline config, see: tic.pipeline.pseudotime.PseudotimePipeline
 }
 
-DEFAULT_DATACACHE_DIR = os.path.join(os.path.expanduser("~"), ".cache","tic") # ~: home directory, cache directory for tic will be stored here: ~/.cache/tic
+# Default cache directory for tic will be stored here: ~/.cache/tic if not set in environment variable
+DEFAULT_DATACACHE_DIR = os.environ.get(
+    "DEFAULT_DATACACHE_DIR",
+    os.path.join(os.path.expanduser("~"), ".cache", "tic")
+)

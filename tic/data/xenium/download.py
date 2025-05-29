@@ -42,6 +42,15 @@ XENIUM_DATASETS: dict[str, dict[str, str]] = {
         "expr": "cell_feature_matrix.h5",
         "cells": "cells.csv.gz",
     },
+    "xenium_kidney_cancer": {
+        "zip": (
+            "https://cf.10xgenomics.com/samples/xenium/1.5.0/"
+            "Xenium_V1_hKidney_cancer_section/"
+            "Xenium_V1_hKidney_cancer_section_outs.zip"
+        ),
+        "expr": "cell_feature_matrix.h5",
+        "cells": "cells.csv.gz",
+    },
 }
 
 PathLike = Union[str, Path]
