@@ -15,6 +15,8 @@ register
 """
 
 from __future__ import annotations
+from concurrent.futures import ThreadPoolExecutor
+import os
 
 from tic.graph.utils import estimate_radius
 
@@ -66,6 +68,7 @@ def extract(
     graph_params: Mapping[str, Any] | None = None,
     subgraph_params: Mapping[str, Any] | None = None,
     build_graph_if_missing: bool = True,
+    n_jobs: int | None = None,
     test_mode: bool = False,
 ) -> AnnData:
     """
@@ -86,29 +89,26 @@ def extract(
         Parameters for extract_subgraph (strategy, hop, etc.).
     build_graph_if_missing
         Whether to auto-build a default KNN graph (skipped for radius strategy).
+    n_jobs
+        Number of threads for subgraph extraction (None=auto).
     test_mode
         If True, logs timing for graph build and subgraph extraction.
     """
     # 1) Determine centre indices
     if centre_types is not None:
         if 'cell_type' not in adata.obs.columns:
-            raise ValueError(
-                "`adata.obs['cell_type']` is missing."
-            )
+            raise ValueError("`adata.obs['cell_type']` is missing.")
         missing = set(centre_types) - set(adata.obs['cell_type'].unique())
         if missing:
-            raise ValueError(
-                f"Centre types not in adata.obs['cell_type']: {missing}."
-            )
+            raise ValueError(f"Centre types not in adata.obs['cell_type']: {missing}.")
         centres = np.where(adata.obs['cell_type'].isin(centre_types))[0]
     else:
         centres = np.arange(adata.n_obs)
 
-    # 2) Ensure graph only for non-radius strategies
+    # 2) Graph build only for non-radius strategies
     sub_defaults = {'strategy': 'radius', 'radius': estimate_radius(adata, n_samples=1000)}
     sub_kwargs = {**sub_defaults, **(subgraph_params or {})}
     sub_kwargs.pop('return_type', None)
-
     strat = sub_kwargs.get('strategy', 'radius')
     if build_graph_if_missing and strat != 'radius':
         params = {'method': 'knn', 'k': 10}
@@ -124,33 +124,39 @@ def extract(
     recipe_dict = get_recipe(recipe)
     extractors = [FeatureRegistry.get(name)(**params) for name, params in recipe_dict.items()]
 
-    # 4) Prepare containers
-    obsm_data = {ext.name: [] for ext in extractors}
-    obs_rows = []
+    # 4) Containers
+    obsm_data: dict[str, list[np.ndarray]] = {ext.name: [] for ext in extractors}
+    obs_rows: list[pd.DataFrame] = []
 
-    # 5) Extract per centre
+    # 5) Parallel subgraph extract & transform
+    def _process(c: int):
+        neigh = extract_subgraph(adata, c, return_type='indices', **sub_kwargs)
+        feats = [ext.transform(adata, centre_idx=c, neighbour_idx=neigh) for ext in extractors]
+        return c, feats
+
+    max_workers = n_jobs or os.cpu_count() or 1
     if test_mode:
         t0 = time.time()
-    for c in tqdm(centres, desc=f"Extracting subgraphs for {len(centres)} cells, cell types:{centre_types}"):
-        neigh = extract_subgraph(adata, c, return_type='indices', **sub_kwargs)
-        obs_rows.append(adata.obs.iloc[[c]])
-        for ext in extractors:
-            obsm_data[ext.name].append(ext.transform(adata, centre_idx=c, neighbour_idx=neigh))
+    with ThreadPoolExecutor(max_workers=max_workers) as exe:
+        futures = list(exe.map(_process, centres))
     if test_mode:
-        logger.info(f"extract_subgraph loop time: {time.time() - t0:.3f}s")
+        logger.info(f"parallel extract time: {time.time() - t0:.3f}s")
+
+    for c, feats in tqdm(futures, total=len(centres), desc="Extracting subgraphs"):
+        obs_rows.append(adata.obs.iloc[[c]])
+        for ext, vec in zip(extractors, feats):
+            obsm_data[ext.name].append(vec)
 
     # 6) Build output AnnData
     obs = pd.concat(obs_rows, ignore_index=True)
     out = AnnData(X=adata.X[centres], obs=obs, var=adata.var.copy(), uns={})
-
     for name, mats in obsm_data.items():
         out.obsm[name] = np.vstack(mats)
 
-    # 7) Record metadata and predictors
+    # 7) Metadata & predictors
     out.uns['feature_modes'] = list(recipe_dict.keys())
     out.uns['graph_params'] = graph_params or {}
     out.uns['subgraph_params'] = sub_kwargs
-
     blocks = [out.obsm[ext.name] for ext in extractors]
     out.obsm['X_predictors'] = np.hstack(blocks)
     out.uns['X_predictors_names'] = sum((ext.feature_names(adata) for ext in extractors), [])
@@ -158,7 +164,6 @@ def extract(
     out.uns['X_predictors_meta'] = pd.concat(meta_rows, ignore_index=True)
 
     return out
-
 # ----------------------------------------------------------------------
 # Ensure all extractor modules are imported so their @register decorator runs
 import importlib

@@ -57,6 +57,15 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
           - radius: float 
             - for 'radius' strategy: this is the radius of the circle
             - for other strategies: this will cut off the edges longer than the radius 
+    
+    ------------------------------------------------------------
+    build_graph_if_missing: bool = True,
+        Whether to auto-build a default KNN graph (skipped for radius strategy).
+    test_mode: bool = False,
+        If True, logs timing for graph build and subgraph extraction.
+    n_jobs: int | None = None, 
+        Number of threads for subgraph extraction (None=auto).
+        If test_mode is True, n_jobs will be set to 1.
 
     Returns
     -------
@@ -115,8 +124,8 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
         subgraph_params: Optional[Dict[str, Any]] = None,
         build_graph_if_missing: bool = True,
         test_mode: bool = False,
+        n_jobs: int | None = None,
     ) -> None:
-        
         recipe_dict = get_recipe(recipe)
         super().__init__(
             FeatureConfig(
@@ -128,6 +137,7 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
             )
         )
         self.test_mode = test_mode
+        self.n_jobs = n_jobs
 
     def _fit_impl(self, adata: AnnData, *, copy: bool = True) -> AnnData:
         try:
@@ -138,6 +148,7 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
                 graph_params=self.cfg.graph_params or {},
                 subgraph_params=self.cfg.subgraph_params or {},
                 test_mode=self.test_mode,
+                n_jobs=self.n_jobs,
             )
         except KeyError as error:
             raise ValueError(
