@@ -8,6 +8,7 @@ and override key parameters for graph construction and subgraph extraction.
 from __future__ import annotations
 
 from typing import Any, Dict, Sequence, Optional, Mapping
+import logging
 
 from anndata import AnnData
 
@@ -16,6 +17,15 @@ from ..config import FeatureConfig
 from .base import BaseWrapper
 from ..features import extract
 from ..features.recipes import get_recipe
+
+# set up logger
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
+
+
 
 class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
     """
@@ -104,6 +114,7 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
         graph_params: Optional[Dict[str, Any]] = None,
         subgraph_params: Optional[Dict[str, Any]] = None,
         build_graph_if_missing: bool = True,
+        test_mode: bool = False,
     ) -> None:
         
         recipe_dict = get_recipe(recipe)
@@ -116,6 +127,7 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
                 build_graph_if_missing=build_graph_if_missing,
             )
         )
+        self.test_mode = test_mode
 
     def _fit_impl(self, adata: AnnData, *, copy: bool = True) -> AnnData:
         try:
@@ -125,6 +137,7 @@ class FeatureWrapper(BaseWrapper[FeatureConfig, AnnData]):
                 centre_types=self.cfg.centre_types,
                 graph_params=self.cfg.graph_params or {},
                 subgraph_params=self.cfg.subgraph_params or {},
+                test_mode=self.test_mode,
             )
         except KeyError as error:
             raise ValueError(

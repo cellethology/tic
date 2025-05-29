@@ -15,7 +15,7 @@ from importlib import metadata as _metadata
 
 from . import pp, tl  # re‑export sub‑packages
 from .io import to_networkx, to_pyg
-from .utils import get_connectivities_key
+from .utils import get_connectivities_key, estimate_radius
 
 __all__ = [
     "pp",
@@ -23,6 +23,7 @@ __all__ = [
     "to_networkx",
     "to_pyg",
     "get_connectivities_key",
+    "estimate_radius",
 ]
 
 # Package version (falls back to "0.0.0" if not installed via pip)

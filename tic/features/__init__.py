@@ -16,6 +16,8 @@ register
 
 from __future__ import annotations
 
+from tic.graph.utils import estimate_radius
+
 __all__ = [
     "list_available",
     "describe",
@@ -24,16 +26,26 @@ __all__ = [
 ]
 
 from typing import Any, Mapping, Sequence
+import logging
+import time
 
 import numpy as np
 import pandas as pd
 from anndata import AnnData
+from tqdm import tqdm
 
 from ..graph.pp import compute_neighbors
 from ..graph.tl import extract_subgraph
 
 from .recipes import get_recipe
 from .registry import FeatureRegistry, register
+
+# set up logger
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def list_available() -> list[str]:
@@ -46,7 +58,6 @@ def describe(name: str) -> str:
     cls = FeatureRegistry.get(name)
     return cls.__doc__ or "No description available."
 
-
 def extract(
     adata: AnnData,
     *,
@@ -54,8 +65,8 @@ def extract(
     centre_types: Sequence[str] | None = None,
     graph_params: Mapping[str, Any] | None = None,
     subgraph_params: Mapping[str, Any] | None = None,
-    build_graph_if_missing: bool = True
-    
+    build_graph_if_missing: bool = True,
+    test_mode: bool = False,
 ) -> AnnData:
     """
     Apply a recipe and return a new AnnData with original X/var_names preserved,
@@ -74,98 +85,79 @@ def extract(
     subgraph_params
         Parameters for extract_subgraph (strategy, hop, etc.).
     build_graph_if_missing
-        Whether to auto-build a default KNN graph.
-
-    Returned AnnData
-    -----------------
-
+        Whether to auto-build a default KNN graph (skipped for radius strategy).
+    test_mode
+        If True, logs timing for graph build and subgraph extraction.
     """
     # 1) Determine centre indices
     if centre_types is not None:
         if 'cell_type' not in adata.obs.columns:
             raise ValueError(
-                "`adata.obs['cell_type']` is missing. "
-                "If your dataset does not include cell type annotations, "
-                "please explicitly set `centre_types=None`."
+                "`adata.obs['cell_type']` is missing."
             )
         missing = set(centre_types) - set(adata.obs['cell_type'].unique())
         if missing:
             raise ValueError(
-                f"The following `centre_types` are not present in `adata.obs['cell_type']`: {missing}. "
-                f"Available cell types: {adata.obs['cell_type'].unique().tolist()}"
+                f"Centre types not in adata.obs['cell_type']: {missing}."
             )
-
         centres = np.where(adata.obs['cell_type'].isin(centre_types))[0]
     else:
         centres = np.arange(adata.n_obs)
 
-    # 2) ensure graph
-    if build_graph_if_missing and not adata.obsp:
-        params = {'method': 'knn', 'k': 10}
-        params.update(graph_params or {})
-        compute_neighbors(adata, **params)
-
-    # 3) instantiate extractors
-    recipe_dict = get_recipe(recipe)  # extractor_name -> default params
-    extractors = [FeatureRegistry.get(name)(**params) for name, params in recipe_dict.items()]
-
-    # 4) prepare subgraph kwargs
-    sub_defaults = {'strategy': 'radius', 'radius': 100}
+    # 2) Ensure graph only for non-radius strategies
+    sub_defaults = {'strategy': 'radius', 'radius': estimate_radius(adata, n_samples=1000)}
     sub_kwargs = {**sub_defaults, **(subgraph_params or {})}
     sub_kwargs.pop('return_type', None)
 
-    # 5) initialize obsm containers
-    obsm_data: dict[str, list[np.ndarray]] = {ext.name: [] for ext in extractors}
+    strat = sub_kwargs.get('strategy', 'radius')
+    if build_graph_if_missing and strat != 'radius':
+        params = {'method': 'knn', 'k': 10}
+        params.update(graph_params or {})
+        if test_mode:
+            t0 = time.time()
+            compute_neighbors(adata, **params)
+            logger.info(f"compute_neighbors time: {time.time() - t0:.3f}s")
+        else:
+            compute_neighbors(adata, **params)
+
+    # 3) Instantiate extractors
+    recipe_dict = get_recipe(recipe)
+    extractors = [FeatureRegistry.get(name)(**params) for name, params in recipe_dict.items()]
+
+    # 4) Prepare containers
+    obsm_data = {ext.name: [] for ext in extractors}
     obs_rows = []
 
-    # 6) for each centre, compute and cache
-    for c in centres:
+    # 5) Extract per centre
+    if test_mode:
+        t0 = time.time()
+    for c in tqdm(centres, desc=f"Extracting subgraphs for {len(centres)} cells, cell types:{centre_types}"):
         neigh = extract_subgraph(adata, c, return_type='indices', **sub_kwargs)
         obs_rows.append(adata.obs.iloc[[c]])
         for ext in extractors:
-            vec = ext.transform(adata, centre_idx=c, neighbour_idx=neigh)
-            obsm_data[ext.name].append(vec)
+            obsm_data[ext.name].append(ext.transform(adata, centre_idx=c, neighbour_idx=neigh))
+    if test_mode:
+        logger.info(f"extract_subgraph loop time: {time.time() - t0:.3f}s")
 
-    # 7) build new AnnData preserving original X and var_names for centres
+    # 6) Build output AnnData
     obs = pd.concat(obs_rows, ignore_index=True)
-    out = AnnData(
-        X=adata.X[centres],
-        obs=obs,
-        var=adata.var.copy(),
-        uns={},
-    )
+    out = AnnData(X=adata.X[centres], obs=obs, var=adata.var.copy(), uns={})
 
-    # 8) assign extractor outputs to obsm as matrices
     for name, mats in obsm_data.items():
         out.obsm[name] = np.vstack(mats)
 
-    # 9) record metadata
+    # 7) Record metadata and predictors
     out.uns['feature_modes'] = list(recipe_dict.keys())
     out.uns['graph_params'] = graph_params or {}
     out.uns['subgraph_params'] = sub_kwargs
 
-    # 10) build unified predictor matrix & meta
-    blocks = []
-    name_cols: list[str] = []
-    meta_rows = []
-
-    for ext in extractors:
-        block = out.obsm[ext.name]          # (n_centres, n_features_i)
-        blocks.append(block)
-
-        # feature names / meta
-        name_cols.extend(ext.feature_names(adata))
-        meta_dict = ext.feature_meta(adata)
-        if meta_dict is None:
-            meta_dict = {"name": ext.feature_names(adata)}
-        meta_rows.append(pd.DataFrame(meta_dict))
-
-    out.obsm["X_predictors"] = np.hstack(blocks)
-    out.uns["X_predictors_names"] = name_cols
-    out.uns["X_predictors_meta"] = pd.concat(meta_rows, ignore_index=True)
+    blocks = [out.obsm[ext.name] for ext in extractors]
+    out.obsm['X_predictors'] = np.hstack(blocks)
+    out.uns['X_predictors_names'] = sum((ext.feature_names(adata) for ext in extractors), [])
+    meta_rows = [pd.DataFrame(ext.feature_meta(adata) or {'name': ext.feature_names(adata)}) for ext in extractors]
+    out.uns['X_predictors_meta'] = pd.concat(meta_rows, ignore_index=True)
 
     return out
-
 
 # ----------------------------------------------------------------------
 # Ensure all extractor modules are imported so their @register decorator runs
