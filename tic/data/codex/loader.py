@@ -1,12 +1,11 @@
-"""tic.codex.loader
-===================
-
+# tic/codex/loader.py
+"""
 Load pre-downloaded Murine CODEX datasets into `anndata.AnnData` objects.
 
 Functions
 ---------
 - list_regions: Enumerate spatial region identifiers in a CODEX dataset.
-- load_region: Load expression and metadata for a single CODEX region.
+- load_region: Load expression and metadata for a single CODEX region, with optional normalization.
 """
 from __future__ import annotations
 
@@ -21,9 +20,10 @@ from ...constant import DEFAULT_DATACACHE_DIR
 from .download import ensure_codex_dataset
 from ..utils import check_spatial_anndata
 
-logger = __import__('logging').getLogger(__name__)
-logger.addHandler(__import__('logging').StreamHandler())
-logger.setLevel(__import__('logging').INFO)
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.INFO)
 
 PathLike = Union[str, Path]
 
@@ -47,6 +47,7 @@ def list_regions(
         for p in Path(root).glob(pattern)
     )
 
+
 def _find_file(root: Path, region_id: str, suffix: str) -> Path:
     """
     Locate a data file with flexible matching.
@@ -54,26 +55,6 @@ def _find_file(root: Path, region_id: str, suffix: str) -> Path:
     Supports both:
     - {region_id}.{suffix}.csv
     - {region_id}.{suffix}.csv.gz
-    If region_id already ends with .{suffix}, assumes user passed full stem.
-
-    Parameters
-    ----------
-    root : Path
-        Directory to search in.
-    region_id : str
-        Region identifier without suffix, e.g. 'UPMC_c007_v001_r001_reg062'.
-    suffix : str
-        Type of file: 'cell_data', 'cell_features', 'cell_types', or 'expression'.
-
-    Returns
-    -------
-    Path
-        The matched file path.
-
-    Raises
-    ------
-    FileNotFoundError
-        If no file is found matching the pattern.
     """
     if region_id.endswith(f".{suffix}"):
         base = region_id
@@ -89,10 +70,13 @@ def _find_file(root: Path, region_id: str, suffix: str) -> Path:
         f"No file found for pattern {base}.csv[.gz] in directory: {root}"
     )
 
+
 def load_region(
     dataset: Literal["upmc", "charville", "dfci"],
     region_id: str,
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
+    *,
+    normalize: Literal[None, "size", "counts"] = None,
 ) -> AnnData:
     """
     Load a single spatial region from a CODEX dataset into AnnData.
@@ -105,6 +89,10 @@ def load_region(
         Region identifier, e.g. 'UPMC_c001_v001_r001_reg001'.
     cache_dir
         Root cache directory where datasets are stored.
+    normalize
+        If 'size', divides each cell's counts by its recorded size.
+        If 'counts', divides by total counts per cell.
+        If None, no normalization is applied.
 
     Returns
     -------
@@ -116,14 +104,16 @@ def load_region(
         - .obsm['spatial']: 2D coordinates as numpy array
         - .uns: metadata with 'tissue_id' and 'data_level'
     """
+    # Ensure data present
     root = ensure_codex_dataset(dataset, cache_dir)
 
-    # locate each file robustly
+    # Locate files
     coords_fp   = _find_file(root, region_id, "cell_data")
     features_fp = _find_file(root, region_id, "cell_features")
     types_fp    = _find_file(root, region_id, "cell_types")
     expr_fp     = _find_file(root, region_id, "expression")
 
+    # Read
     dfs = {
         'coords': pd.read_csv(coords_fp),
         'features': pd.read_csv(features_fp),
@@ -133,14 +123,14 @@ def load_region(
 
     # Normalize cell IDs to strings
     for df in dfs.values():
-        df['CELL_ID'] = df['CELL_ID'].astype(str)
+        df['CELL_ID'] = df['CELL_ID'].astype(str).str.strip()
 
     # Drop acquisition ID if present
     expr = dfs['expr']
     if 'ACQUISITION_ID' in expr.columns:
         expr = expr.drop(columns=['ACQUISITION_ID'])
 
-    # Merge all dataframes on CELL_ID
+    # Merge all tables
     merged = (
         dfs['coords']
         .merge(dfs['features'], on='CELL_ID')
@@ -148,11 +138,11 @@ def load_region(
         .merge(expr, on='CELL_ID')
     )
 
-    # Biomarker columns
-    biom_cols = [col for col in expr.columns if col != 'CELL_ID']
+    # Build expression matrix
+    biom_cols = [c for c in expr.columns if c != 'CELL_ID']
     X = merged[biom_cols].to_numpy(dtype=np.float32)
 
-    # Build AnnData
+    # Build obs, var, obsm
     obs = (
         merged[['CELL_ID', 'CELL_TYPE', 'SIZE']]
         .rename(columns={
@@ -168,5 +158,22 @@ def load_region(
     adata = AnnData(X=X, obs=obs, var=var, obsm=obsm)
     adata.uns['tissue_id'] = region_id
     adata.uns['data_level'] = 'tissue'
+
+    # --- Normalize ---
+    if normalize == 'size':
+        if 'size' in adata.obs:
+            adata.X = adata.X / adata.obs['size'].values[:, None]
+        else:
+            logger.warning("Requested size normalization but 'size' not in obs.")
+    elif normalize == 'counts':
+        totals = np.asarray(adata.X.sum(axis=1)).flatten()
+        adata.X = adata.X / totals[:, None]
+
+    # drop Nans
+    adata = adata[~np.isnan(adata.X).any(axis=1)]
+
+    # Final checks
     adata = check_spatial_anndata(adata)
+    logger.info("Loaded %s (%s): %d cells * %d biomarkers.",
+                dataset, region_id, adata.n_obs, adata.n_vars)
     return adata
