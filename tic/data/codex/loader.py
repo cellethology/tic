@@ -72,8 +72,8 @@ def _find_file(root: Path, region_id: str, suffix: str) -> Path:
 
 
 def load_region(
-    dataset: Literal["upmc", "charville", "dfci"],
-    region_id: str,
+    dataset: Literal["upmc", "charville", "dfci"] | str = 'upmc',
+    region_id: str = 'UPMC_c001_v001_r001_reg001',
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,
     normalize: Literal[None, "size", "counts"] = None,

@@ -1,3 +1,13 @@
+# tic/preprocessing/gene_variability.py
+'''
+This script provides a comprehensive pipeline for analyzing gene variability in single-cell RNA-seq data.
+It includes functions for filtering cells by cell type, computing gene variances, and visualizing the results.
+
+The pipeline supports multiple visualization styles:
+- histogram_rug: A histogram of all gene variances with a "rug" of selected genes.
+- bar_rank: A bar plot of selected genes with their global variance rank.
+- scatter_rank: A scatter plot of variance vs. rank for all genes, highlighting selected ones.
+'''
 import warnings
 from typing import List, Literal, Optional, Union
 
