@@ -1,15 +1,27 @@
 # tic/preprocessing/gene_variability.py
-'''
-This script provides a comprehensive pipeline for analyzing gene variability in single-cell RNA-seq data.
-It includes functions for filtering cells by cell type, computing gene variances, and visualizing the results.
+"""
+Gene variability analysis utilities for the TIC pipeline.
 
-The pipeline supports multiple visualization styles:
-- histogram_rug: A histogram of all gene variances with a "rug" of selected genes.
-- bar_rank: A bar plot of selected genes with their global variance rank.
-- scatter_rank: A scatter plot of variance vs. rank for all genes, highlighting selected ones.
-'''
+This module provides a full pipeline to:
+1.  Optionally subset an :class:`~anndata.AnnData` object by cell type(s).
+2.  Compute **per-gene expression variance** across cells.
+3.  Classify user-specified genes as *highly variable* or not, based on either
+    a global *top-N* rank or a variance *quantile* threshold.
+4.  Visualise the variance distribution with multiple styles to help assess
+    whether the genes of interest (GOIs) truly vary in the current dataset – a
+    prerequisite for meaningful pseudotime ordering.
+
+Why this matters
+----------------
+If a GOI exhibits little variation, any ordering of cells (e.g. along
+pseudotime) will look *flat* for that gene, rendering biological conclusions
+weak.  Detecting low variability early lets you decide whether to drop the gene
+or adjust experimental design.
+"""
+from __future__ import annotations
+
 import warnings
-from typing import List, Literal, Optional, Union
+from typing import Literal, Sequence, Union
 
 import numpy as np
 import pandas as pd
@@ -17,324 +29,304 @@ import matplotlib.pyplot as plt
 from anndata import AnnData
 from scipy.sparse import issparse
 
+# -----------------------------------------------------------------------------
+# Core helpers
+# -----------------------------------------------------------------------------
 
 def filter_cells_by_type(
     adata: AnnData,
-    cell_types: Union[str, List[str]]
+    cell_types: Union[str, Sequence[str]],
 ) -> AnnData:
-    """
-    Subset an AnnData object by one or multiple cell types.
+    """Return a slice of *adata* containing only *cell_types*.
 
     Parameters
     ----------
     adata
-        AnnData with `.obs['cell_type']` annotation.
+        Input AnnData with an ``.obs['cell_type']`` column.
     cell_types
-        A single cell type (str) or list of cell types to keep.
-
-    Returns
-    -------
-    AnnData
-        A new AnnData containing only the specified cell types.
+        Single cell type or iterable of cell types to *keep*.
     """
-    if isinstance(cell_types, str):
-        mask = adata.obs['cell_type'] == cell_types
-    else:
-        mask = adata.obs['cell_type'].isin(cell_types)
+    mask = (
+        adata.obs["cell_type"].isin([cell_types])
+        if isinstance(cell_types, str)
+        else adata.obs["cell_type"].isin(cell_types)
+    )
     return adata[mask].copy()
+
+
+def _extract_dense(X):
+    """Return a dense *numpy* view of ``X`` (handles sparse inputs)."""
+    return X.toarray() if issparse(X) else X
 
 
 def compute_gene_variability(
     adata: AnnData,
-    gene_list: List[str]
+    gene_list: Sequence[str],
 ) -> pd.Series:
-    """
-    Compute variance of expression for a given list of genes,
-    ignoring any genes not present in the AnnData.
+    """Compute *per-gene* variance for *gene_list* (silently skips missing).
 
-    Parameters
-    ----------
-    adata
-        AnnData whose `.var_names` include at least one gene from `gene_list`.
-    gene_list
-        List of gene names to compute variability for.
-
-    Returns
-    -------
-    pd.Series
-        Variance of each valid gene across all cells, indexed by gene name.
-
-    Raises
-    ------
-    ValueError
-        If none of the genes in `gene_list` are found in `adata.var_names`.
+    Notes
+    -----
+    Returned series is **not** log-transformed.  Make sure *adata.X* contains
+    the expression scale you care about (raw counts, log1p, etc.).
     """
     present = [g for g in gene_list if g in adata.var_names]
     missing = set(gene_list) - set(present)
-
     if not present:
-        raise ValueError(
-            "None of the requested genes are in the AnnData object."
-        )
-
+        raise ValueError("None of the requested genes are present in adata.")
     if missing:
         warnings.warn(
             f"Ignoring {len(missing)} unknown gene(s): {sorted(missing)}",
-            UserWarning
+            UserWarning,
         )
 
-    adata_sub = adata[:, present]
-    X = adata_sub.X
-    if issparse(X):
-        X = X.toarray()
-    variances = np.var(X, axis=0)
-    return pd.Series(data=variances, index=present, name='variance')
+    X = _extract_dense(adata[:, present].X)
+    variances = np.var(X, axis=0, ddof=0)
+    return pd.Series(variances, index=present, name="variance")
+
+
+# -----------------------------------------------------------------------------
+# HVG classification
+# -----------------------------------------------------------------------------
+
+def classify_gene_variability(
+    all_vars: pd.Series,
+    sel_vars: pd.Series,
+    *,
+    top_n: int | None = 2000,
+    quantile: float | None = None,
+) -> pd.DataFrame:
+    """Determine whether each selected gene is *highly variable*.
+
+    Exactly **one** of *top_n* **or** *quantile* may be provided.
+
+    Parameters
+    ----------
+    all_vars
+        Variance of **all** genes (index must be gene names).
+    sel_vars
+        Variance of user-selected genes (subset of *all_vars.index*).
+    top_n
+        Genes with global variance rank ≤ *top_n* are marked as HVG.
+    quantile
+        Alternatively, genes with variance ≥ *all_vars.quantile(quantile)* are
+        marked as HVG.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns: ``variance``, ``rank``, ``is_hvg`` (bool).
+    """
+    if (top_n is None) == (quantile is None):
+        raise ValueError("Specify exactly one of 'top_n' or 'quantile'.")
+
+    ranks = all_vars.rank(ascending=False, method="min").astype(int)
+    sel_ranks = ranks.loc[sel_vars.index]
+
+    if top_n is not None:
+        threshold_flag = sel_ranks <= top_n
+    else:
+        var_threshold = all_vars.quantile(quantile)
+        threshold_flag = sel_vars >= var_threshold
+
+    return pd.DataFrame(
+        {
+            "variance": sel_vars,
+            "rank": sel_ranks,
+            "is_hvg": threshold_flag,
+        }
+    )
+
+
+# -----------------------------------------------------------------------------
+# Visualisation helpers (unchanged except small refactor)
+# -----------------------------------------------------------------------------
+
+def _setup_ax(figsize=(8, 4)):
+    fig, ax = plt.subplots(figsize=figsize)
+    return fig, ax
 
 
 def plot_distribution_rug(
     all_vars: pd.Series,
     sel_vars: pd.Series,
-    title: Optional[str] = None,
+    *,
+    title: str | None = None,
     bins: int = 100,
-    figsize: tuple = (8, 4)
-) -> None:
-    """
-    Plot a histogram of all gene variances with a "rug" of selected genes.
-
-    Parameters
-    ----------
-    all_vars
-        Variance series for all genes.
-    sel_vars
-        Variance series for selected genes.
-    title
-        Optional title for the plot.
-    bins
-        Number of bins for the histogram.
-    figsize
-        Figure size tuple (width, height).
-    """
-    plt.figure(figsize=figsize)
-    counts, edges, _ = plt.hist(
-        all_vars, bins=bins, alpha=0.4, label='All genes'
-    )
-    ylim = plt.ylim()
+    figsize: tuple[int, int] = (8, 4),
+):
+    fig, ax = _setup_ax(figsize)
+    ax.hist(all_vars, bins=bins, alpha=0.4, label="All genes")
+    ylim = ax.get_ylim()
     for gene, var in sel_vars.items():
-        plt.vlines(var, ymin=0, ymax=ylim[1] * 0.05, color='C1')
-        plt.text(
-            var, ylim[1] * 0.055, gene,
-            rotation=90, va='bottom', fontsize=8
-        )
-    plt.xlabel('Variance')
-    plt.ylabel('Count')
+        ax.vlines(var, ymin=0, ymax=ylim[1] * 0.05, color="C1")
+        ax.text(var, ylim[1] * 0.055, gene, rotation=90, va="bottom", fontsize=8)
+    ax.set_xlabel("Variance")
+    ax.set_ylabel("Count")
     if title:
-        plt.title(title)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+        ax.set_title(title)
+    ax.legend()
+    fig.tight_layout()
 
 
 def plot_bar_with_rank(
     all_vars: pd.Series,
     sel_vars: pd.Series,
-    title: Optional[str] = None,
-    figsize: tuple = (8, 4)
-) -> None:
-    """
-    Bar plot of selected genes with their global variance rank.
-
-    Parameters
-    ----------
-    all_vars
-        Variance series for all genes.
-    sel_vars
-        Variance series for selected genes.
-    title
-        Optional title for the plot.
-    figsize
-        Figure size tuple (width, height).
-    """
-    ranks = all_vars.rank(ascending=False, method='min').astype(int)
+    *,
+    title: str | None = None,
+    figsize: tuple[int, int] = (8, 4),
+):
+    ranks = all_vars.rank(ascending=False, method="min").astype(int)
     sel_ranks = ranks.loc[sel_vars.index]
     sel_sorted = sel_vars.sort_values(ascending=False)
 
-    plt.figure(figsize=figsize)
-    ax = sel_sorted.plot.bar()
+    fig, ax = _setup_ax(figsize)
+    sel_sorted.plot.bar(ax=ax)
     for i, gene in enumerate(sel_sorted.index):
-        ax.text(
-            i, sel_sorted[gene] * 1.02,
-            f"#{sel_ranks[gene]}", ha='center', va='bottom',
-            fontsize=9
-        )
-    plt.ylabel('Variance')
-    plt.xlabel('Gene')
+        ax.text(i, sel_sorted[gene] * 1.02, f"#{sel_ranks[gene]}", ha="center", va="bottom", fontsize=9)
+    ax.set_ylabel("Variance")
+    ax.set_xlabel("Gene")
     if title:
-        plt.title(title)
-    plt.tight_layout()
-    plt.show()
+        ax.set_title(title)
+    fig.tight_layout()
 
 
 def plot_scatter_rank(
     all_vars: pd.Series,
     sel_vars: pd.Series,
-    title: Optional[str] = None,
-    figsize: tuple = (8, 4)
-) -> None:
-    """
-    Scatter plot of variance vs. rank for all genes, highlighting selected ones.
-
-    Parameters
-    ----------
-    all_vars
-        Variance series for all genes.
-    sel_vars
-        Variance series for selected genes.
-    title
-        Optional title for the plot.
-    figsize
-        Figure size tuple (width, height).
-    """
+    *,
+    title: str | None = None,
+    figsize: tuple[int, int] = (8, 4),
+):
     sorted_all = all_vars.sort_values(ascending=False)
     x_all = np.arange(len(sorted_all))
-    ranks = sorted_all.rank(ascending=False, method='min').astype(int)
+    ranks = sorted_all.rank(ascending=False, method="min").astype(int)
 
-    plt.figure(figsize=figsize)
-    plt.scatter(x_all, sorted_all, s=5, color='lightgray', label='All genes')
+    fig, ax = _setup_ax(figsize)
+    ax.scatter(x_all, sorted_all, s=5, color="lightgray", label="All genes")
 
     for gene, var in sel_vars.items():
         r = ranks[gene] - 1
-        plt.scatter(r, var, s=40, label=gene)
-        plt.text(r, var, gene, fontsize=8, ha='right', va='bottom')
+        ax.scatter(r, var, s=40, label=gene)
+        ax.text(r, var, gene, fontsize=8, ha="right", va="bottom")
 
-    plt.xlabel('Rank')
-    plt.ylabel('Variance')
+    ax.set_xlabel("Rank")
+    ax.set_ylabel("Variance")
     if title:
-        plt.title(title)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    plt.show()
+        ax.set_title(title)
+    ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    fig.tight_layout()
 
 
 def plot_violin_points(
     all_vars: pd.Series,
     sel_vars: pd.Series,
-    title: Optional[str] = None,
-    figsize: tuple = (6, 4)
-) -> None:
-    """
-    Violin plot of all gene variances with overlaid points for selected genes.
-
-    Parameters
-    ----------
-    all_vars
-        Variance series for all genes.
-    sel_vars
-        Variance series for selected genes.
-    title
-        Optional title for the plot.
-    figsize
-        Figure size tuple (width, height).
-    """
-    plt.figure(figsize=figsize)
-    parts = plt.violinplot(
-        all_vars.values, showmeans=True, showextrema=True
-    )
-    for pc in parts['bodies']:
+    *,
+    title: str | None = None,
+    figsize: tuple[int, int] = (6, 4),
+):
+    fig, ax = _setup_ax(figsize)
+    parts = ax.violinplot(all_vars.values, showmeans=True, showextrema=True)
+    for pc in parts["bodies"]:
         pc.set_alpha(0.4)
 
-    # Jitter selected points
-    jitter = 0.04
-    x_jitter = np.random.normal(0, jitter, size=len(sel_vars))
-    plt.scatter(
-        x_jitter, sel_vars.values,
-        s=40, color='C1', edgecolor='k', alpha=0.8
-    )
-    for x, gene, var in zip(x_jitter, sel_vars.index, sel_vars.values):
-        plt.text(x, var, gene, fontsize=8, ha='right', va='bottom')
+    jitter = np.random.normal(0, 0.04, size=len(sel_vars))
+    ax.scatter(jitter, sel_vars.values, s=40, color="C1", edgecolor="k", alpha=0.8)
+    for x, gene, var in zip(jitter, sel_vars.index, sel_vars.values):
+        ax.text(x, var, gene, fontsize=8, ha="right", va="bottom")
 
-    plt.xticks([])
-    plt.ylabel('Variance')
+    ax.set_xticks([])
+    ax.set_ylabel("Variance")
     if title:
-        plt.title(title)
-    plt.tight_layout()
-    plt.show()
+        ax.set_title(title)
+    fig.tight_layout()
 
+
+# -----------------------------------------------------------------------------
+# High-level API
+# -----------------------------------------------------------------------------
 
 def analyze_gene_variability(
     adata: AnnData,
-    gene_list: List[str],
-    cell_types: Optional[Union[str, List[str]]] = None,
+    gene_list: Sequence[str],
+    *,
+    cell_types: Union[str, Sequence[str], None] = None,
+    classify_top_n: int | None = 2000,
+    classify_quantile: float | None = None,
     plot: bool = True,
-    viz_styles: Union[str, List[str]] | Literal['histogram_rug', 'bar_rank', 'scatter_rank', 'violin_points'] = 'bar_rank'
-) -> pd.Series:
-    """
-    Full pipeline: filter by cell type, compute gene variances,
-    and visualize using one or more selected styles.
-
-    Available viz_styles:
-      - "histogram_rug"
-      - "bar_rank"
-      - "scatter_rank"
-      - "violin_points"
+    viz_styles: Union[
+        str,
+        Sequence[str],
+        Literal["histogram_rug", "bar_rank", "scatter_rank", "violin_points"],
+    ] = "bar_rank",
+) -> pd.DataFrame:
+    """Full pipeline for gene variability *assessment* and *visualisation*.
 
     Parameters
     ----------
     adata
-        AnnData with expression matrix `.X` and `.obs['cell_type']`.
+        Input AnnData.  **Ensure** that ``adata.X`` is already normalised /
+        transformed as required (e.g. log1p of total-normalised counts).
     gene_list
-        List of gene names to analyze.
+        Genes of interest (GOIs) whose variability you want to test.
     cell_types
-        Cell type or list of cell types to filter by. If None,
-        all cells are used.
+        If provided, restrict analysis to these cell types.
+    classify_top_n, classify_quantile
+        Criteria for labelling a gene as *highly variable*.  Specify **one** of
+        them (defaults to ``top_n=2000``).
     plot
-        Whether to plot the results.
+        Whether to render variance distribution plots.
     viz_styles
-        A style or list of styles for visualization.(works when plot is True)
+        One or more plot styles (ignored if ``plot=False``).
 
     Returns
     -------
-    pd.Series
-        Gene variances indexed by gene name.
+    pd.DataFrame
+        ``['variance', 'rank', 'is_hvg']`` for each GOI.
     """
-    # Step 1: filter by cell type
+    # 1) Subset by cell type (optional)
     if cell_types is not None:
         adata = filter_cells_by_type(adata, cell_types)
 
-    # Step 2: compute variances for selected genes
+    # 2) Compute variance for *all* genes and for GOIs
+    all_vars = compute_gene_variability(adata, list(adata.var_names))
     sel_vars = compute_gene_variability(adata, gene_list)
 
-    # Prepare viz_styles list
-    if isinstance(viz_styles, str):
-        viz_styles = [viz_styles]
-    valid = {
-        'histogram_rug',
-        'bar_rank',
-        'scatter_rank',
-        'violin_points'
-    }
-    for style in viz_styles:
-        if style not in valid:
-            raise ValueError(f"Unknown viz style: {style}")
+    # 3) Classify HVGs
+    hvg_df = classify_gene_variability(
+        all_vars,
+        sel_vars,
+        top_n=classify_top_n,
+        quantile=classify_quantile,
+    )
 
-    # Compute all gene variances once if needed
-    if any(s in viz_styles for s in valid - {'bar_rank'}):
-        all_vars = compute_gene_variability(adata, list(adata.var_names))
-
-    title_base = "Gene variance"
-    if cell_types is not None:
-        title_base += f" in {cell_types}"
-
-    # Step 3: visualize
+    # 4) Plotting
     if plot:
-        for style in viz_styles:
-            title = f"{title_base}: {style.replace('_', ' ').title()}"
-            if style == 'histogram_rug':
+        if isinstance(viz_styles, str):
+            viz_styles = [viz_styles]
+        valid_styles = {
+            "histogram_rug",
+            "bar_rank",
+            "scatter_rank",
+            "violin_points",
+        }
+        for s in viz_styles:
+            if s not in valid_styles:
+                raise ValueError(f"Unknown viz style: {s}")
+
+        title_base = "Gene variance"
+        if cell_types is not None:
+            title_base += f" in {cell_types}"
+
+        for s in viz_styles:
+            title = f"{title_base}: {s.replace('_', ' ').title()}"
+            if s == "histogram_rug":
                 plot_distribution_rug(all_vars, sel_vars, title=title)
-            elif style == 'bar_rank':
+            elif s == "bar_rank":
                 plot_bar_with_rank(all_vars, sel_vars, title=title)
-            elif style == 'scatter_rank':
+            elif s == "scatter_rank":
                 plot_scatter_rank(all_vars, sel_vars, title=title)
-            elif style == 'violin_points':
+            elif s == "violin_points":
                 plot_violin_points(all_vars, sel_vars, title=title)
 
-    return sel_vars
+    return hvg_df

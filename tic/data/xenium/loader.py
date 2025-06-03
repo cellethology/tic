@@ -52,13 +52,40 @@ def load_xenium_dataset(
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,
     force_download: bool = False,
-    normalize: Literal[None, "size", "counts"] = None,
+    normalize: Literal[None, "size", "counts", "scanpy", "zscore"] = None,
+    log: bool = False,
     n_cells: Optional[int] = None,
     include_mask: bool = False,
 ) -> AnnData:
     """
-    Robust loader for Xenium datasets into AnnData, auto-detecting file formats
-    and ensuring consistent string-based cell IDs across all files.
+    Robust loader for Xenium datasets into AnnData, with support for expression normalization
+    and log transformation.
+
+    Parameters
+    ----------
+    name : str
+        Xenium dataset name.
+    cache_dir : str or Path
+        Directory for cached data.
+    force_download : bool
+        Force re-download of dataset.
+    normalize : {"size", "counts", "scanpy", None}
+        Type of normalization:
+        - "size": normalize by cell area
+        - "counts": normalize by total expression per cell (sum = 1)
+        - "scanpy": use `sc.pp.normalize_total` with target_sum=1e4
+        - None: no normalization
+    log : bool
+        Whether to apply `sc.pp.log1p` after normalization.
+    n_cells : int or None
+        Subsample to fixed number of cells.
+    include_mask : bool
+        Whether to load segmentation boundaries.
+
+    Returns
+    -------
+    AnnData
+        Normalized and optionally log-transformed single-cell expression matrix.
     """
     # Ensure data present
     ds_root = ensure_xenium_dataset(name, cache_dir, force=force_download)
@@ -116,13 +143,31 @@ def load_xenium_dataset(
         d = np.linalg.norm(xy - centre, axis=1)
         keep = np.argsort(d)[:n_cells]
         adata = adata[keep].copy()
+    
+    # Ensure dense
+    if not isinstance(adata.X, np.ndarray):
+        adata.X = adata.X.toarray()
 
     # --- Normalize ---
     if normalize == 'size' and 'cell_area' in adata.obs:
         adata.X = adata.X / adata.obs['cell_area'].values[:, None]
+        logger.info("Normalized by cell area.")
     elif normalize == 'counts':
         totals = np.array(adata.X.sum(axis=1)).flatten()
         adata.X = adata.X / totals[:, None]
+        logger.info("Normalized by total expression (sum = 1).")
+    elif normalize == 'scanpy':
+        sc.pp.normalize_total(adata, target_sum=1e4)
+        logger.info("Normalized using `sc.pp.normalize_total(target_sum=1e4)`.")
+    elif normalize == 'zscore':
+        adata.X = (adata.X - adata.X.mean(axis=0)) / adata.X.std(axis=0)
+        logger.info("Normalized using `zscore`.")
+
+    # --- Log transform ---
+    if log:
+        # do log1p transformation
+        adata.X = np.log1p(adata.X)
+        logger.info("Applied log1p transformation.")
 
     # --- Masks (boundaries) ---
     if include_mask:
@@ -143,9 +188,6 @@ def load_xenium_dataset(
     # --- Finalize ---
     adata.uns.update({'tissue_id': name, 'data_level': 'tissue'})
     logger.info("Loaded %s: %d cells * %d genes.", name, adata.n_obs, adata.n_vars)
-    
-    # Ensure dense matrix
-    if not isinstance(adata.X, np.ndarray):
-        adata.X = adata.X.toarray()
+
     check_spatial_anndata(adata)
     return adata

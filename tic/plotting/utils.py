@@ -1,8 +1,4 @@
-# tic/plotting/utils.py
-from __future__ import annotations
-
 import numpy as np
-
 
 def moving_average(y: np.ndarray, window: int = 5) -> np.ndarray:
     """
@@ -18,24 +14,21 @@ def moving_average(y: np.ndarray, window: int = 5) -> np.ndarray:
     """
     if window < 1 or window > len(y):
         raise ValueError("Window size must be between 1 and length of y.")
-    # 用非 NaN 值填充
     y_filled = np.nan_to_num(y, nan=np.nanmean(y))
-    # same 模式卷积，输出长度与 y_filled 相同
     kernel = np.ones(window) / window
     y_smoothed = np.convolve(y_filled, kernel, mode="same")
     return y_smoothed
 
-
 def normalize(y: np.ndarray) -> np.ndarray:
-    """Scale values to [0, 1], ignoring NaNs."""
+    """
+    Scale values to [0, 1], ignoring NaNs.
+    """
     ymin = np.nanmin(y)
     ymax = np.nanmax(y)
-    return (y - ymin) / (ymax - ymin) if ymax > ymin else y
-
-
-def default_y_transform(y: np.ndarray) -> np.ndarray:
-    """Smoothing + normalization."""
-    return normalize(moving_average(y, window=5))
+    if ymax > ymin:
+        return (y - ymin) / (ymax - ymin) + 1e-8
+    else:
+        return y
 
 def fill_nan_with_interp(arr: np.ndarray) -> np.ndarray:
     """
@@ -44,5 +37,5 @@ def fill_nan_with_interp(arr: np.ndarray) -> np.ndarray:
     x = np.arange(len(arr))
     mask = ~np.isnan(arr)
     if mask.sum() < 2:
-        return np.nan_to_num(arr, nan=0.0)  # fallback
+        return np.nan_to_num(arr, nan=0.0)
     return np.interp(x, x[mask], arr[mask])

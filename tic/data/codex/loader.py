@@ -15,6 +15,7 @@ from typing import Literal, List, Union
 import numpy as np
 import pandas as pd
 from anndata import AnnData
+import scanpy as sc
 
 from ...constant import DEFAULT_DATACACHE_DIR
 from .download import ensure_codex_dataset
@@ -76,33 +77,40 @@ def load_region(
     region_id: str = 'UPMC_c001_v001_r001_reg001',
     cache_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,
-    normalize: Literal[None, "size", "counts"] = None,
+    normalize: Literal[None, "size", "counts", "scanpy"] = None,
+    log: bool = False,
+    preprocessed: bool = False,
 ) -> AnnData:
     """
     Load a single spatial region from a CODEX dataset into AnnData.
 
     Parameters
     ----------
-    dataset
+    dataset : str
         CODEX dataset name ('upmc', 'charville', or 'dfci').
-    region_id
+    region_id : str
         Region identifier, e.g. 'UPMC_c001_v001_r001_reg001'.
-    cache_dir
+    cache_dir : str or Path
         Root cache directory where datasets are stored.
-    normalize
-        If 'size', divides each cell's counts by its recorded size.
-        If 'counts', divides by total counts per cell.
-        If None, no normalization is applied.
+    normalize : {"size", "counts", "scanpy", None} , will be ignored if preprocessed is True
+        Normalization method:
+        - "size": normalize by physical cell size
+        - "counts": normalize per-cell total to 1.0
+        - "scanpy": use `sc.pp.normalize_total(target_sum=1e4)`
+        - None: no normalization
+    log : bool, will be ignored if preprocessed is True
+        Whether to apply `sc.pp.log1p` transformation after normalization.
+    preprocessed : bool
+        Whether the data is already preprocessed. If True, skip normalization and log1p.
 
     Returns
     -------
     AnnData
         - .X: cell-by-biomarker expression matrix (float32)
-        - .obs: DataFrame with columns:
-            'cell_id', 'cell_type', 'size'
-        - .var: DataFrame indexed by biomarker names
-        - .obsm['spatial']: 2D coordinates as numpy array
-        - .uns: metadata with 'tissue_id' and 'data_level'
+        - .obs: DataFrame with 'cell_id', 'cell_type', 'size'
+        - .var: biomarker names
+        - .obsm['spatial']: cell (X, Y) coordinates
+        - .uns: metadata including tissue ID
     """
     # Ensure data present
     root = ensure_codex_dataset(dataset, cache_dir)
@@ -113,7 +121,7 @@ def load_region(
     types_fp    = _find_file(root, region_id, "cell_types")
     expr_fp     = _find_file(root, region_id, "expression")
 
-    # Read
+    # Read dataframes
     dfs = {
         'coords': pd.read_csv(coords_fp),
         'features': pd.read_csv(features_fp),
@@ -125,7 +133,7 @@ def load_region(
     for df in dfs.values():
         df['CELL_ID'] = df['CELL_ID'].astype(str).str.strip()
 
-    # Drop acquisition ID if present
+    # Drop acquisition column if present
     expr = dfs['expr']
     if 'ACQUISITION_ID' in expr.columns:
         expr = expr.drop(columns=['ACQUISITION_ID'])
@@ -142,14 +150,10 @@ def load_region(
     biom_cols = [c for c in expr.columns if c != 'CELL_ID']
     X = merged[biom_cols].to_numpy(dtype=np.float32)
 
-    # Build obs, var, obsm
+    # Build obs and var
     obs = (
         merged[['CELL_ID', 'CELL_TYPE', 'SIZE']]
-        .rename(columns={
-            'CELL_ID': 'cell_id',
-            'CELL_TYPE': 'cell_type',
-            'SIZE': 'size'
-        })
+        .rename(columns={'CELL_ID': 'cell_id', 'CELL_TYPE': 'cell_type', 'SIZE': 'size'})
         .set_index('cell_id')
     )
     var = pd.DataFrame(index=biom_cols)
@@ -159,20 +163,44 @@ def load_region(
     adata.uns['tissue_id'] = region_id
     adata.uns['data_level'] = 'tissue'
 
-    # --- Normalize ---
-    if normalize == 'size':
-        if 'size' in adata.obs:
-            adata.X = adata.X / adata.obs['size'].values[:, None]
-        else:
-            logger.warning("Requested size normalization but 'size' not in obs.")
-    elif normalize == 'counts':
-        totals = np.asarray(adata.X.sum(axis=1)).flatten()
-        adata.X = adata.X / totals[:, None]
+        # --- Normalize ---
+    if not preprocessed:
+        if normalize == 'size':
+            if 'size' in adata.obs:
+                adata.X = adata.X / adata.obs['size'].values[:, None]
+                logger.info("Normalized by cell size.")
+            else:
+                logger.warning("Requested size normalization but 'size' not found in obs.")
+        elif normalize == 'counts':
+            totals = np.asarray(adata.X.sum(axis=1)).flatten()
+            totals[totals == 0] = 1  # avoid divide-by-zero
+            adata.X = adata.X / totals[:, None]
+            logger.info("Normalized by total counts (sum = 1).")
+        elif normalize == 'scanpy':
+            try:
+                sc.pp.normalize_total(adata, target_sum=1e4)
+                logger.info("Normalized using `sc.pp.normalize_total(target_sum=1e4)`.")
+            except Exception as e:
+                logger.warning(f"Scanpy normalization failed: {e}")
 
-    # drop Nans
+        # --- Log transform ---
+        if log:
+            if np.any(adata.X < 0):
+                logger.warning("Skipping log1p: expression matrix contains negative values.")
+            else:
+                adata.X = np.log1p(adata.X)
+                logger.info("Applied log1p transformation.")
+    else:
+        logger.info("Skipping normalization and log1p because `preprocessed=True`.")
+
+    # --- Drop cells with NaNs ---
     adata = adata[~np.isnan(adata.X).any(axis=1)]
 
-    # Final checks
+    # --- Ensure dense ---
+    if not isinstance(adata.X, np.ndarray):
+        adata.X = adata.X.toarray()
+
+    # --- Final checks ---
     adata = check_spatial_anndata(adata)
     logger.info("Loaded %s (%s): %d cells * %d biomarkers.",
                 dataset, region_id, adata.n_obs, adata.n_vars)
