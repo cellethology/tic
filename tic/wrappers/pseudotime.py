@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 from sklearn.discriminant_analysis import StandardScaler
 
+from ..utils.seed import set_random_seed
 from ..constant import DEFAULT_KEY
 from ..pseudotime.pp.clustering import ClusterMethod
 from ..pseudotime.pp.dimensionality import ReductionMethod
@@ -52,6 +53,7 @@ class PseudotimeWrapper(BaseWrapper[PseudotimeConfig, AnnData]):
                 step_order=step_order,
             )
         )
+        set_random_seed(random_state)
         if self.cfg.output_dir:
             os.makedirs(self.cfg.output_dir, exist_ok=True)
             self.save_params(os.path.join(self.cfg.output_dir, 'params.json'))

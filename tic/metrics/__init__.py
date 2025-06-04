@@ -8,11 +8,14 @@ from .api import (
     calculate_trend,
     rank_by_monotonicity,
     rank_by_trend,
+    compute_variability
 )
+
 
 __all__ = [
     "calculate_monotonicity",
     "calculate_trend",
     "rank_by_monotonicity",
     "rank_by_trend",
+    "compute_variability"
 ]

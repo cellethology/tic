@@ -5,12 +5,15 @@ Provides single and batch processing for monotonicity/trend analysis,
 with optional sorting and plotting.
 """
 
-from typing import List, Optional, Tuple, Literal
+from typing import List, Optional, Sequence, Tuple, Literal
+from anndata import AnnData
 import numpy as np
+import pandas as pd
+
 
 from .monotonicity import spearman_monotonicity, kendall_monotonicity
 from .trend import mann_kendall_trend, linear_regression_trend
-
+from .variability import _METRIC_FUNCS
 
 def calculate_monotonicity(
     y: np.ndarray,
@@ -135,3 +138,55 @@ def rank_by_trend(
         return indices.tolist(), [scores[i] for i in indices]
     return indices.tolist()
 
+def compute_variability(
+    adata: AnnData,
+    *,
+    dataset_type: Literal["xenium", "codex"],
+    layer: Optional[str] = None,
+    metrics: Optional[Sequence[str]] = None,
+    drop_na: bool = True,
+) -> pd.DataFrame:
+    """Compute variability metrics tailored to the given ``dataset_type``.
+
+    Parameters
+    ----------
+    adata : AnnData
+        Expression matrix (cells × genes).
+    dataset_type : {'xenium', 'codex'}
+        Determines which metrics are computed by default:
+        * xenium → ['cv']
+        * codex  → ['mse', 'kurtosis', 'skewness', 'gini']
+    layer : str, optional
+        Anndata layer to use (default ``None`` → ``adata.X``).
+    metrics : Sequence[str], optional
+        Manually specify metrics (subset of CV/MSE/Kurtosis/Skewness/Gini).
+    drop_na : bool, default ``True``
+        Remove genes with NaN values (e.g. CV when mean==0).
+
+    Returns
+    -------
+    pandas.DataFrame
+        ``index`` = gene names, each column = metric.
+    """
+
+    if metrics is None:
+        metrics = (
+            ["cv"] if dataset_type == "xenium" else ["mse", "kurtosis", "skewness", "gini"]
+        )
+
+    invalid = set(metrics) - _METRIC_FUNCS.keys()
+    if invalid:
+        raise ValueError(f"Unsupported metric(s): {sorted(invalid)}")
+
+    # Compute selected metrics and concatenate
+    results = [
+        _METRIC_FUNCS[m](adata, layer=layer).rename(m)  # type: ignore[arg-type]
+        for m in metrics
+    ]
+    df = pd.concat(results, axis=1)
+
+    # Optional NA pruning
+    if drop_na:
+        df = df.dropna(axis=0, how="any")
+
+    return df
