@@ -1,12 +1,6 @@
-"""tic.xenium.loader
-====================
+# tic/xenium/loader.py
+# ====================
 
-Load 10x Genomics Xenium datasets into AnnData objects.
-
-Functions
----------
-- load_xenium_dataset: standard Xenium dataset loader
-"""
 from __future__ import annotations
 
 import logging
@@ -15,8 +9,8 @@ from typing import Literal, Optional, Union
 
 import numpy as np
 import pandas as pd
-from anndata import AnnData
 import scanpy as sc
+from anndata import AnnData
 
 from ...constant import DEFAULT_DATACACHE_DIR
 from .download import ensure_xenium_dataset, XENIUM_DATASETS
@@ -59,7 +53,9 @@ def load_xenium_dataset(
 ) -> AnnData:
     """
     Robust loader for Xenium datasets into AnnData, with support for expression normalization
-    and log transformation.
+    and log transformation.  Additionally, if the original dataset lacks a 'cell_type'
+    column but a cache file named '{name}_llm_cell_types.parquet' already exists in the
+    same cache folder, that Parquet will be loaded into adata.obs['cell_type'].
 
     Parameters
     ----------
@@ -69,124 +65,134 @@ def load_xenium_dataset(
         Directory for cached data.
     force_download : bool
         Force re-download of dataset.
-    normalize : {"size", "counts", "scanpy", None}
-        Type of normalization:
-        - "size": normalize by cell area
-        - "counts": normalize by total expression per cell (sum = 1)
-        - "scanpy": use `sc.pp.normalize_total` with target_sum=1e4
-        - None: no normalization
+    normalize : {"size", "counts", "scanpy", "zscore", None}
+        Type of normalization.
     log : bool
         Whether to apply `sc.pp.log1p` after normalization.
     n_cells : int or None
         Subsample to fixed number of cells.
     include_mask : bool
         Whether to load segmentation boundaries.
-
-    Returns
-    -------
-    AnnData
-        Normalized and optionally log-transformed single-cell expression matrix.
     """
-    # Ensure data present
-    ds_root = ensure_xenium_dataset(name, cache_dir, force=force_download)
+    # 1) Ensure data present on disk
+    ds_root = Path(ensure_xenium_dataset(name, cache_dir, force=force_download))
     cfg = XENIUM_DATASETS[name]
 
-    # --- Expression ---
-    expr_path = ds_root / cfg['expr']
+    # 2) Load raw expression matrix
+    expr_path = ds_root / cfg["expr"]
     adata = sc.read_10x_h5(expr_path.as_posix(), gex_only=False)
     adata.var_names_make_unique()
     adata.obs_names = adata.obs_names.astype(str).str.strip()
 
-    # --- Metadata: cells ---
-    cells_path = _choose_file(ds_root, 'cells', ['.parquet', '.csv.gz'])
+    # 3) Load or build cells metadata
+    cells_path = _choose_file(ds_root, "cells", [".parquet", ".csv.gz"])
     if cells_path is None:
         raise FileNotFoundError(f"No cells file found in {ds_root}")
-    if cells_path.suffix == '.parquet':
+    if cells_path.suffix == ".parquet":
         cells_df = pd.read_parquet(cells_path)
     else:
-        cells_df = pd.read_csv(cells_path, compression='infer')
-    cells_df['cell_id'] = cells_df['cell_id'].astype(str).str.strip()
+        cells_df = pd.read_csv(cells_path, compression="infer")
+    cells_df["cell_id"] = cells_df["cell_id"].astype(str).str.strip()
 
-    # Extra metadata
-    if 'extra' in cfg:
-        extra_path = Path(cfg['extra'])
+    # 4) Merge in any “extra” metadata (e.g., 'group' => 'cell_type')
+    if "extra" in cfg:
+        extra_path = Path(cfg["extra"])
         extra_df = pd.read_csv(ds_root / extra_path)
-        extra_df['cell_id'] = extra_df['cell_id'].astype(str).str.strip()
-        cells_df = cells_df.merge(extra_df, on='cell_id', how='left')
-        if 'group' in cells_df:
-            cells_df['cell_type'] = cells_df['group'].fillna('Unknown')
+        extra_df["cell_id"] = extra_df["cell_id"].astype(str).str.strip()
+        cells_df = cells_df.merge(extra_df, on="cell_id", how="left")
+        if "group" in cells_df.columns:
+            cells_df["cell_type"] = cells_df["group"].fillna("Unknown")
 
-    # Reindex
-    cells_df = cells_df.set_index('cell_id')
-
-    # --- Align ---
+    # 5) Reindex by cell_id and align with adata.obs_names
+    cells_df = cells_df.set_index("cell_id")
     shared = adata.obs_names.intersection(cells_df.index)
     if len(shared) == 0:
-        logger.error("No shared cell IDs between expression and metadata.\n"
-                     f"adata.obs_names sample: {adata.obs_names[:5]}\n"
-                     f"cells_df.index sample: {cells_df.index[:5]}")
+        logger.error(
+            "No shared cell IDs between expression and metadata.\n"
+            f"adata.obs_names sample: {adata.obs_names[:5]}\n"
+            f"cells_df.index sample: {cells_df.index[:5]}"
+        )
         raise ValueError("Alignment failed: no overlapping cell IDs.")
     adata = adata[shared].copy()
     cells_df = cells_df.loc[shared]
     adata.obs = cells_df
 
-    # --- Spatial coords ---
-    if {'x_centroid', 'y_centroid'}.issubset(adata.obs.columns):
-        adata.obsm['spatial'] = adata.obs[['x_centroid', 'y_centroid']].values
+    # 6) If original metadata already provided 'cell_type', keep it.
+    #    Otherwise, look for an LLM‐annotated cache file.
+    if "cell_type" not in adata.obs.columns:
+        cache_file = ds_root / f"{name}_llm_cell_types.parquet"
+        if cache_file.exists():
+            try:
+                df_cache = pd.read_parquet(cache_file)
+                # Expect df_cache to have columns ["cell_id", "cell_type"]
+                df_cache = df_cache.set_index("cell_id")
+                df_cache = df_cache.loc[adata.obs_names.intersection(df_cache.index), :]
+                adata.obs["cell_type"] = df_cache["pred_cell_type"].astype("category")
+                logger.info("Loaded LLM‐annotated cell types from %s", cache_file)
+            except Exception as e:
+                logger.warning(
+                    "Failed to read LLM cache (%s): %s. Skipping cell_type load.", cache_file, e
+                )
+
+    # 7) Spatial coordinates
+    if {"x_centroid", "y_centroid"}.issubset(adata.obs.columns):
+        adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].values
     else:
         logger.warning("Centroid columns missing in cells metadata.")
 
-    # --- Subsample ---
+    # 8) Optionally subsample to n_cells
     if n_cells is not None and n_cells < adata.n_obs:
-        xy = adata.obsm['spatial']
-        centre = xy.mean(axis=0)
-        d = np.linalg.norm(xy - centre, axis=1)
-        keep = np.argsort(d)[:n_cells]
-        adata = adata[keep].copy()
-    
-    # Ensure dense
+        xy = adata.obsm.get("spatial", None)
+        if xy is not None:
+            centre = xy.mean(axis=0)
+            d = np.linalg.norm(xy - centre, axis=1)
+            keep = np.argsort(d)[:n_cells]
+            adata = adata[keep].copy()
+        else:
+            logger.warning("Cannot subsample by distance: no spatial coords found.")
+
+    # 9) Ensure dense array
     if not isinstance(adata.X, np.ndarray):
         adata.X = adata.X.toarray()
 
-    # --- Normalize ---
-    if normalize == 'size' and 'cell_area' in adata.obs:
-        adata.X = adata.X / adata.obs['cell_area'].values[:, None]
+    # 10) Normalization
+    if normalize == "size" and "cell_area" in adata.obs:
+        adata.X = adata.X / adata.obs["cell_area"].values[:, None]
         logger.info("Normalized by cell area.")
-    elif normalize == 'counts':
+    elif normalize == "counts":
         totals = np.array(adata.X.sum(axis=1)).flatten()
         adata.X = adata.X / totals[:, None]
         logger.info("Normalized by total expression (sum = 1).")
-    elif normalize == 'scanpy':
+    elif normalize == "scanpy":
         sc.pp.normalize_total(adata, target_sum=1e4)
         logger.info("Normalized using `sc.pp.normalize_total(target_sum=1e4)`.")
-    elif normalize == 'zscore':
+    elif normalize == "zscore":
         adata.X = (adata.X - adata.X.mean(axis=0)) / adata.X.std(axis=0)
         logger.info("Normalized using `zscore`.")
 
-    # --- Log transform ---
+    # 11) Log transform
     if log:
-        # do log1p transformation
         adata.X = np.log1p(adata.X)
         logger.info("Applied log1p transformation.")
 
-    # --- Masks (boundaries) ---
+    # 12) Load boundaries if requested
     if include_mask:
-        adata.uns['cell_boundaries'] = {}
-        for mask in ['cell', 'nucleus']:
+        adata.uns["cell_boundaries"] = {}
+        for mask in ["cell", "nucleus"]:
             df_mask = None
-            mask_path = _choose_file(ds_root, f"{mask}_boundaries", ['.parquet', '.csv.gz'])
+            mask_path = _choose_file(ds_root, f"{mask}_boundaries", [".parquet", ".csv.gz"])
             if mask_path is not None:
-                if mask_path.suffix == '.parquet':
+                if mask_path.suffix == ".parquet":
                     df_mask = pd.read_parquet(mask_path)
                 else:
                     df_mask = pd.read_csv(mask_path)
-                df_mask['cell_id'] = df_mask['cell_id'].astype(str).str.strip()
-                df_mask = df_mask[df_mask['cell_id'].isin(adata.obs_names)].reset_index(drop=True)
-                adata.uns['cell_boundaries'][mask] = df_mask
+                df_mask["cell_id"] = df_mask["cell_id"].astype(str).str.strip()
+                df_mask = df_mask[df_mask["cell_id"].isin(adata.obs_names)].reset_index(drop=True)
+                adata.uns["cell_boundaries"][mask] = df_mask
                 logger.info("Loaded %s boundaries: %s", mask, mask_path.name)
 
-    # --- Finalize ---
-    adata.uns.update({'tissue_id': name, 'data_level': 'tissue'})
+    # 13) Finalize
+    adata.uns.update({"tissue_id": name, "data_level": "tissue"})
     logger.info("Loaded %s: %d cells * %d genes.", name, adata.n_obs, adata.n_vars)
 
     check_spatial_anndata(adata)
