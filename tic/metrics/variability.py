@@ -5,7 +5,7 @@
 
 This module implements dataset-aware variability measures for:
 
-* Xenium (spatial transcriptomics) → Coefficient of Variation (CV)
+* Xenium (spatial transcriptomics) → Coefficient of Variation (CV), Shannon entropy(measure of uncertainty)
 * Codex  (spatial proteomics)      → Mean-Squared Expression (MSE),
                                          Kurtosis, Skewness, Gini coefficient
 
@@ -23,6 +23,7 @@ import pandas as pd
 from anndata import AnnData
 from scipy.sparse import issparse
 from scipy.stats import kurtosis, skew
+from scipy.stats import entropy as scipy_entropy 
 
 __all__ = [
     "compute_cv",
@@ -92,6 +93,28 @@ def compute_cv(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
     cv = std / np.where(mean == 0, np.nan, mean)
     return pd.Series(cv, index=adata.var_names, name="cv")
 
+def compute_entropy(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
+    """Shannon entropy per gene (across cells).
+
+    For each gene, the expression is normalized to a probability distribution
+    (sum=1 across all cells), and Shannon entropy is computed.
+
+    Notes
+    -----
+    * Input is converted to non-negative values before computing probabilities.
+    * Genes with all-zero expression will have entropy 0 (undefined case).
+
+    Returns
+    -------
+    pandas.Series
+        ``index`` = gene names, ``values`` = entropy.
+    """
+    X = _to_dense(adata.layers[layer] if layer else adata.X)
+    X = np.clip(X, a_min=0, a_max=None)  # ensure non-negative
+    prob_dist = X / (X.sum(axis=0, keepdims=True) + 1e-12)  # column-wise normalize
+    ent = scipy_entropy(prob_dist, axis=0, base=2)
+    return pd.Series(ent, index=adata.var_names, name="entropy")
+
 
 def compute_mse(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
     """Mean-Squared Expression for each gene (z-score space).
@@ -132,6 +155,7 @@ def compute_gini(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
 # Mapping metric names → functions
 _METRIC_FUNCS: Dict[str, Callable[[AnnData, Optional[str]], pd.Series]] = {
     "cv": compute_cv,
+    "entropy": compute_entropy,
     "mse": compute_mse,
     "kurtosis": compute_kurtosis,
     "skewness": compute_skewness,

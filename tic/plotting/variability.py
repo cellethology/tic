@@ -16,7 +16,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Mapping, Optional, Sequence
+from typing import Dict, Mapping, Optional, Sequence
 
 __all__ = ["plot_variability"]
 
