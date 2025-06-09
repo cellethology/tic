@@ -16,7 +16,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import Dict, Mapping, Optional, Sequence
+from typing import Dict, Literal, Mapping, Optional, Sequence
 
 __all__ = ["plot_variability"]
 
@@ -39,7 +39,7 @@ _DEFAULT_CATEGORY_COLORS = {
 def plot_variability(
     variability: Mapping[str, pd.Series] | Mapping[str, pd.DataFrame],
     *,
-    metric: str = "cv",
+    metric: str | Literal["cv", "entropy", "kurtosis", "skewness", "mse", "gini"],
     gene_categories: Optional[Mapping[str, Sequence[str]]] = None,
     dataset_colors: Optional[Mapping[str, str]] = None,
     category_colors: Optional[Mapping[str, str]] = None,
@@ -202,6 +202,13 @@ def plot_variability(
         ax.set_xscale("log")
     if log_y:
         ax.set_yscale("log")
+
+    if metric == "kurtosis":
+        # add a horizontal line at 3 or log(3) if log_y is True
+        if log_y:
+            ax.axhline(np.log(3), color="black", linestyle="--", linewidth=1, label="Kurtosis = 3")
+        else:
+            ax.axhline(3, color="black", linestyle="--", linewidth=1, label="Kurtosis = 3")
 
     ax.set_xlabel(f"Gene rank (lower is more variable)" if not log_x else "log(Gene rank)", fontsize=12)
     ax.set_ylabel(metric.upper() if not log_y else f"log({metric.upper()})", fontsize=12)

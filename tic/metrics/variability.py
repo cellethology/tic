@@ -115,6 +115,25 @@ def compute_entropy(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series
     ent = scipy_entropy(prob_dist, axis=0, base=2)
     return pd.Series(ent, index=adata.var_names, name="entropy")
 
+def compute_nonzero_ratio(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
+    """Compute the ratio of non-zero values for each gene across all cells.
+
+    Parameters
+    ----------
+    adata : AnnData
+        AnnData object.
+    layer : str, optional
+        If given, use ``adata.layers[layer]`` instead of ``adata.X``.
+
+    Returns
+    -------
+    pandas.Series
+        ``index`` = gene names, ``values`` = ratio of non-zero values per gene.
+    """
+    X = _to_dense(adata.layers[layer] if layer else adata.X)
+    ratio = (X != 0).sum(axis=0) / X.shape[0]
+    return pd.Series(ratio, index=adata.var_names, name="nonzero_ratio")
+
 
 def compute_mse(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
     """Mean-Squared Expression for each gene (z-score space).
@@ -156,6 +175,7 @@ def compute_gini(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
 _METRIC_FUNCS: Dict[str, Callable[[AnnData, Optional[str]], pd.Series]] = {
     "cv": compute_cv,
     "entropy": compute_entropy,
+    "nonzero_ratio": compute_nonzero_ratio,
     "mse": compute_mse,
     "kurtosis": compute_kurtosis,
     "skewness": compute_skewness,
