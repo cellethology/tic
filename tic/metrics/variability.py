@@ -16,7 +16,7 @@ the appropriate metrics based on ``dataset_type``. See api.py for more details.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Sequence
 
 import numpy as np
 import pandas as pd
@@ -134,6 +134,39 @@ def compute_nonzero_ratio(adata: AnnData, *, layer: Optional[str] = None) -> pd.
     ratio = (X != 0).sum(axis=0) / X.shape[0]
     return pd.Series(ratio, index=adata.var_names, name="nonzero_ratio")
 
+def compute_pseudo_nonzero_ratios(
+    adata: AnnData,
+    *,
+    thresholds: Sequence[float] = (0.0, 0.5, 1.0),
+    layer: Optional[str] = None,
+) -> pd.DataFrame:
+    """
+    Compute pseudo non-zero ratios for z-scored data using various thresholds.
+
+    For each gene and each threshold τ, compute the fraction of cells where
+    the z-scored expression exceeds τ.
+
+    Parameters
+    ----------
+    adata : AnnData
+        AnnData object with z-scored expression data.
+    thresholds : Sequence[float], default = (0.0, 0.5, 1.0)
+        Thresholds above which expression is considered pseudo-non-zero.
+    layer : str, optional
+        If provided, use `adata.layers[layer]` instead of `adata.X`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        ``index`` = gene names, ``columns`` = pseudo-nonzero ratios for each threshold.
+    """
+    X = _to_dense(adata.layers[layer] if layer else adata.X)
+    results = {}
+    for tau in thresholds:
+        mask = (X > tau)
+        ratios = mask.sum(axis=0) / X.shape[0]
+        results[f"pseudo_nonzero>τ={tau}"] = ratios
+    return pd.DataFrame(results, index=adata.var_names)
 
 def compute_mse(adata: AnnData, *, layer: Optional[str] = None) -> pd.Series:
     """Mean-Squared Expression for each gene (z-score space).
@@ -176,6 +209,7 @@ _METRIC_FUNCS: Dict[str, Callable[[AnnData, Optional[str]], pd.Series]] = {
     "cv": compute_cv,
     "entropy": compute_entropy,
     "nonzero_ratio": compute_nonzero_ratio,
+    "pseudo_nonzero_ratios": compute_pseudo_nonzero_ratios,
     "mse": compute_mse,
     "kurtosis": compute_kurtosis,
     "skewness": compute_skewness,

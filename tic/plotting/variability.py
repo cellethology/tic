@@ -44,6 +44,8 @@ def plot_variability(
     dataset_colors: Optional[Mapping[str, str]] = None,
     category_colors: Optional[Mapping[str, str]] = None,
     ax: Optional[plt.Axes] = None,
+    x_axis_label: Optional[str] = None,
+    y_axis_label: Optional[str] = None,
     y_max: Optional[float] = None,
     y_percentile_clip: Optional[float] = None,
     log_x: bool = False,
@@ -71,6 +73,10 @@ def plot_variability(
         Category name → color code.
     ax : matplotlib.axes.Axes
         Optional external Axes to draw on.
+    x_axis_label : str
+        Optional label for X-axis.
+    y_axis_label : str
+        Optional label for Y-axis.
     y_max : float
         Maximum value for Y-axis.This is raw value before log transformation.
     y_percentile_clip : float
@@ -210,8 +216,8 @@ def plot_variability(
         else:
             ax.axhline(3, color="black", linestyle="--", linewidth=1, label="Kurtosis = 3")
 
-    ax.set_xlabel(f"Gene rank (lower is more variable)" if not log_x else "log(Gene rank)", fontsize=12)
-    ax.set_ylabel(metric.upper() if not log_y else f"log({metric.upper()})", fontsize=12)
+    ax.set_xlabel(x_axis_label if x_axis_label else f"Gene rank (lower is more variable)" if not log_x else "log(Gene rank)", fontsize=12)
+    ax.set_ylabel(y_axis_label if y_axis_label else metric.upper() if not log_y else f"log({metric.upper()})", fontsize=12)
     if title:
         ax.set_title(title, fontsize=14, fontweight="bold")
 

@@ -179,10 +179,16 @@ def compute_variability(
         raise ValueError(f"Unsupported metric(s): {sorted(invalid)}")
 
     # Compute selected metrics and concatenate
-    results = [
-        _METRIC_FUNCS[m](adata, layer=layer).rename(m)  # type: ignore[arg-type]
-        for m in metrics
-    ]
+    results = []
+    for m in metrics:
+        out = _METRIC_FUNCS[m](adata, layer=layer)
+        if isinstance(out, pd.Series):
+            out = out.rename(m)
+            results.append(out)
+        elif isinstance(out, pd.DataFrame):
+            results.append(out)
+        else:
+            raise TypeError(f"Metric '{m}' returned unsupported type: {type(out)}")
     df = pd.concat(results, axis=1)
 
     # Optional NA pruning

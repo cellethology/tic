@@ -10,7 +10,7 @@ Functions
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, List, Union
+from typing import Literal, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -80,6 +80,7 @@ def load_region(
     normalize: Literal[None, "size", "counts", "scanpy"] = None,
     log: bool = False,
     preprocessed: bool = False,
+    min_total_counts_ratio: Optional[float] = None,
 ) -> AnnData:
     """
     Load a single spatial region from a CODEX dataset into AnnData.
@@ -102,6 +103,8 @@ def load_region(
         Whether to apply `sc.pp.log1p` transformation after normalization.
     preprocessed : bool
         Whether the data is already preprocessed. If True, skip normalization and log1p.
+    min_total_counts_ratio : Optional[float]
+        Minimum total counts ratio. If provided, filter cells with total counts < mean_count * min_total_counts_ratio.
 
     Returns
     -------
@@ -190,6 +193,25 @@ def load_region(
             else:
                 adata.X = np.log1p(adata.X)
                 logger.info("Applied log1p transformation.")
+
+        # --- Optional filtering by total counts ratio ---
+        if min_total_counts_ratio is not None:
+            total_counts = adata.X.sum(axis=1)
+            mean_count = total_counts.mean()
+            threshold = mean_count * min_total_counts_ratio
+            keep_mask = total_counts >= threshold
+            prev_n = adata.n_obs
+            adata = adata[keep_mask].copy()
+            logger.info(
+                "Filtered cells with total counts < %.2f (%.1fx mean): %d → %d cells",
+                threshold,
+                min_total_counts_ratio,
+                prev_n,
+                adata.n_obs,
+            )
+
+        # --- Drop cells with NaNs ---
+        adata = adata[~np.isnan(adata.X).any(axis=1)]
     else:
         logger.info("Skipping normalization and log1p because `preprocessed=True`.")
 

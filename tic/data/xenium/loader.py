@@ -50,6 +50,7 @@ def load_xenium_dataset(
     log: bool = False,
     n_cells: Optional[int] = None,
     include_mask: bool = False,
+    min_total_counts_ratio: Optional[float] = None,
 ) -> AnnData:
     """
     Robust loader for Xenium datasets into AnnData, with support for expression normalization
@@ -73,6 +74,8 @@ def load_xenium_dataset(
         Subsample to fixed number of cells.
     include_mask : bool
         Whether to load segmentation boundaries.
+    min_total_counts_ratio : Optional[float]
+        Minimum total counts ratio. If provided, filter cells with total counts < mean_count * min_total_counts_ratio.
     """
     # 1) Ensure data present on disk
     ds_root = Path(ensure_xenium_dataset(name, cache_dir, force=force_download))
@@ -154,6 +157,22 @@ def load_xenium_dataset(
     # 9) Ensure dense array
     if not isinstance(adata.X, np.ndarray):
         adata.X = adata.X.toarray()
+
+    # 9.5) Optional filter by total counts ratio
+    if min_total_counts_ratio is not None:
+        total_counts = adata.X.sum(axis=1)
+        mean_count = total_counts.mean()
+        threshold = mean_count * min_total_counts_ratio
+        keep_mask = total_counts >= threshold
+        prev_n = adata.n_obs
+        adata = adata[keep_mask].copy()
+        logger.info(
+            "Filtered cells with total counts < %.2f (%.1fx mean): %d → %d cells",
+            threshold,
+            min_total_counts_ratio,
+            prev_n,
+            adata.n_obs,
+        )
 
     # 10) Normalization
     if normalize == "size" and "cell_area" in adata.obs:
