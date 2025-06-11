@@ -141,7 +141,6 @@ def rank_by_trend(
 def compute_variability(
     adata: AnnData,
     *,
-    dataset_type: Literal["xenium", "codex"],
     layer: Optional[str] = None,
     metrics: Optional[Sequence[str]] = None,
     drop_na: bool = True,
@@ -152,14 +151,11 @@ def compute_variability(
     ----------
     adata : AnnData
         Expression matrix (cells × genes).
-    dataset_type : {'xenium', 'codex'}
-        Determines which metrics are computed by default:
-        * xenium → ['cv']
-        * codex  → ['mse', 'kurtosis', 'skewness', 'gini']
     layer : str, optional
         Anndata layer to use (default ``None`` → ``adata.X``).
     metrics : Sequence[str], optional
-        Manually specify metrics (subset of CV/MSE/Kurtosis/Skewness/Gini).
+        if None, all metrics will be computed.
+        Manually specify metrics (subset of CV/MSE/Kurtosis/Skewness/Gini/Nonzero ratio/Pseudo-nonzero ratio).
     drop_na : bool, default ``True``
         Remove genes with NaN values (e.g. CV when mean==0).
 
@@ -170,9 +166,7 @@ def compute_variability(
     """
 
     if metrics is None:
-        metrics = (
-            ["cv"] if dataset_type == "xenium" else ["mse", "kurtosis", "skewness", "gini"]
-        )
+        metrics = _METRIC_FUNCS.keys()
 
     invalid = set(metrics) - _METRIC_FUNCS.keys()
     if invalid:

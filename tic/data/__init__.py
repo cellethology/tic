@@ -25,6 +25,7 @@ from .xenium.download import ensure_xenium_dataset, download_xenium_dataset
 from .xenium.loader import load_xenium_dataset
 from .codex.download import ensure_codex_dataset, download_codex_dataset
 from .codex.loader import list_regions, load_region
+from .bgi.loader import load_bgi_dataset
 
 __all__ = [
     # low-level I/O
@@ -47,4 +48,6 @@ __all__ = [
     "download_codex_dataset",
     "list_regions",
     "load_region",
+    # BGI
+    "load_bgi_dataset",
 ]

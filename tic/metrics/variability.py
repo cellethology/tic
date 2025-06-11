@@ -137,7 +137,7 @@ def compute_nonzero_ratio(adata: AnnData, *, layer: Optional[str] = None) -> pd.
 def compute_pseudo_nonzero_ratios(
     adata: AnnData,
     *,
-    thresholds: Sequence[float] = (0.0, 0.5, 1.0),
+    thresholds: Sequence[float] = (-1.0, -0.5, 0.0, 0.5, 1.0),
     layer: Optional[str] = None,
 ) -> pd.DataFrame:
     """
