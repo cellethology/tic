@@ -3,6 +3,9 @@ scr/
 
 utils/config.py
 notebook/expr
+
+latex/
+latex/*
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
 __pycache__/

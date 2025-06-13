@@ -87,6 +87,59 @@ def plot_gene_distributions_by_category(
         fig.suptitle(title, fontsize=14)
     plt.show()
 
+def plot_gene__distribution_with_tau(
+    adata: AnnData,
+    gene: str,
+    tau: float,
+    *,
+    bins: int = 60,
+    layer: Optional[str] = None,
+    save_path: Optional[str] = None,
+    title: Optional[str] = None,
+    font_size: int = 12,
+) -> None:
+    """
+    Plot z-scored gene expression distribution for a given gene with τ (threshold) overlay.
+
+    Parameters
+    ----------
+    adata : AnnData
+        AnnData object with z-scored expression matrix.
+    gene : str
+        Gene name to visualize.
+    tau : float
+        Threshold τ for the gene (e.g., from GMM or Otsu).
+    bins : int
+        Number of histogram bins.
+    layer : str, optional
+        Layer to use instead of `adata.X`.
+    save_path : str, optional
+        Path to save the figure.
+    title : str, optional
+        Custom title.
+    font_size : int
+        Font size for labels and title.
+    """
+    if gene not in adata.var_names:
+        raise ValueError(f"Gene '{gene}' not found in adata.var_names.")
+    
+    X = adata.layers[layer] if layer else adata.X
+    x = X[:, adata.var_names.get_loc(gene)].toarray().flatten()  # z-scored expression values
+
+    plt.figure(figsize=(6, 4))
+    sns.histplot(x, bins=bins, kde=True, color="#4C72B0", edgecolor="white", linewidth=0.5)
+    plt.axvline(tau, color="red", linestyle="--", linewidth=2, label=f"$\\tau$ = {tau:.2f}")
+
+    plt.xlabel(f"Z-scored expression of {gene}", fontsize=font_size)
+    plt.ylabel("Cell count", fontsize=font_size)
+    plt.title(title or f"{gene} Expression Distribution (τ = {tau:.2f})", fontsize=font_size+1)
+    plt.legend()
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=300)
+    plt.show()
+
 def plot_gene_histograms(
     adata: AnnData,
     genes: List[str],
