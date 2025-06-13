@@ -227,3 +227,82 @@ def plot_variability(
     plt.tight_layout()
 
     return ax
+
+def plot_variability_grid(
+    variability: Mapping[str, pd.Series] | Mapping[str, pd.DataFrame],
+    *,
+    metric: str,
+    gene_categories: Optional[Mapping[str, Sequence[str]]] = None,
+    dataset_colors: Optional[Mapping[str, str]] = None,
+    category_colors: Optional[Mapping[str, str]] = None,
+    x_axis_label: Optional[str] = None,
+    y_axis_label: Optional[str] = None,
+    y_max: Optional[float] = None,
+    y_percentile_clip: Optional[float] = None,
+    log_x: bool = False,
+    log_y: bool = False,
+    ascending: bool = False,
+    top_n: int = 0,
+    annotate_top: bool = True,
+    annotate_emt: bool = False,
+    n_cols: int = 2,
+    figsize_per_plot: tuple[int, int] = (6, 4),
+    suptitle: Optional[str] = None,
+) -> plt.Figure:
+    """
+    Plot a grid of variability vs. gene rank plots, one per dataset.
+
+    Parameters
+    ----------
+    See plot_variability docstring.
+    n_cols : int
+        Number of columns in the grid layout.
+    figsize_per_plot : tuple
+        Size of each subplot.
+    suptitle : str
+        Overall title for the figure.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+    """
+    n_datasets = len(variability)
+    n_cols = min(n_cols, n_datasets)
+    n_rows = int(np.ceil(n_datasets / n_cols))
+    fig, axes = plt.subplots(
+        n_rows,
+        n_cols,
+        figsize=(figsize_per_plot[0] * n_cols, figsize_per_plot[1] * n_rows),
+        squeeze=False
+    )
+
+    for ax in axes.flat[n_datasets:]:
+        ax.axis("off")
+
+    for i, (ds_name, var_series) in enumerate(variability.items()):
+        row, col = divmod(i, n_cols)
+        ax = axes[row][col]
+        plot_variability(
+            {ds_name: var_series},
+            metric=metric,
+            gene_categories=gene_categories,
+            dataset_colors=dataset_colors,
+            category_colors=category_colors,
+            ax=ax,
+            x_axis_label=x_axis_label,
+            y_axis_label=y_axis_label,
+            y_max=y_max,
+            y_percentile_clip=y_percentile_clip,
+            log_x=log_x,
+            log_y=log_y,
+            ascending=ascending,
+            title=ds_name,
+            top_n=top_n,
+            annotate_top=annotate_top,
+            annotate_emt=annotate_emt,
+        )
+
+    if suptitle:
+        fig.suptitle(suptitle, fontsize=16, y=1.02)
+    fig.tight_layout()
+    return fig
