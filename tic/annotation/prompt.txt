@@ -1,24 +1,27 @@
-You are an expert in single-cell transcriptomics and cell-type annotation. Your task is to annotate cell clusters generated from single-cell RNA sequencing data based on provided marker genes.
+# Optimized Prompt for Tumor Cell Annotation in Single-cell RNA-seq Data
 
-### Task Background
-We performed single-cell RNA sequencing data analysis and clustered cells using the following pipeline:
-- Normalized gene expression.
-- Principal Component Analysis (PCA), selecting the top 50 principal components.
-- Constructed a k-nearest neighbors (kNN) graph with k=15.
-- Applied Leiden clustering with resolution=2.
-- Identified the top 5 marker genes for each cluster based on differential expression analysis.
+**You are an expert in single-cell transcriptomics and cell-type annotation, specializing in analyzing cancer tissues.** Your primary task is to annotate each cell cluster generated from single-cell RNA sequencing data as **"Tumor cell" or "Non-tumor cell" first**, and then assign more specific subtypes if they are not tumor cells.
 
-### Your Objective
-Using the provided top marker genes for each cluster, assign the most appropriate cell type to each cluster. Provide a concise explanation based on known biological functions or known cell-specific expression profiles of these marker genes.
+---
 
-### Data Description (Optional)
-The data is derived from single-cell RNA sequencing of tissue samples. Clusters represent groups of cells sharing similar transcriptional profiles.
+## Task Objective (Important!)
 
-### Provided Results
-You will receive results from our clustering analysis in the following format:
+For each provided cluster:
+
+1. **Clearly determine** whether the cluster represents **"Tumor cell"** or **"Non-tumor cell"**.
+2. If identified as **"Non-tumor cell"**, further specify a detailed cell type (e.g., immune cells like T cell, Myeloid cell, Fibroblast, Epithelial non-tumor, etc.).
+3. Provide a concise justification (**≤ 50 words**) based explicitly on provided marker genes.
+4. Provide your confidence score (**0 to 1**) regarding your annotation.
+
+---
+
+## Provided Input Format
+
+You will receive clustering analysis results in the following JSON format:
+
 ```json
 {
-  "cluster_id": {
+  "<cluster_id>": {
     "genes": ["gene1", "gene2", "gene3", "gene4", "gene5"],
     "scores": [score1, score2, score3, score4, score5]
   },
@@ -26,16 +29,32 @@ You will receive results from our clustering analysis in the following format:
 }
 ```
 
-### Expected Output
-For each cluster, provide the cell type annotation along with a brief justification referencing biological roles or known expression patterns of marker genes. Your response format should be:
+---
+
+## Expected Output Format
+
+Return your annotations strictly in this structured JSON format:
+
 ```json
 {
-  "cluster_id": {
-    "assigned_cell_type": "Cell Type Name",
-    "reasoning": "Brief justification based on marker gene expression."
+  "<cluster_id>": {
+    "assigned_cell_type": "<Tumor cell | Immune cell | Fibroblast | Epithelial non-tumor | Uncertain Epithelial | Unknown>",
+    "confidence": 0.0-1.0,
+    "reason": "Concise justification (≤50 words), referencing key marker genes explicitly."
   },
   ...
 }
 ```
 
-Please annotate the clusters now.
+---
+
+## Important Notes
+
+- Multiple clusters can be annotated as `"Tumor cell"` if applicable.
+- If no clusters meet criteria clearly indicating tumor cells, annotate them all according to specific non-tumor cell types.
+- Use `"Unknown"` only if insufficient information is provided by the markers, and explain this in the `reason`.
+- Follow exactly the provided JSON field names and order. **Do not add extra fields.**
+
+---
+
+**Please annotate the clusters now.**

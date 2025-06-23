@@ -11,6 +11,7 @@ _BUILTIN: Dict[str, Dict[str, Dict[str, Any]]] = {
     # cell‑level only
     "cell_default": {
         "centre_gene": {},
+        "centre_gene_hvg": {},
     },
     # full micro‑environment default
     "tme_default": {

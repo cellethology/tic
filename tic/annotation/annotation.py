@@ -126,6 +126,7 @@ def transform_cluster_annotation(cluster_annotation: dict) -> dict:
     {
         "cluster_id": {
             "assigned_cell_type": "Cell Type Name",
+            "confidence": "Confidence score, 0.0-1.0",
             "reasoning": "Brief justification based on marker gene expression."
         },
         ...

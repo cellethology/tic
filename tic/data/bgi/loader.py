@@ -17,6 +17,7 @@ This module exposes :func:`load_bgi_dataset`, a high-level helper that
 """
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import Dict, Literal, Optional, Union
@@ -42,10 +43,10 @@ PathLike = Union[str, Path]
 # Sample descriptions – passed to LLM for extra context (extend as needed)
 # -----------------------------------------------------------------------------
 _DESCRIPTIONS: Dict[str, str] = {
-    "B03425E1": "Non-small-cell lung cancer (NSCLC).",
-    "C03628C1": "Clear-cell renal cell carcinoma.",
-    "B02804B5": "Murine MC38 orthotopic colorectal cancer (CRC).",
-    "B03425E3": "Breast cancer sample.",
+    "B03425E1": "This sample is from Non-small-cell lung cancer (NSCLC).",
+    "C03628C1": "This sample is from Clear-cell renal cell carcinoma.",
+    "B02804B5": "This sample is from Murine MC38 orthotopic colorectal cancer (CRC).",
+    "B03425E3": "This sample is from Breast cancer.",
 }
 
 # -----------------------------------------------------------------------------
@@ -179,6 +180,9 @@ def load_bgi_dataset(
                     copy=False,
                     return_cluster_annotation=True,
                 )
+                # cache cluster annotation in json file
+                with open(sample_dir / f"{sample_id}_{data_type}_cluster_annotation.json", "w") as f:
+                    json.dump(cluster_map, f)
 
                 # ---- bring back labels & clustering into the *full* AnnData -------
                 for key in ("leiden", "cell_type", "pred_cell_type"):

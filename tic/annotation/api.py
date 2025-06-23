@@ -14,10 +14,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union
-
+from typing import Any, Dict, Literal, Mapping, Sequence, Tuple, Union
+import pandas as pd
+import numpy as np
 import scanpy as sc
 from anndata import AnnData
+from sklearn.cluster import KMeans
 
 from ..constant import DEFAULT_DATACACHE_DIR
 from .annotation import (
@@ -109,7 +111,8 @@ def annotate_adata(
         dataset_description=dataset_description,
         return_json=True,
     )
-
+    # cache cluster annotation
+    
     # 5) Map cluster annotations back to AnnData
     mapping = transform_cluster_annotation(cluster_annotation)
     adata.obs[added_key] = adata.obs[groupby].map(mapping).astype("category")
@@ -158,3 +161,117 @@ def _maybe_cache_cell_types(adata: AnnData, added_key: str) -> None:
         logger.info("Saved cell-type cache to %s", cache_file)
     except Exception as e:
         logger.warning("Failed to cache cell types for tissue '%s': %s", tissue_id, e)
+
+
+def annotate_emt_state(
+    adata: AnnData,
+    epithelial_genes: Sequence[str],
+    mesenchymal_genes: Sequence[str],
+    *,
+    copy: bool = True,
+    cluster_on: Literal["index", "scores", "pca"] = "index",
+    n_pca: int = 10,
+    random_state: int | None = 0,
+    score_kwargs: Mapping | None = None,       
+) -> AnnData:
+    """
+    Add EMT scores & binary labels (Epithelial / Mesenchymal) to `adata.obs`.
+
+    Parameters
+    ----------
+    adata
+        AnnData containing **only tumour cells**.
+    epithelial_genes
+        List / tuple of epithelial marker genes.
+    mesenchymal_genes
+        List / tuple of mesenchymal marker genes.
+    copy
+        If True, return a copy of `adata`; else work in place.
+    cluster_on
+        'index' (1-D), 'scores' (2-D) or 'pca' (n_pca-D) space for k-means.
+    n_pca
+        Number of PCs when `cluster_on='pca'`.
+    random_state
+        Seed for k-means reproducibility.
+    score_kwargs
+        Extra keyword arguments passed to `scanpy.tl.score_genes`
+        (e.g. ``dict(ctrl_as_ref=False, ctrl_size=50)``).
+
+    Returns
+    -------
+    AnnData
+        With columns ``emt_index``, ``emt_progress``, ``emt_label`` in ``.obs``.
+    """
+    if copy:
+        adata = adata.copy()
+
+    score_kwargs = {} if score_kwargs is None else dict(score_kwargs)
+
+    # ------------------------------------------------------------------ #
+    # 1. Score genes (epi / mes)                                         #
+    # ------------------------------------------------------------------ #
+    present_epi = [g for g in epithelial_genes if g in adata.var_names]
+    present_mes = [g for g in mesenchymal_genes if g in adata.var_names]
+    if not present_epi or not present_mes:
+        raise ValueError("No epithelial or mesenchymal genes found in `adata`.")
+
+    def _safe_score(genes: Sequence[str], name: str) -> None:
+        try:
+            sc.tl.score_genes(adata, genes, score_name=name, use_raw=False,
+                              **score_kwargs)
+        except RuntimeError as err:
+            msg = str(err)
+            if "ctrl_as_ref=False" in msg and "ctrl_as_ref" not in score_kwargs:
+                sc.tl.score_genes(
+                    adata, genes, score_name=name, use_raw=False,
+                    ctrl_as_ref=False, **score_kwargs
+                )
+            else:
+                raise
+
+    _safe_score(present_epi, "epi_score")
+    _safe_score(present_mes, "mes_score")
+
+    adata.obs["emt_index"] = adata.obs["mes_score"] - adata.obs["epi_score"]
+    idx_min, idx_max = adata.obs["emt_index"].min(), adata.obs["emt_index"].max()
+    adata.obs["emt_progress"] = (
+        (adata.obs["emt_index"] - idx_min) / (idx_max - idx_min)
+    )
+
+    # ------------------------------------------------------------------ #
+    # 2. Build feature space for clustering                              #
+    # ------------------------------------------------------------------ #
+    if cluster_on == "index":
+        X = adata.obs[["emt_index"]].to_numpy()
+    elif cluster_on == "scores":
+        X = adata.obs[["epi_score", "mes_score"]].to_numpy()
+    elif cluster_on == "pca":
+        sc.tl.pca(
+            adata[:, present_epi + present_mes],
+            n_comps=n_pca,
+            svd_solver="arpack",
+            use_highly_variable=False,
+        )
+        X = adata.obsm["X_pca"][:, :n_pca]
+    else:
+        raise ValueError(
+            "`cluster_on` must be 'index', 'scores', or 'pca', "
+            f"got {cluster_on!r}."
+        )
+
+    # ------------------------------------------------------------------ #
+    # 3. Two-class k-means & label mapping                               #
+    # ------------------------------------------------------------------ #
+    km = KMeans(n_clusters=2, n_init="auto", random_state=random_state)
+    labels = km.fit_predict(X)
+
+    mes_cluster = (
+        adata.obs.assign(_lbl=labels)
+        .groupby("_lbl")["emt_index"]
+        .mean()
+        .idxmax()
+    )
+    mapped = np.where(labels == mes_cluster, "Mesenchymal", "Epithelial")
+    adata.obs["emt_label"] = pd.Categorical(mapped)
+
+    return adata
