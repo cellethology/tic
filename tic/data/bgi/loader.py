@@ -54,7 +54,7 @@ _DESCRIPTIONS: Dict[str, str] = {
 
 def load_bgi_dataset(
     sample_id: str,
-    data_type: Literal["raw", "tissue"] = "tissue",
+    data_type: Literal["raw", "tissue", "cellbin"] = "tissue",
     data_dir: PathLike = DEFAULT_DATACACHE_DIR,
     *,
     normalize: Literal[None, "counts", "scanpy", "zscore"] = None,
@@ -62,6 +62,7 @@ def load_bgi_dataset(
     n_cells: Optional[int] = None,
     min_total_counts_ratio: Optional[float] = None,
     auto_annotate: bool = True,
+    force_reannotate: bool = False,
     assign_params: Optional[dict] = None,
     llm_model_name: Optional[str] = None,
     llm_kwargs: Optional[dict] = None,
@@ -135,7 +136,7 @@ def load_bgi_dataset(
     cache_file = sample_dir / f"{sample_id}_{data_type}_llm_cell_types.parquet"
     if "cell_type" not in adata.obs.columns:
         # 1. Try cached parquet first ------------------------------------------------
-        if cache_file.exists():
+        if cache_file.exists() and not force_reannotate:
             try:
                 df_cache = pd.read_parquet(cache_file).set_index("cell_id")
                 adata.obs["cell_type"] = (
@@ -146,7 +147,7 @@ def load_bgi_dataset(
                 logger.warning("Failed reading cache %s – %s", cache_file, exc)
 
         # 2. Run LLM annotation if allowed ------------------------------------------
-        elif auto_annotate:
+        elif auto_annotate or force_reannotate:
             if annotate_adata is None:
                 logger.warning("annotate_adata unavailable – cannot auto-annotate.")
             else:

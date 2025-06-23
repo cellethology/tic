@@ -24,7 +24,7 @@ Example:
 
 import argparse
 import sys
-from stereo.io.reader import read_gef, stereo_to_anndata # type: ignore
+import stereo as st # type: ignore
 import scanpy as sc
 import logging
 from pathlib import Path
@@ -81,12 +81,12 @@ def process_bgi_gef(
             raise FileNotFoundError(f"Input file not found: {input_gef_path}")
         
         logger.info(f"Reading GEF file: {input_gef_path}")
-        Exper_data = read_gef(input_gef_path)
+        Exper_data = st.io.read_gef(input_gef_path)
         logger.debug(f"Raw Stereo data structure:\n{Exper_data}")
         
         # Conversion to AnnData
         logger.info("Converting to AnnData format")
-        adata = stereo_to_anndata(data=Exper_data, flavor=flavor)
+        adata = st.io.stereo_to_anndata(data=Exper_data, flavor=flavor)
         
         # Basic checks
         if check_quality:
