@@ -172,6 +172,8 @@ def annotate_emt_state(
     cluster_on: Literal["index", "scores", "pca"] = "index",
     n_pca: int = 10,
     random_state: int | None = 0,
+    normalize_scores: bool = True,
+    general_score: bool = False,
     score_kwargs: Mapping | None = None,       
 ) -> AnnData:
     """
@@ -193,6 +195,11 @@ def annotate_emt_state(
         Number of PCs when `cluster_on='pca'`.
     random_state
         Seed for k-means reproducibility.
+    normalize_scores
+        If True, normalize the scores to 0-1 range.
+    general_score
+        If True, calculate the average expression of the genes.
+        If False, calculate the score of the genes using `scanpy.tl.score_genes`.
     score_kwargs
         Extra keyword arguments passed to `scanpy.tl.score_genes`
         (e.g. ``dict(ctrl_as_ref=False, ctrl_size=50)``).
@@ -228,9 +235,20 @@ def annotate_emt_state(
                 )
             else:
                 raise
+    def _general_score(genes: Sequence[str], name: str) -> None:
+        # calculate the average expression of the genes
+        adata.obs[name] = adata[:, genes].X.mean(axis=1)
 
-    _safe_score(present_epi, "epi_score")
-    _safe_score(present_mes, "mes_score")
+    if not general_score:
+        _safe_score(present_epi, "epi_score")
+        _safe_score(present_mes, "mes_score")
+    else:
+        _general_score(present_epi, "epi_score")
+        _general_score(present_mes, "mes_score")
+
+    if normalize_scores:
+        adata.obs["epi_score"] = (adata.obs["epi_score"] - adata.obs["epi_score"].min()) / (adata.obs["epi_score"].max() - adata.obs["epi_score"].min())
+        adata.obs["mes_score"] = (adata.obs["mes_score"] - adata.obs["mes_score"].min()) / (adata.obs["mes_score"].max() - adata.obs["mes_score"].min())
 
     adata.obs["emt_index"] = adata.obs["mes_score"] - adata.obs["epi_score"]
     idx_min, idx_max = adata.obs["emt_index"].min(), adata.obs["emt_index"].max()

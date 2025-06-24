@@ -14,3 +14,7 @@ leidenalg
 
 # optional
 openai # for openai backend
+
+# app
+Dash
+dash-bootstrap-components

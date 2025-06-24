@@ -4,6 +4,9 @@ scr/
 utils/config.py
 notebook/expr
 
+data/
+data/*
+
 latex/
 latex/*
 
