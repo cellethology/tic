@@ -17,10 +17,12 @@ _BUILTIN: Dict[str, Dict[str, Dict[str, Any]]] = {
     "tme_default": {
         "centre_gene": {},
         "composition": {"normalize": True},
+        "centre_gene_comp": {},
         "neighbor_gene_sum": {},
         "same_type_gene_sum": {},
         "same_type_gene_average": {},
         "celltype_gene_count": {},
+
     },
     "geometry_features": {
         "geometry_basic": {},
