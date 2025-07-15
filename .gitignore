@@ -1,4 +1,10 @@
-scripts/
+# --- Un-ignore first ---
+!scripts/
+!scripts/multipatients/
+!scripts/multipatients/**
+
+# --- Then ignore undesired paths ---
+scripts/*
 scr/
 
 utils/config.py
@@ -16,6 +22,7 @@ notes/*
 results/
 results/*
 
+# Allow all contents under multipatients
 !scripts/multipatients/**
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
