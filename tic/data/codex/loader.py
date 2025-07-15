@@ -110,7 +110,7 @@ def load_region(
     -------
     AnnData
         - .X: cell-by-biomarker expression matrix (float32)
-        - .obs: DataFrame with 'cell_id', 'cell_type', 'size'
+        - .obs: DataFrame with 'cell_id', 'cell_type', 'size', 'x', 'y'
         - .var: biomarker names
         - .obsm['spatial']: cell (X, Y) coordinates
         - .uns: metadata including tissue ID
@@ -159,6 +159,8 @@ def load_region(
         .rename(columns={'CELL_ID': 'cell_id', 'CELL_TYPE': 'cell_type', 'SIZE': 'size'})
         .set_index('cell_id')
     )
+    obs['x'] = merged['X'].to_numpy(dtype=np.float32)
+    obs['y'] = merged['Y'].to_numpy(dtype=np.float32)
     var = pd.DataFrame(index=biom_cols)
     obsm = {'spatial': merged[['X', 'Y']].to_numpy(dtype=np.float32)}
 

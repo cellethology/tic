@@ -1,61 +1,47 @@
+#!/usr/bin/env python
+"""Spatial Transcriptomics Viewer
+================================
+
+Dash application for interactive exploration of spatial-omics datasets
+stored in **AnnData** format. This version (2025-07-11) adds **user-selectable
+coordinate sources**: any 2-D matrix in ``adata.obsm`` with shape
+``(n_obs, 2)`` is detected automatically and can be chosen from a dropdown.
+
+Key features
+------------
+* Cell-type filtering and gene / metadata colouring.
+* Line-plot window with x/y transforms, click-to-cell linkage.
+* k-nearest neighbourhood zoom + mini-map.
+* **NEW:** Coordinate-source dropdown (defaults to ``'spatial'`` if present).
+
+Author: Zhang Jiahao | Project: TIC – Tumor Inference of Causality | MIT License.
 """
-Spatial Transcriptomics Viewer
-==============================
-
-Dash application for interactive exploration of spatial transcriptomics
-(AnnData) data.  NEW in this version (2025‑06‑26):
-
-* **Line‑plot click → cell‑id linkage**
-  * Click any point on the **line plot** to automatically populate the
-    *Search Cell ID* box and trigger neighbourhood zoom on the main
-    scatter.
-* **Line plot window** (added previously)
-  * Select a **numeric** `obs` field as the x‑axis (e.g. `size`, `pseudotime`).
-  * Select **one or more** genes / biomarkers as y‑axis variables.
-  * `x_transform`: `'raw'`, `'bin'` (default, 100 bins), `'bin+normalize'`.
-  * `y_transform`: `None` (no transform), `'normalize'`, `'smooth'`,
-    `'normalize+smooth'`.
-  * Built‑in helper utilities: `moving_average`, `normalize`,
-    `fill_nan_with_interp`.
-
-Other key features retained from earlier version:
-
-* Cell‑type filtering, gene‑expression scatter, metadata field colouring.
-* Cell search with k‑nearest neighbourhood mini‑map.
-* Consistent palette & interactive tool‑tips.
-
-Author: Zhang Jiahao  |  Project: TIC – Tumor Inference of Causality
-License: MIT
-"""
-
 from __future__ import annotations
 
 import sys
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, Literal, Optional, Sequence
-
-import numpy as np
-import pandas as pd
-import scanpy as sc
-import scipy.spatial
-from anndata import AnnData
+from typing import Iterable, Literal
 
 import dash
 import dash_bootstrap_components as dbc
+import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
+import scanpy as sc
+import scipy.spatial
+from anndata import AnnData
 from dash import Dash, Input, Output, State, dcc, html
 
 ###############################################################################
 # Helper utilities – transforms & smoothing
 ###############################################################################
 
-N_BINS: int = 100  # default number of bins for x‑axis discretisation
-
+N_BINS: int = 100  # default number of bins for x-axis discretisation
 
 def moving_average(y: np.ndarray, window: int = 5) -> np.ndarray:  # noqa: D401
-    """Return simple moving‑average (ignores NaNs)."""
+    """Return simple moving-average (ignores NaNs)."""
     if window < 1 or window > len(y):
         raise ValueError("Window size must be between 1 and length of y.")
     y_filled = np.nan_to_num(y, nan=np.nanmean(y))
@@ -64,7 +50,7 @@ def moving_average(y: np.ndarray, window: int = 5) -> np.ndarray:  # noqa: D401
 
 
 def normalize(y: np.ndarray) -> np.ndarray:  # noqa: D401
-    """Min‑max scale to [0, 1] (ignores NaNs)."""
+    """Min-max scale to [0, 1] (ignores NaNs)."""
     ymin = np.nanmin(y)
     ymax = np.nanmax(y)
     if ymax > ymin:
@@ -73,7 +59,7 @@ def normalize(y: np.ndarray) -> np.ndarray:  # noqa: D401
 
 
 def fill_nan_with_interp(arr: np.ndarray) -> np.ndarray:  # noqa: D401
-    """Fill NaNs in 1‑D array via linear interpolation."""
+    """Fill NaNs in 1-D array via linear interpolation."""
     x = np.arange(len(arr))
     mask = ~np.isnan(arr)
     if mask.sum() < 2:
@@ -84,6 +70,23 @@ def fill_nan_with_interp(arr: np.ndarray) -> np.ndarray:  # noqa: D401
 # Data loading / caching
 ###############################################################################
 
+def _get_candidate_obsm_2d_keys(adata: AnnData) -> dict[str, np.ndarray]:
+    """
+    Return a mapping of .obsm keys ➜ 2-D arrays with shape (n_obs, 2).
+    If 'spatial' not in obsm, but obs['x'] and obs['y'] exist, use them as fallback.
+    """
+    obsm_2d = {
+        key: val.astype(np.float32)
+        for key, val in adata.obsm.items()
+        if isinstance(val, np.ndarray) and val.shape == (adata.n_obs, 2)
+    }
+
+    if "spatial" not in obsm_2d and {"x", "y"}.issubset(adata.obs.columns):
+        spatial_fallback = adata.obs[["x", "y"]].to_numpy(dtype=np.float32)
+        obsm_2d["spatial"] = spatial_fallback
+
+    return obsm_2d
+
 
 class DataStore:  # noqa: D101
     """Cached wrapper around AnnData with spatial coordinates & helpers."""
@@ -91,73 +94,88 @@ class DataStore:  # noqa: D101
     def __init__(self, path: Path):
         self.adata: AnnData = sc.read(path)
 
-        # spatial coordinates --------------------------------------------------
-        if {"x", "y"}.issubset(self.adata.obs.columns):
-            self.xy = self.adata.obs[["x", "y"]].to_numpy(dtype=np.float32)
-        elif "spatial" in self.adata.obsm:
-            self.xy = self.adata.obsm["spatial"][:, :2].astype(np.float32)
-        else:
-            raise KeyError(
-                "Spatial coordinates ('x','y' columns or 'spatial' obsm) not found.")
+        # discover 2-D coordinate matrices in obsm ---------------------------
+        self.obsm_2d: dict[str, np.ndarray] = _get_candidate_obsm_2d_keys(self.adata)
+        if not self.obsm_2d:
+            raise KeyError("No 2-D coordinate arrays found in `.obsm`.")
 
-        # k‑d tree for neighbourhood queries ----------------------------------
+        # default coordinate key: prefer 'spatial'
+        self.xy_key: str = "spatial" if "spatial" in self.obsm_2d else list(self.obsm_2d)[0]
+        self.xy: np.ndarray = self.obsm_2d[self.xy_key]
         self.kdtree = scipy.spatial.KDTree(self.xy)
 
-        # cell‑type categorical & palette -------------------------------------
+        # cell-type categorical & palette -----------------------------------
         self.cell_types = self.adata.obs["cell_type"].astype("category")
         palette = px.colors.qualitative.Plotly
         self.ct_colors = {
-            ct: palette[i % len(palette)]
-            for i, ct in enumerate(self.cell_types.cat.categories)
+            ct: palette[i % len(palette)] for i, ct in enumerate(self.cell_types.cat.categories)
         }
 
-        # obs keys and identify numeric ones ----------------------------------
+        # obs keys & numeric subset -----------------------------------------
         self.obs_keys: list[str] = list(self.adata.obs.columns)
         self.numeric_obs: list[str] = [
             k for k in self.obs_keys if pd.api.types.is_numeric_dtype(self.adata.obs[k])
         ]
-        self.obs_minmax = {
-            k: (self.adata.obs[k].min(), self.adata.obs[k].max()) for k in self.numeric_obs
-        }
+        self.obs_minmax = {k: (self.adata.obs[k].min(), self.adata.obs[k].max()) for k in self.numeric_obs}
+
+    # ---------------------------------------------------------------------
+    def set_xy_key(self, key: str) -> None:  # noqa: D401
+        """Switch active coordinate source and rebuild KD-tree."""
+        if key not in self.obsm_2d:
+            raise KeyError(f"Key '{key}' not in obsm coordinate candidates.")
+        if key == self.xy_key:
+            return  # no-op
+        self.xy_key = key
+        self.xy = self.obsm_2d[key]
+        self.kdtree = scipy.spatial.KDTree(self.xy)
 
 
 @lru_cache(maxsize=1)
 def prepare(path: str | Path) -> DataStore:  # noqa: D401
-    """Lazy‑load DataStore with LRU cache."""
+    """Lazy-load DataStore with LRU cache."""
     return DataStore(Path(path))
 
 ###############################################################################
 # Dash application factory
 ###############################################################################
 
-
 def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
     ds = prepare(str(h5ad_path))
-    adata, xy = ds.adata, ds.xy
-    cell_types, ct_colors = ds.cell_types, ds.ct_colors
+    adata = ds.adata  # shorthand
 
     app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
     server = app.server  # type: ignore[attr-defined]
 
-    # ---------- Dropdown options ---------------------------------------------
-    ct_options = [{"label": ct, "value": ct} for ct in cell_types.cat.categories]
+    # ---------- Dropdown options -------------------------------------------
+    ct_options = [{"label": ct, "value": ct} for ct in ds.cell_types.cat.categories]
     obs_options = [{"label": k, "value": k} for k in ds.obs_keys]
     gene_options = [{"label": g, "value": g} for g in adata.var_names]
     numeric_obs_options = [{"label": k, "value": k} for k in ds.numeric_obs]
+    xy_key_options = [{"label": k, "value": k} for k in ds.obsm_2d.keys()]
 
-    # ---------- Layout -------------------------------------------------------
+    # ---------- Layout -----------------------------------------------------
     app.layout = dbc.Container(
         fluid=True,
         children=[
             dbc.Row(
                 [
-                    # Sidebar -------------------------------------------------
+                    # Sidebar -------------------------------------------
                     dbc.Col(
                         [
                             html.H4("Spatial Transcriptomics Viewer"),
                             html.Hr(),
 
-                            # FILTERS --------------------------------------
+                            # COORD SOURCE -----------------------------
+                            html.Label("Coordinate Source (.obsm key)"),
+                            dcc.Dropdown(
+                                id="xy-key-dropdown",
+                                options=xy_key_options,
+                                value=ds.xy_key,
+                                clearable=False,
+                            ),
+                            html.Br(),
+
+                            # FILTERS ----------------------------------
                             html.Label("Filter by Cell Type"),
                             dcc.Dropdown(
                                 id="cell-type-dropdown",
@@ -194,7 +212,7 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                             ),
                             html.Hr(),
 
-                            # LINE PLOT CONFIG -----------------------------
+                            # LINE PLOT CONFIG -------------------------
                             html.H5("Line Plot Settings"),
                             html.Label("X-axis (numeric obs)"),
                             dcc.Dropdown(
@@ -240,15 +258,15 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                             ),
                             html.Hr(),
 
-                            # SEARCH --------------------------------------
+                            # SEARCH ----------------------------------
                             html.Label("Search Cell ID"),
                             dcc.Input(
                                 id="cell-search",
                                 type="text",
                                 placeholder="Enter cell obs_name…",
-                                debounce=False,  # value change triggers immediately
+                                debounce=False,
                             ),
-                            html.Small("  ← auto‑filled on line‑plot click"),
+                            html.Small("  ← auto-filled on line-plot click"),
                             html.Br(),
                             html.Br(),
 
@@ -270,42 +288,21 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                         style={"overflowY": "scroll", "height": "95vh", "padding": "20px"},
                     ),
 
-                    # MAIN PANEL -------------------------------------------
+                    # MAIN PANEL ---------------------------------------
                     dbc.Col(
                         [
-                            dcc.Graph(
-                                id="spatial-plot",
-                                style={"height": "60vh"},
-                                config={"displaylogo": False},
-                            ),
+                            dcc.Graph(id="spatial-plot", style={"height": "60vh"}, config={"displaylogo": False}),
                             html.Hr(),
-
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        [
-                                            html.H6("Neighborhood View (centre ±k)"),
-                                            dcc.Graph(
-                                                id="domain-plot",
-                                                style={"height": "22vh"},
-                                                config={"displaylogo": False},
-                                            ),
-                                        ],
-                                        width=4,
-                                    ),
-                                    dbc.Col(
-                                        [
-                                            html.H6("Line Plot"),
-                                            dcc.Graph(
-                                                id="line-plot",
-                                                style={"height": "22vh"},
-                                                config={"displaylogo": False},
-                                            ),
-                                        ],
-                                        width=8,
-                                    ),
-                                ]
-                            ),
+                            dbc.Row([
+                                dbc.Col([
+                                    html.H6("Neighborhood View (centre ±k)"),
+                                    dcc.Graph(id="domain-plot", style={"height": "22vh"}, config={"displaylogo": False}),
+                                ], width=4),
+                                dbc.Col([
+                                    html.H6("Line Plot"),
+                                    dcc.Graph(id="line-plot", style={"height": "22vh"}, config={"displaylogo": False}),
+                                ], width=8),
+                            ]),
                         ],
                         width=9,
                     ),
@@ -337,7 +334,7 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         )
 
     ###############################################################################
-    # Callback – scatter + neighbourhood + domain mini‑map
+    # Callback – scatter + neighbourhood + domain mini-map
     ###############################################################################
 
     @app.callback(
@@ -348,8 +345,9 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         Input("gene-dropdown", "value"),
         Input("obs-dropdown", "value"),
         Input("normalize-toggle", "value"),
-        Input("cell-search", "value"),  # ← value change triggers update
+        Input("cell-search", "value"),
         State("neighborhood-k", "value"),
+        Input("xy-key-dropdown", "value"),  # NEW
     )
     def update_scatter(
         selected_cts: list[str],
@@ -358,9 +356,15 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         norm_flag: list[str],
         cell_id: str | None,
         k: int | None,
+        xy_key: str,
     ):  # noqa: C901, WPS231
-        # --------------------------------------------------- helpers
-        def maybe_normalise(arr: np.ndarray) -> np.ndarray:
+        # update coordinate source & KD-tree
+        ds.set_xy_key(xy_key)
+        xy = ds.xy
+        cell_types = ds.cell_types
+
+        # helper -----------------------------------------------------------
+        def maybe_normalise(arr: np.ndarray) -> np.ndarray:  # noqa: D401
             return normalize(arr) if "norm" in norm_flag else arr
 
         try:
@@ -371,15 +375,13 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         mask_all = cell_types.isin(selected_cts).to_numpy()
         fig = go.Figure()
 
-        # --------------- colouring logic ------------------------------------
+        # ------------ colouring logic ------------------------------------
         if obs_field:  # metadata colouring
             col = adata.obs[obs_field]
             if pd.api.types.is_numeric_dtype(col):
                 vals = col.to_numpy(dtype=float)
                 vals_disp = maybe_normalise(vals)
-                vmin, vmax = (
-                    (0.0, 1.0) if "norm" in norm_flag else ds.obs_minmax[obs_field]
-                )
+                vmin, vmax = ((0.0, 1.0) if "norm" in norm_flag else ds.obs_minmax[obs_field])
                 fig.add_trace(
                     _masked_scatter(
                         xy[mask_all],
@@ -397,10 +399,7 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                 )
             else:  # categorical
                 cats = pd.Categorical(col).categories
-                cat_colors = {
-                    cat: px.colors.qualitative.Plotly[i % len(px.colors.qualitative.Plotly)]
-                    for i, cat in enumerate(cats)
-                }
+                cat_colors = {cat: px.colors.qualitative.Plotly[i % len(px.colors.qualitative.Plotly)] for i, cat in enumerate(cats)}
                 for cat in cats:
                     m = mask_all & (col == cat).to_numpy()
                     if not m.any():
@@ -416,13 +415,9 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                     )
         elif gene:  # gene expression colouring
             idx = adata.var_names.get_loc(gene)
-            expr = (
-                adata.X[:, idx].A.ravel() if hasattr(adata.X, "A") else adata.X[:, idx]
-            ).astype(float)
+            expr = (adata.X[:, idx].A.ravel() if hasattr(adata.X, "A") else adata.X[:, idx]).astype(float)
             expr_disp = maybe_normalise(expr)
-            vmin, vmax = (
-                (0.0, 1.0) if "norm" in norm_flag else (expr.min(), expr.max())
-            )
+            vmin, vmax = ((0.0, 1.0) if "norm" in norm_flag else (expr.min(), expr.max()))
             fig.add_trace(
                 _masked_scatter(
                     xy[mask_all],
@@ -438,7 +433,7 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                     hovertext=adata.obs_names[mask_all],
                 )
             )
-        else:  # default cell‑type palette
+        else:  # default palette (cell-type)
             for ct in cell_types.cat.categories:
                 m = mask_all & (cell_types == ct).to_numpy()
                 if not m.any():
@@ -446,14 +441,14 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                 fig.add_trace(
                     _masked_scatter(
                         xy[m],
-                        {"size": 5, "opacity": 0.8, "color": ct_colors[ct]},
+                        {"size": 5, "opacity": 0.8, "color": ds.ct_colors[ct]},
                         hovertext=adata.obs_names[m],
                         name=str(ct),
                         showlegend=True,
                     )
                 )
 
-        # --------------- neighbourhood zoom ---------------------------------
+        # ------------- neighbourhood zoom & mini-map ----------------------
         card = None
         domain_fig = go.Figure()
         if cell_id and cell_id in adata.obs_names:
@@ -463,22 +458,14 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
             nn_xy = ds.xy[nn]
             nn_ct = cell_types.iloc[nn].to_numpy()
 
-            # zoom main scatter
             fig.update_layout(
                 xaxis=dict(range=[centre_xy[0] - 50, centre_xy[0] + 50]),
                 yaxis=dict(range=[centre_xy[1] - 50, centre_xy[1] + 50]),
             )
             fig.add_trace(
-                go.Scattergl(
-                    x=[centre_xy[0]],
-                    y=[centre_xy[1]],
-                    mode="markers",
-                    marker=dict(color="black", size=10, symbol="x"),
-                    showlegend=False,
-                )
+                go.Scattergl(x=[centre_xy[0]], y=[centre_xy[1]], mode="markers", marker=dict(color="black", size=10, symbol="x"), showlegend=False)
             )
 
-            # mini‑map domain ---------------------------------------------
             for ct in np.unique(nn_ct):
                 mask_nn = nn_ct == ct
                 domain_fig.add_trace(
@@ -486,62 +473,32 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                         x=nn_xy[mask_nn, 0],
                         y=nn_xy[mask_nn, 1],
                         mode="markers",
-                        marker=dict(size=6, color=ct_colors[ct], opacity=0.8),
+                        marker=dict(size=6, color=ds.ct_colors[ct], opacity=0.8),
                         name=ct,
                         showlegend=True,
                     )
                 )
             domain_fig.add_trace(
-                go.Scattergl(
-                    x=[centre_xy[0]],
-                    y=[centre_xy[1]],
-                    mode="markers",
-                    marker=dict(color="black", size=10, symbol="x"),
-                    showlegend=False,
-                )
+                go.Scattergl(x=[centre_xy[0]], y=[centre_xy[1]], mode="markers", marker=dict(color="black", size=10, symbol="x"), showlegend=False)
             )
-            domain_fig.update_layout(
-                template="plotly_white",
-                margin=dict(t=10, l=10, r=10, b=10),
-                xaxis=dict(visible=False),
-                yaxis=dict(visible=False),
-                height=200,
-            )
+            domain_fig.update_layout(template="plotly_white", margin=dict(t=10, l=10, r=10, b=10), xaxis=dict(visible=False), yaxis=dict(visible=False), height=200)
             domain_fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
-            # info card ----------------------------------------------------
             info = adata.obs.iloc[idx_centre]
             rows = [html.Tr([html.Td(str(k)), html.Td(str(v))]) for k, v in info.items()]
             card = dbc.Card(
                 dbc.CardBody([
                     html.H6(f"Cell: {cell_id}"),
-                    dbc.Table([
-                        html.Thead(html.Tr([html.Th("Field"), html.Th("Value")])),
-                        html.Tbody(rows),
-                    ], bordered=True, size="sm", hover=True),
+                    dbc.Table([html.Thead(html.Tr([html.Th("Field"), html.Th("Value")])), html.Tbody(rows)], bordered=True, size="sm", hover=True),
                     html.Small(f"Showing centre + {k} neighbours."),
                 ]),
                 className="mt-3",
             )
 
-        # empty domain fig if not used ----------------------------------------
         if not domain_fig.data:
-            domain_fig.update_layout(
-                template="plotly_white",
-                xaxis=dict(visible=False),
-                yaxis=dict(visible=False),
-                margin=dict(t=10, l=10, r=10, b=10),
-                height=200,
-            )
+            domain_fig.update_layout(template="plotly_white", xaxis=dict(visible=False), yaxis=dict(visible=False), margin=dict(t=10, l=10, r=10, b=10), height=200)
 
-        # common scatter layout tweaks ----------------------------------------
-        fig.update_layout(
-            template="plotly_white",
-            dragmode="pan",
-            xaxis=dict(visible=False),
-            yaxis=dict(visible=False),
-            margin=dict(t=10, l=10, b=10, r=10),
-        )
+        fig.update_layout(template="plotly_white", dragmode="pan", xaxis=dict(visible=False), yaxis=dict(visible=False), margin=dict(t=10, l=10, b=10, r=10))
         fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
         return fig, card, domain_fig
@@ -558,37 +515,27 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         Input("x-transform-dropdown", "value"),
         Input("y-transform-dropdown", "value"),
     )
-    def update_line_plot(
-        selected_cts: list[str],
-        x_key: str | None,
-        genes: list[str] | str | None,
-        x_transform: Literal["raw", "bin", "bin+normalize"],
-        y_transform: str,
-    ):
+    def update_line_plot(selected_cts: list[str], x_key: str | None, genes: list[str] | str | None, x_transform: Literal["raw", "bin", "bin+normalize"], y_transform: str):
         fig = go.Figure()
         if x_key is None or not genes:
-            fig.update_layout(
-                template="plotly_white",
-                xaxis_title="x",
-                yaxis_title="gene expression (a.u.)",
-            )
+            fig.update_layout(template="plotly_white", xaxis_title="x", yaxis_title="gene expression (a.u.)")
             return fig
 
         if isinstance(genes, str):
             genes = [genes]
 
-        mask_cts = cell_types.isin(selected_cts).to_numpy()
+        mask_cts = ds.cell_types.isin(selected_cts).to_numpy()
         X_raw = adata.obs[x_key].to_numpy(dtype=float)[mask_cts]
 
-        # ------------------------------------------------- handle x‑transform
+        # x-transform -----------------------------------------------------
         if x_transform == "raw":
             sort_idx = np.argsort(X_raw)
             xx = X_raw[sort_idx]
-        else:  # bin / bin+normalize
+        else:
             bins = np.linspace(np.nanmin(X_raw), np.nanmax(X_raw), N_BINS + 1)
-            bin_idx = np.digitize(X_raw, bins) - 1  # 0‑based
+            bin_idx = np.digitize(X_raw, bins) - 1
             bin_centres = (bins[:-1] + bins[1:]) / 2
-            xx = bin_centres  # fixed len
+            xx = bin_centres
 
         if x_transform.endswith("normalize"):
             xx = normalize(xx)
@@ -596,12 +543,10 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
         else:
             x_label = x_key if x_transform == "raw" else f"{x_key} (binned)"
 
-        # ------------------------------------------------- compute y for each gene
+        # y computation ---------------------------------------------------
         for g in genes:
             idx = adata.var_names.get_loc(g)
-            yvals_full = (
-                adata.X[:, idx].A.ravel() if hasattr(adata.X, "A") else adata.X[:, idx]
-            ).astype(float)[mask_cts]
+            yvals_full = (adata.X[:, idx].A.ravel() if hasattr(adata.X, "A") else adata.X[:, idx]).astype(float)[mask_cts]
 
             if x_transform == "raw":
                 yvals = yvals_full[sort_idx]
@@ -613,32 +558,19 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
                         y_agg[b] = np.nanmean(yvals_full[m])
                 yvals = fill_nan_with_interp(y_agg)
 
-            # y‑transform --------------------------------------------------
+            # y-transform ------------------------------------------------
             if y_transform in {"normalize", "normalize+smooth"}:
                 yvals = normalize(yvals)
             if y_transform in {"smooth", "normalize+smooth"}:
                 yvals = moving_average(yvals, window=max(3, len(yvals) // 50))
 
-            fig.add_trace(
-                go.Scatter(
-                    x=xx,
-                    y=yvals,
-                    mode="lines+markers",
-                    name=g,
-                )
-            )
+            fig.add_trace(go.Scatter(x=xx, y=yvals, mode="lines+markers", name=g))
 
-        fig.update_layout(
-            template="plotly_white",
-            xaxis_title=x_label,
-            yaxis_title="Expression (a.u.)",
-            margin=dict(t=10, l=40, r=10, b=40),
-            legend_title="Gene",
-        )
+        fig.update_layout(template="plotly_white", xaxis_title=x_label, yaxis_title="Expression (a.u.)", margin=dict(t=10, l=40, r=10, b=40), legend_title="Gene")
         return fig
 
     ###############################################################################
-    # Callback – line‑plot click → fill cell‑search
+    # Callback – line-plot click ➜ fill cell-search
     ###############################################################################
 
     @app.callback(
@@ -662,13 +594,9 @@ def make_app(h5ad_path: str | Path) -> Dash:  # noqa: WPS231
 
         gene_name = genes[curve_idx] if isinstance(genes, list) else genes
 
-        mask_cts = cell_types.isin(selected_cts).to_numpy()
+        mask_cts = ds.cell_types.isin(selected_cts).to_numpy()
         x_vals = adata.obs[x_key].to_numpy(dtype=float)[mask_cts]
-        y_vals = (
-            adata.X[:, adata.var_names.get_loc(gene_name)].A.ravel()
-            if hasattr(adata.X, "A")
-            else adata.X[:, adata.var_names.get_loc(gene_name)]
-        ).astype(float)[mask_cts]
+        y_vals = (adata.X[:, adata.var_names.get_loc(gene_name)].A.ravel() if hasattr(adata.X, "A") else adata.X[:, adata.var_names.get_loc(gene_name)]).astype(float)[mask_cts]
 
         distances = np.abs(x_vals - x_clicked) + np.abs(y_vals - y_clicked)
         if np.isnan(distances).all():

@@ -23,7 +23,7 @@ from ..plotting import (
 
 class CausalWrapper:  # pylint: disable=too-few-public-methods
     """
-    One‑stop causal inference + plotting interface.
+    One-stop causal inference + plotting interface.
 
     Parameters
     ----------
@@ -37,6 +37,10 @@ class CausalWrapper:  # pylint: disable=too-few-public-methods
         If ``None`` → keep every column in ``feature_key``.
     method
         Causal method string recognised by :pyclass:`tic.causal.factory`.
+    prior_trend
+        use to automaticly flip pseudo time via the prior trend of the interested target outcome 
+        variable. If prior trend is increasing and spearman(outcome, pseudo time) is negative, 
+        the pseudo time will be flipped.
     bins
         Number of pseudotime bins.  ``None`` or ``<=1`` → no binning.
     method_kwargs
@@ -50,19 +54,24 @@ class CausalWrapper:  # pylint: disable=too-few-public-methods
         feature_key: str = "X_predictors",
         include_extractors: Optional[Sequence[str]] = ("celltype_gene_count",),
         method: str = "granger_causality",
+        prior_trend: Literal['none', 'increase', 'decrease'],
         bins: int | None = 100,
         method_kwargs: Optional[Dict[str, Any]] = None,
     ) -> None:
         self.outcome = outcome
         self.feature_key = feature_key
+        if isinstance(include_extractors, str):
+            include_extractors = [include_extractors]
         self.include_extractors: Optional[tuple[str, ...]] = (
             tuple(include_extractors) if include_extractors is not None else None
         )
         self.method = method
+        self.prior_trend = prior_trend
         self.bins = bins
         self.method_kwargs = method_kwargs or {}
 
         self._results: Dict[str, Dict[str, Any]] | None = None  # cache
+        
 
     # --------------------------------------------------------------------- public
     def fit(self, adata: AnnData) -> Dict[str, Dict[str, Any]]:
@@ -143,10 +152,16 @@ class CausalWrapper:  # pylint: disable=too-few-public-methods
             feat_names = [n for n, keep in zip(all_names, keep_mask) if keep]
         else:
             feat_names = all_names
+    
 
         # 4) -------- bin pseudo‑time & aggregate
         pt = adata.obs[pt_key].to_numpy()
         y_idx = list(adata.var_names).index(self.outcome)
+        # flip 
+        if self.prior_trend != 'none':
+            corr = pd.Series(pt).corr(pd.Series(adata.X[:, y_idx].flatten()), method='spearman')
+            if (self.prior_trend == 'increase' and corr < 0) or (self.prior_trend == 'decrease' and corr > 0):
+                pt = -pt  # flip
 
         if self.bins is None or self.bins <= 1:
             bin_ids = np.zeros_like(pt, dtype=int)

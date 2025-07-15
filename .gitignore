@@ -12,6 +12,11 @@ latex/*
 
 notes/
 notes/*
+
+results/
+results/*
+
+!scripts/multipatients/**
 #-------------Python gitignore template----------
 # Byte-compiled / optimized / DLL files
 __pycache__/

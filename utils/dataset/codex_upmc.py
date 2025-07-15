@@ -5,12 +5,6 @@ UPMC_GENES = [
     "HLA-DR", "Ki67", "PanCK", "Podoplanin", "Vimentin", "aSMA"
 ]
 
-# UPMC_CELL_TYPES = [
-#     "APC", "B cell", "CD4 T cell", "CD8 T cell", "Granulocyte", "Lymph vessel",
-#     "Macrophage", "Naive immune cell", "Stromal / Fibroblast", "Tumor",
-#     "Tumor (CD15+)", "Tumor (CD20+)", "Tumor (CD21+)", "Tumor (Ki67+)",
-#     "Tumor (Podo+)", "Vessel", "Unassigned"
-# ]
 UPMC_CELL_TYPES = [
     "APC", "B cell", "CD4 T cell", "CD8 T cell", "Granulocyte", "Lymph vessel",
     "Macrophage", "Naive immune cell", "Stromal / Fibroblast", "Tumor",
